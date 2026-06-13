@@ -1,0 +1,71 @@
+@page "/login"
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@layout AdminBlankLayout
+
+<PageTitle>Login Admin | 37 Music Studio</PageTitle>
+
+<main class="studio-login-page theme-container" aria-labelledby="studioLoginTitle">
+    <section class="studio-login-panel" aria-label="Login admin 37 Music Studio">
+        <div class="studio-login-brand">
+            <div class="studio-login-brand__mark" aria-hidden="true">37</div>
+
+            <div class="studio-login-brand__copy">
+                <p class="studio-login-brand__eyebrow">Admin Portal</p>
+                <h1 id="studioLoginTitle">37 Music Studio</h1>
+                <p>Masuk ke ruang kendali studio.</p>
+            </div>
+        </div>
+
+        <form class="studio-login-card" method="post" action="/local-auth/sign-in" autocomplete="on">
+            <input type="hidden" name="returnUrl" value="@SafeReturnUrl" />
+
+            <div class="studio-login-card__header">
+                <p>Secure Local Access</p>
+                <h2>Login Admin</h2>
+            </div>
+
+            @if (HasError)
+            {
+                <div class="studio-login-alert" role="alert">
+                    @ErrorMessage
+                </div>
+            }
+
+            <label class="studio-login-field">
+                <span>Username</span>
+                <input name="username" type="text" autocomplete="username" spellcheck="false" placeholder="Masukkan username" required />
+            </label>
+
+            <label class="studio-login-field">
+                <span>Password</span>
+                <input name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required />
+            </label>
+
+            <button class="studio-login-submit" type="submit">
+                Masuk ke Admin
+            </button>
+
+            <p class="studio-login-note">
+                Credential aktif dibaca dari file lokal yang tidak ikut commit.
+            </p>
+        </form>
+    </section>
+</main>
+
+@code {
+    [Microsoft.AspNetCore.Components.SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    [Microsoft.AspNetCore.Components.SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private string SafeReturnUrl => StudioAuthReturnUrl.Sanitize(ReturnUrl);
+
+    private bool HasError => !string.IsNullOrWhiteSpace(Error);
+
+    private string ErrorMessage => Error?.Trim().ToLowerInvariant() switch
+    {
+        "config" => "File auth lokal belum siap atau tidak bisa dibaca. Cek .local/auth.local.json.",
+        _ => "Username atau password belum cocok."
+    };
+}

@@ -361,7 +361,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-# 37 Music Studio local-only auth credentials
-.local/
-**/.local/
-*.local.json

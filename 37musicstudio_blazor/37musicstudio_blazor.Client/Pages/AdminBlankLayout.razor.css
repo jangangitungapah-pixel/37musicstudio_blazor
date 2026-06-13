@@ -1,0 +1,7 @@
+.studio-blank-layout {
+    min-height: 100dvh;
+    background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--ui-accent, #d8a85f) 14%, transparent), transparent 34rem),
+        var(--ui-bg-page, #f7f2ea);
+    color: var(--ui-text-main, #241b13);
+}

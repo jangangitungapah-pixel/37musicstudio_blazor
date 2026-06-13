@@ -1,0 +1,15 @@
+@inject Microsoft.AspNetCore.Components.NavigationManager NavigationManager
+
+@code {
+    protected override void OnInitialized()
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        var returnUrl = string.IsNullOrWhiteSpace(relativePath)
+            ? "/admin"
+            : "/" + relativePath.TrimStart('/');
+
+        var target = "/login?returnUrl=" + System.Uri.EscapeDataString(returnUrl);
+
+        NavigationManager.NavigateTo(target, forceLoad: true);
+    }
+}
