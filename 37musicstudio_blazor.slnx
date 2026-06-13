@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="37musicstudio_blazor/37musicstudio_blazor.Client/37musicstudio_blazor.Client.csproj" />
+  <Project Path="37musicstudio_blazor/37musicstudio_blazor/37musicstudio_blazor.csproj" />
+</Solution>

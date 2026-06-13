@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+    "profiles": {
+      "http": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+        "applicationUrl": "http://37musicstudio-blazor.dev.localhost:5119",
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
+      },
+      "https": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+        "applicationUrl": "https://37musicstudio-blazor.dev.localhost:7183;http://37musicstudio-blazor.dev.localhost:5119",
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
+      }
+    }
+  }
