@@ -11,60 +11,100 @@
 <main class="studio-schedule-page" aria-labelledby="scheduleTitle">
     <section class="studio-schedule-shell">
         <header class="studio-schedule-header">
-            <a class="studio-schedule-brand" href="/schedule" aria-label="37 Music Studio Schedule">
-                <span class="studio-schedule-mark" aria-hidden="true">
-                    <StudioIcon Name="music" />
-                </span>
+            <div class="studio-schedule-topbar">
+                <a class="studio-schedule-brand" href="/schedule" aria-label="37 Music Studio Schedule">
+                    <span class="studio-schedule-mark" aria-hidden="true">
+                        <StudioIcon Name="music" />
+                    </span>
 
-                <span class="studio-schedule-brand-copy">
-                    <strong>37 Music Studio</strong>
-                    <small>Schedule</small>
-                </span>
-            </a>
+                    <span class="studio-schedule-brand-copy">
+                        <strong>37 Music Studio</strong>
+                        <small>Schedule</small>
+                    </span>
+                </a>
 
-            <div class="studio-schedule-title">
-                <p id="scheduleTitle">Kalender Booking</p>
-                <h1>@MonthTitle</h1>
+                <div class="studio-schedule-title">
+                    <p id="scheduleTitle">Kalender Booking</p>
+                    <h1>@CalendarTitle</h1>
+                </div>
+
+                <div class="studio-schedule-actions" aria-label="Kontrol kalender">
+                    <button class="studio-icon-button" type="button" @onclick="GoToPreviousRange" aria-label="Sebelumnya">
+                        <StudioIcon Name="chevron-left" />
+                    </button>
+
+                    <button class="studio-today-button" type="button" @onclick="GoToCurrentRange">
+                        <StudioIcon Name="calendar-days" />
+                        <span>Hari Ini</span>
+                    </button>
+
+                    <button class="studio-icon-button" type="button" @onclick="GoToNextRange" aria-label="Berikutnya">
+                        <StudioIcon Name="chevron-right" />
+                    </button>
+
+                    <form method="post" action="/local-auth/sign-out">
+                        <button class="studio-schedule-logout" type="submit">
+                            <StudioIcon Name="log-out" />
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
             </div>
 
-            <div class="studio-schedule-actions" aria-label="Kontrol kalender">
-                <button type="button" @onclick="GoToPreviousMonth" aria-label="Bulan sebelumnya">
-                    <StudioIcon Name="chevron-left" />
-                    <span>Prev</span>
-                </button>
+            <div class="studio-schedule-quickbar" aria-label="Quick view dan quick filter">
+                <div class="studio-schedule-segment" aria-label="Quick view mode">
+                    <span class="studio-quick-label">View</span>
 
-                <button type="button" @onclick="GoToCurrentMonth">
-                    <StudioIcon Name="calendar-days" />
-                    <span>Bulan Ini</span>
-                </button>
-
-                <button type="button" @onclick="GoToNextMonth" aria-label="Bulan berikutnya">
-                    <span>Next</span>
-                    <StudioIcon Name="chevron-right" />
-                </button>
-
-                <form method="post" action="/local-auth/sign-out">
-                    <button class="studio-schedule-logout" type="submit">
-                        <StudioIcon Name="log-out" />
-                        <span>Logout</span>
+                    <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Day)" @onclick="() => SetViewMode(ScheduleViewMode.Day)">
+                        <StudioIcon Name="calendar" />
+                        <span>Hari</span>
                     </button>
-                </form>
+
+                    <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Week)" @onclick="() => SetViewMode(ScheduleViewMode.Week)">
+                        <StudioIcon Name="calendar-range" />
+                        <span>Minggu</span>
+                    </button>
+
+                    <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Month)" @onclick="() => SetViewMode(ScheduleViewMode.Month)">
+                        <StudioIcon Name="calendar-days" />
+                        <span>Bulan</span>
+                    </button>
+                </div>
+
+                <div class="studio-schedule-segment studio-schedule-filter" aria-label="Quick filter booking">
+                    <span class="studio-quick-label">Filter</span>
+
+                    <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Pending)" @onclick="() => SetStatusFilter(BookingStatusFilter.Pending)">
+                        <StudioIcon Name="timer" />
+                        <span>Pending</span>
+                    </button>
+
+                    <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Dp)" @onclick="() => SetStatusFilter(BookingStatusFilter.Dp)">
+                        <StudioIcon Name="credit-card" />
+                        <span>DP</span>
+                    </button>
+
+                    <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Paid)" @onclick="() => SetStatusFilter(BookingStatusFilter.Paid)">
+                        <StudioIcon Name="circle-check" />
+                        <span>Lunas</span>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <section class="studio-schedule-board" style="@ScheduleDayStyle" aria-label="Grid jadwal bulanan">
+        <section class="studio-schedule-board" style="@ScheduleDayStyle" aria-label="Grid jadwal">
             <div class="studio-schedule-table-wrap">
                 <table class="studio-schedule-table">
                     <thead>
                         <tr>
                             <th class="studio-schedule-time-head" scope="col">
                                 <span class="studio-table-head-label">
-                                    <StudioIcon Name="calendar" />
-                                    <span>TGL</span>
+                                    <StudioIcon Name="clock" />
+                                    <span>Jam</span>
                                 </span>
                             </th>
 
-                            @foreach (var day in MonthDays)
+                            @foreach (var day in VisibleDays)
                             {
                                 <th class="@GetDayHeaderClass(day)" scope="col">
                                     <span>@GetDayName(day)</span>
@@ -79,13 +119,10 @@
                         {
                             <tr>
                                 <th class="studio-schedule-time-cell" scope="row">
-                                    <span>
-                                        <StudioIcon Name="clock" />
-                                        <span>@FormatTimeSlot(slot)</span>
-                                    </span>
+                                    <span>@FormatTimeSlot(slot)</span>
                                 </th>
 
-                                @foreach (var day in MonthDays)
+                                @foreach (var day in VisibleDays)
                                 {
                                     var cellId = BuildCellId(day, slot);
                                     var isToday = day.Date == Today.Date;
@@ -139,14 +176,23 @@
 @code {
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
 
-    private DateTime VisibleMonth { get; set; } = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private DateTime CurrentAnchorDate { get; set; } = DateTime.Today;
+
+    private ScheduleViewMode ActiveViewMode { get; set; } = ScheduleViewMode.Month;
+
+    private BookingStatusFilter ActiveStatusFilter { get; set; } = BookingStatusFilter.Pending;
 
     private DateTime Today => DateTime.Today;
 
-    private IReadOnlyList<DateTime> MonthDays => Enumerable
-        .Range(1, DateTime.DaysInMonth(VisibleMonth.Year, VisibleMonth.Month))
-        .Select(day => new DateTime(VisibleMonth.Year, VisibleMonth.Month, day))
-        .ToArray();
+    private IReadOnlyList<DateTime> VisibleDays => ActiveViewMode switch
+    {
+        ScheduleViewMode.Day => new[] { CurrentAnchorDate.Date },
+        ScheduleViewMode.Week => Enumerable.Range(0, 7).Select(offset => StartOfWeek(CurrentAnchorDate).AddDays(offset)).ToArray(),
+        _ => Enumerable
+            .Range(1, DateTime.DaysInMonth(CurrentAnchorDate.Year, CurrentAnchorDate.Month))
+            .Select(day => new DateTime(CurrentAnchorDate.Year, CurrentAnchorDate.Month, day))
+            .ToArray()
+    };
 
     private IReadOnlyList<ScheduleTimeSlot> TimeSlots { get; } = Enumerable
         .Range(10, 13)
@@ -161,9 +207,14 @@
 
     private string? SelectedSlotId { get; set; }
 
-    private string MonthTitle => VisibleMonth.ToString("MMMM yyyy", IndonesianCulture);
+    private string CalendarTitle => ActiveViewMode switch
+    {
+        ScheduleViewMode.Day => CurrentAnchorDate.ToString("dddd, dd MMMM yyyy", IndonesianCulture),
+        ScheduleViewMode.Week => BuildWeekTitle(),
+        _ => CurrentAnchorDate.ToString("MMMM yyyy", IndonesianCulture)
+    };
 
-    private string ScheduleDayStyle => $"--schedule-days:{MonthDays.Count};";
+    private string ScheduleDayStyle => $"--schedule-days:{VisibleDays.Count};";
 
     private string SelectedSlotTitle
     {
@@ -178,21 +229,52 @@
         }
     }
 
-    private void GoToPreviousMonth()
+    private void SetViewMode(ScheduleViewMode viewMode)
     {
-        VisibleMonth = VisibleMonth.AddMonths(-1);
+        ActiveViewMode = viewMode;
+        CurrentAnchorDate = viewMode == ScheduleViewMode.Month
+            ? new DateTime(CurrentAnchorDate.Year, CurrentAnchorDate.Month, 1)
+            : CurrentAnchorDate.Date;
+
         CloseBookingCanvas();
     }
 
-    private void GoToNextMonth()
+    private void SetStatusFilter(BookingStatusFilter statusFilter)
     {
-        VisibleMonth = VisibleMonth.AddMonths(1);
+        ActiveStatusFilter = statusFilter;
         CloseBookingCanvas();
     }
 
-    private void GoToCurrentMonth()
+    private void GoToPreviousRange()
     {
-        VisibleMonth = new DateTime(Today.Year, Today.Month, 1);
+        CurrentAnchorDate = ActiveViewMode switch
+        {
+            ScheduleViewMode.Day => CurrentAnchorDate.AddDays(-1),
+            ScheduleViewMode.Week => CurrentAnchorDate.AddDays(-7),
+            _ => CurrentAnchorDate.AddMonths(-1)
+        };
+
+        CloseBookingCanvas();
+    }
+
+    private void GoToNextRange()
+    {
+        CurrentAnchorDate = ActiveViewMode switch
+        {
+            ScheduleViewMode.Day => CurrentAnchorDate.AddDays(1),
+            ScheduleViewMode.Week => CurrentAnchorDate.AddDays(7),
+            _ => CurrentAnchorDate.AddMonths(1)
+        };
+
+        CloseBookingCanvas();
+    }
+
+    private void GoToCurrentRange()
+    {
+        CurrentAnchorDate = ActiveViewMode == ScheduleViewMode.Month
+            ? new DateTime(Today.Year, Today.Month, 1)
+            : Today.Date;
+
         CloseBookingCanvas();
     }
 
@@ -210,6 +292,44 @@
         SelectedDate = null;
         SelectedSlot = null;
         SelectedSlotId = null;
+    }
+
+    private string GetViewModeButtonClass(ScheduleViewMode viewMode)
+    {
+        return ActiveViewMode == viewMode
+            ? "studio-segment-button is-active"
+            : "studio-segment-button";
+    }
+
+    private string GetStatusFilterButtonClass(BookingStatusFilter statusFilter)
+    {
+        return ActiveStatusFilter == statusFilter
+            ? $"studio-segment-button studio-status-{statusFilter.ToString().ToLowerInvariant()} is-active"
+            : $"studio-segment-button studio-status-{statusFilter.ToString().ToLowerInvariant()}";
+    }
+
+    private string BuildWeekTitle()
+    {
+        var start = StartOfWeek(CurrentAnchorDate);
+        var end = start.AddDays(6);
+
+        if (start.Year == end.Year && start.Month == end.Month)
+        {
+            return $"{start.ToString("dd", IndonesianCulture)} - {end.ToString("dd MMMM yyyy", IndonesianCulture)}";
+        }
+
+        if (start.Year == end.Year)
+        {
+            return $"{start.ToString("dd MMM", IndonesianCulture)} - {end.ToString("dd MMMM yyyy", IndonesianCulture)}";
+        }
+
+        return $"{start.ToString("dd MMM yyyy", IndonesianCulture)} - {end.ToString("dd MMM yyyy", IndonesianCulture)}";
+    }
+
+    private static DateTime StartOfWeek(DateTime date)
+    {
+        var diff = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return date.Date.AddDays(-diff);
     }
 
     private static string BuildCellId(DateTime day, ScheduleTimeSlot slot)
@@ -274,6 +394,20 @@
     private static string BuildSlotAria(DateTime day, ScheduleTimeSlot slot)
     {
         return $"Buka form booking untuk {BuildSlotTitle(day, slot)}";
+    }
+
+    private enum ScheduleViewMode
+    {
+        Day,
+        Week,
+        Month
+    }
+
+    private enum BookingStatusFilter
+    {
+        Pending,
+        Dp,
+        Paid
     }
 
     private readonly record struct ScheduleTimeSlot(TimeSpan Start, TimeSpan End);
