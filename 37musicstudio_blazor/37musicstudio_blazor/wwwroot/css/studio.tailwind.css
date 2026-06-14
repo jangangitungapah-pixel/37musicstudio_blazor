@@ -772,3 +772,35 @@
 }
 /* </studio-victory-striker-hero-usage> */
 }
+
+@layer components {
+/* <studio-login-heading-spacing> */
+.studio-login-header h1,
+#studioLoginTitle {
+    max-width: 100%;
+    font-family: var(--studio-display-font, "Victory Striker Sans Demo", "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif);
+    font-size: clamp(1.42rem, 4.2vw, 1.82rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: 0.18em;
+    word-spacing: 0.38em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-wrap: nowrap;
+}
+
+.studio-login-brand__text p {
+    letter-spacing: 0.055em;
+    word-spacing: 0.12em;
+}
+
+@media (max-width: 520px) {
+    .studio-login-header h1,
+    #studioLoginTitle {
+        font-size: clamp(1.26rem, 7vw, 1.54rem);
+        letter-spacing: 0.145em;
+        word-spacing: 0.28em;
+    }
+}
+/* </studio-login-heading-spacing> */
+}
