@@ -393,31 +393,57 @@
 /* </studio-victory-striker-hero-usage> */
 
 /* <studio-login-heading-spacing> */
+.studio-login-title,
 .studio-login-header h1,
 #studioLoginTitle {
     max-width: 100%;
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: nowrap;
+    gap: 0.54em;
     font-family: var(--studio-display-font, "Victory Striker Sans Demo", "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif);
-    font-size: clamp(1.42rem, 4.2vw, 1.82rem);
+    font-size: clamp(1.55rem, 4vw, 1.96rem);
     font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: 0.18em;
-    word-spacing: 0.38em;
+    line-height: 0.95;
+    letter-spacing: 0;
+    word-spacing: 0;
     text-transform: uppercase;
     white-space: nowrap;
     text-wrap: nowrap;
 }
 
+.studio-login-title span,
+#studioLoginTitle span {
+    display: inline-block;
+    letter-spacing: 0.092em;
+}
+
+.studio-login-title span:last-child,
+#studioLoginTitle span:last-child {
+    letter-spacing: 0.082em;
+}
+
 .studio-login-brand__text p {
-    letter-spacing: 0.055em;
-    word-spacing: 0.12em;
+    letter-spacing: 0.018em;
+    word-spacing: 0.04em;
 }
 
 @media (max-width: 520px) {
+    .studio-login-title,
     .studio-login-header h1,
     #studioLoginTitle {
-        font-size: clamp(1.26rem, 7vw, 1.54rem);
-        letter-spacing: 0.145em;
-        word-spacing: 0.28em;
+        gap: 0.46em;
+        font-size: clamp(1.38rem, 7vw, 1.68rem);
+    }
+
+    .studio-login-title span,
+    #studioLoginTitle span {
+        letter-spacing: 0.074em;
+    }
+
+    .studio-login-title span:last-child,
+    #studioLoginTitle span:last-child {
+        letter-spacing: 0.068em;
     }
 }
 /* </studio-login-heading-spacing> */
