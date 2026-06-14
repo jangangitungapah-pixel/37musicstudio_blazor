@@ -82,3 +82,118 @@
     background: var(--ui-bg-page, #f4efe7);
     color: var(--ui-text-main, #25231f);
 }
+
+/* <studio-all-montserrat-login> */
+:root {
+    --studio-display-font: var(--studio-body-font, "Montserrat", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif);
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select,
+.theme-container,
+.studio-blank-layout,
+.studio-login-page,
+.studio-login-card,
+.studio-login-brand,
+.studio-login-brand__text,
+.studio-login-header,
+.studio-login-form,
+.studio-login-field,
+.studio-login-input,
+.studio-login-submit,
+.studio-login-alert {
+    font-family: var(--studio-body-font, "Montserrat", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif) !important;
+}
+
+.studio-login-mark,
+.studio-login-brand__text p,
+.studio-login-brand__text span,
+.studio-login-header p,
+.studio-login-header h1,
+#studioLoginTitle,
+.studio-login-title,
+.studio-login-title span,
+.studio-login-field > span,
+.studio-login-input input,
+.studio-login-submit {
+    font-family: var(--studio-body-font, "Montserrat", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif) !important;
+}
+
+.studio-login-mark {
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+}
+
+.studio-login-brand__text p {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    text-transform: none;
+}
+
+.studio-login-brand__text span {
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+}
+
+.studio-login-header p {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.studio-login-header h1,
+#studioLoginTitle {
+    display: block !important;
+    max-width: 100%;
+    margin: 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1.78rem, 4vw, 2.12rem);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.055em !important;
+    word-spacing: 0 !important;
+    text-transform: none !important;
+    white-space: normal !important;
+    text-wrap: balance;
+}
+
+.studio-login-title span,
+#studioLoginTitle span {
+    display: inline !important;
+    letter-spacing: inherit !important;
+}
+
+.studio-login-field > span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.018em;
+}
+
+.studio-login-input input {
+    font-size: 0.92rem;
+    font-weight: 500;
+    letter-spacing: -0.018em;
+}
+
+.studio-login-submit {
+    font-size: 0.94rem;
+    font-weight: 700;
+    letter-spacing: -0.018em;
+}
+
+@media (max-width: 520px) {
+    .studio-login-header h1,
+    #studioLoginTitle {
+        font-size: 1.68rem;
+        letter-spacing: -0.045em !important;
+    }
+}
+/* </studio-all-montserrat-login> */
