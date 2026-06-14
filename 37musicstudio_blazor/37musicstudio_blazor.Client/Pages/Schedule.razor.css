@@ -1,0 +1,445 @@
+.studio-schedule-page {
+    min-height: 100dvh;
+    padding: clamp(0.9rem, 2vw, 1.25rem);
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--ui-accent, #d8a85f) 15%, transparent), transparent 24rem),
+        radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--ui-accent-2, #8d7cff) 10%, transparent), transparent 28rem),
+        linear-gradient(135deg, color-mix(in srgb, var(--ui-bg-page, #f4efe7) 94%, #ffffff), var(--ui-bg-page, #f4efe7));
+    color: var(--ui-text-main, #25231f);
+    font-family:
+        var(--studio-body-font),
+        "Montserrat",
+        "Segoe UI Variable",
+        "Segoe UI",
+        system-ui,
+        sans-serif;
+}
+
+.studio-schedule-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(color-mix(in srgb, var(--ui-text-main, #25231f) 3.5%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--ui-text-main, #25231f) 3.5%, transparent) 1px, transparent 1px);
+    background-size: 4.5rem 4.5rem;
+    mask-image: radial-gradient(circle at center, black, transparent 74%);
+    opacity: 0.22;
+}
+
+.studio-schedule-shell {
+    min-height: calc(100dvh - clamp(1.8rem, 4vw, 2.5rem));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.9rem;
+}
+
+.studio-schedule-header,
+.studio-schedule-board,
+.studio-booking-panel {
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 74%, transparent)),
+        var(--ui-surface, #fffefa);
+    box-shadow:
+        0 1.6rem 4.8rem color-mix(in srgb, #000000 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+    backdrop-filter: blur(24px);
+}
+
+.studio-schedule-header {
+    min-height: 5.25rem;
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.8fr) minmax(14rem, 1.4fr) auto;
+    gap: 1rem;
+    align-items: center;
+    border-radius: 1.6rem;
+    padding: 0.85rem;
+}
+
+.studio-schedule-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.72rem;
+    min-width: 0;
+}
+
+.studio-schedule-mark {
+    width: 3.05rem;
+    height: 3.05rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 0.95rem;
+    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 42%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        linear-gradient(160deg, color-mix(in srgb, #ffffff 42%, transparent), transparent),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, var(--ui-surface, #fffefa));
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.98rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+}
+
+.studio-schedule-brand p,
+.studio-schedule-title p {
+    margin: 0;
+}
+
+.studio-schedule-brand p {
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+}
+
+.studio-schedule-brand span {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.studio-schedule-title {
+    min-width: 0;
+}
+
+.studio-schedule-title p {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.studio-schedule-title h1 {
+    margin: 0.18rem 0 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1.45rem, 3vw, 2rem);
+    line-height: 1;
+    letter-spacing: -0.055em;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.studio-schedule-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+}
+
+.studio-schedule-actions button {
+    min-height: 2.75rem;
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    border-radius: 0.9rem;
+    padding: 0 0.86rem;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 92%, #ffffff), color-mix(in srgb, var(--ui-surface, #fffefa) 78%, var(--ui-bg-page, #f4efe7)));
+    color: var(--ui-text-main, #25231f);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow:
+        0 0.65rem 1.5rem color-mix(in srgb, #000000 4%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 56%, transparent);
+}
+
+.studio-schedule-actions button:hover {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 42%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+}
+
+.studio-schedule-actions .studio-schedule-logout {
+    margin-left: 0.35rem;
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 52%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 30%, transparent), transparent 55%),
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 90%, #ffffff 10%), color-mix(in srgb, var(--ui-accent, #d8a85f) 94%, #8f682c 6%));
+    color: var(--ui-accent-contrast, #15100a);
+}
+
+.studio-schedule-board {
+    min-height: 0;
+    border-radius: 1.6rem;
+    overflow: hidden;
+}
+
+.studio-schedule-table-wrap {
+    height: 100%;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 55%, transparent) transparent;
+}
+
+.studio-schedule-table {
+    width: max(100%, calc(4.8rem + 3.5rem * var(--schedule-days, 31)));
+    min-width: 100%;
+    height: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+}
+
+.studio-schedule-table th,
+.studio-schedule-table td {
+    border-right: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 86%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 86%, transparent);
+}
+
+.studio-schedule-time-head,
+.studio-schedule-time-cell {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    width: 5.8rem;
+    min-width: 5.8rem;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 92%, transparent), color-mix(in srgb, var(--ui-bg-page, #f4efe7) 35%, transparent)),
+        var(--ui-surface, #fffefa);
+}
+
+.studio-schedule-time-head {
+    top: 0;
+    z-index: 8;
+    height: 3.5rem;
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.studio-schedule-time-cell {
+    height: 2.62rem;
+    color: var(--ui-text-main, #25231f);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.studio-schedule-time-cell span {
+    display: inline-flex;
+    padding-left: 0.75rem;
+    white-space: nowrap;
+}
+
+.studio-schedule-day-head {
+    position: sticky;
+    top: 0;
+    z-index: 7;
+    height: 3.5rem;
+    min-width: 3.55rem;
+    padding: 0.35rem 0.25rem;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 92%, transparent), color-mix(in srgb, var(--ui-bg-page, #f4efe7) 30%, transparent)),
+        var(--ui-surface, #fffefa);
+    color: var(--ui-text-main, #25231f);
+    vertical-align: middle;
+}
+
+.studio-schedule-day-head span,
+.studio-schedule-day-head strong {
+    display: block;
+}
+
+.studio-schedule-day-head span {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.studio-schedule-day-head strong {
+    margin-top: 0.12rem;
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.studio-schedule-day-head.is-today {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 15%, var(--ui-surface, #fffefa)), color-mix(in srgb, var(--ui-accent, #d8a85f) 6%, var(--ui-surface, #fffefa)));
+}
+
+.studio-schedule-day-head.is-weekend span,
+.studio-schedule-day-head.is-weekend strong {
+    color: color-mix(in srgb, var(--ui-text-muted, #70685e) 84%, var(--ui-accent, #d8a85f));
+}
+
+.studio-schedule-cell {
+    height: 2.62rem;
+    min-width: 3.55rem;
+    padding: 0;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 46%, transparent);
+}
+
+.studio-schedule-cell.is-today {
+    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 7%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-cell.is-selected {
+    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 15%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-slot {
+    width: 100%;
+    height: 100%;
+    min-height: 2.62rem;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.studio-schedule-slot span {
+    width: calc(100% - 0.55rem);
+    height: calc(100% - 0.55rem);
+    border-radius: 0.68rem;
+    border: 1px solid transparent;
+    background: transparent;
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        box-shadow 140ms ease,
+        transform 140ms ease;
+}
+
+.studio-schedule-slot:hover span,
+.studio-schedule-slot:focus-visible span {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 42%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 60%),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 13%, var(--ui-surface, #fffefa));
+    box-shadow:
+        0 0.6rem 1.2rem color-mix(in srgb, var(--ui-accent, #d8a85f) 13%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 48%, transparent);
+    transform: translateY(-1px);
+}
+
+.studio-schedule-slot:focus-visible {
+    outline: 0;
+}
+
+.studio-booking-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+}
+
+.studio-booking-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background:
+        radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, transparent), transparent 22rem),
+        color-mix(in srgb, var(--ui-bg-page, #f4efe7) 66%, transparent);
+    backdrop-filter: blur(16px);
+    cursor: default;
+}
+
+.studio-booking-panel {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 42rem);
+    min-height: min(68dvh, 34rem);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    border-radius: 1.55rem;
+    overflow: hidden;
+}
+
+.studio-booking-header {
+    min-height: 4.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    padding: 1rem;
+}
+
+.studio-booking-header p {
+    margin: 0;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.studio-booking-header h2 {
+    margin: 0.2rem 0 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-weight: 750;
+    letter-spacing: -0.035em;
+}
+
+.studio-booking-header button {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 88%, var(--ui-bg-page, #f4efe7));
+    color: var(--ui-text-main, #25231f);
+    font-size: 1.45rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.studio-booking-canvas {
+    min-height: 20rem;
+    margin: 1rem;
+    border: 1px dashed color-mix(in srgb, var(--ui-border-strong, rgba(32, 28, 23, 0.18)) 86%, var(--ui-accent, #d8a85f));
+    border-radius: 1.1rem;
+    background:
+        radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--ui-accent, #d8a85f) 7%, transparent), transparent 16rem),
+        color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 72%, transparent);
+}
+
+@media (max-width: 880px) {
+    .studio-schedule-page {
+        padding: 0.75rem;
+    }
+
+    .studio-schedule-header {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+        border-radius: 1.25rem;
+        gap: 0.8rem;
+    }
+
+    .studio-schedule-actions {
+        justify-content: stretch;
+        overflow-x: auto;
+        padding-bottom: 0.1rem;
+    }
+
+    .studio-schedule-actions button {
+        flex: 1 0 auto;
+    }
+
+    .studio-schedule-board {
+        border-radius: 1.25rem;
+    }
+
+    .studio-schedule-time-head,
+    .studio-schedule-time-cell {
+        width: 5.35rem;
+        min-width: 5.35rem;
+    }
+
+    .studio-booking-panel {
+        min-height: min(74dvh, 34rem);
+        border-radius: 1.25rem;
+    }
+}

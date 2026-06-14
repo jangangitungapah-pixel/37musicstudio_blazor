@@ -1,0 +1,247 @@
+@page "/"
+@page "/admin"
+@page "/schedule"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@layout AdminBlankLayout
+
+@using System.Globalization
+
+<PageTitle>Schedule | 37 Music Studio</PageTitle>
+
+<main class="studio-schedule-page theme-container" aria-labelledby="scheduleTitle">
+    <section class="studio-schedule-shell">
+        <header class="studio-schedule-header">
+            <div class="studio-schedule-brand">
+                <div class="studio-schedule-mark" aria-hidden="true">37</div>
+
+                <div>
+                    <p>37 Music Studio</p>
+                    <span>Schedule</span>
+                </div>
+            </div>
+
+            <div class="studio-schedule-title">
+                <p id="scheduleTitle">Kalender Booking</p>
+                <h1>@MonthTitle</h1>
+            </div>
+
+            <div class="studio-schedule-actions" aria-label="Kontrol kalender">
+                <button type="button" @onclick="GoToPreviousMonth" aria-label="Bulan sebelumnya">â€¹</button>
+                <button type="button" @onclick="GoToCurrentMonth">Bulan Ini</button>
+                <button type="button" @onclick="GoToNextMonth" aria-label="Bulan berikutnya">â€º</button>
+
+                <form method="post" action="/local-auth/sign-out">
+                    <button class="studio-schedule-logout" type="submit">Logout</button>
+                </form>
+            </div>
+        </header>
+
+        <section class="studio-schedule-board" aria-label="Grid jadwal bulanan">
+            <div class="studio-schedule-table-wrap">
+                <table class="studio-schedule-table">
+                    <thead>
+                        <tr>
+                            <th class="studio-schedule-time-head" scope="col">TGL</th>
+
+                            @foreach (var day in MonthDays)
+                            {
+                                <th class="@GetDayHeaderClass(day)" scope="col">
+                                    <span>@GetDayName(day)</span>
+                                    <strong>@day.Day</strong>
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var slot in TimeSlots)
+                        {
+                            <tr>
+                                <th class="studio-schedule-time-cell" scope="row">
+                                    <span>@slot.Label</span>
+                                </th>
+
+                                @foreach (var day in MonthDays)
+                                {
+                                    var cellId = BuildCellId(day, slot);
+                                    var isToday = day.Date == Today.Date;
+                                    var isSelected = SelectedSlotId == cellId;
+
+                                    <td class="@GetCellClass(isToday, isSelected)">
+                                        <button
+                                            type="button"
+                                            class="studio-schedule-slot"
+                                            title="@BuildSlotTitle(day, slot)"
+                                            aria-label="@BuildSlotAria(day, slot)"
+                                            @onclick="() => OpenBookingCanvas(day, slot)">
+                                            <span></span>
+                                        </button>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
+
+    @if (IsBookingCanvasOpen)
+    {
+        <div class="studio-booking-modal" role="dialog" aria-modal="true" aria-labelledby="bookingCanvasTitle">
+            <button class="studio-booking-backdrop" type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas"></button>
+
+            <section class="studio-booking-panel">
+                <header class="studio-booking-header">
+                    <div>
+                        <p id="bookingCanvasTitle">Booking</p>
+                        <h2>@SelectedSlotTitle</h2>
+                    </div>
+
+                    <button type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas">Ã—</button>
+                </header>
+
+                <div class="studio-booking-canvas" aria-label="Canvas booking kosong"></div>
+            </section>
+        </div>
+    }
+</main>
+
+@code {
+    private static readonly CultureInfo IndonesianCulture = new("id-ID");
+
+    private DateTime VisibleMonth { get; set; } = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+    private DateTime Today => DateTime.Today;
+
+    private IReadOnlyList<DateTime> MonthDays => Enumerable
+        .Range(1, DateTime.DaysInMonth(VisibleMonth.Year, VisibleMonth.Month))
+        .Select(day => new DateTime(VisibleMonth.Year, VisibleMonth.Month, day))
+        .ToArray();
+
+    private IReadOnlyList<ScheduleTimeSlot> TimeSlots { get; } = Enumerable
+        .Range(10, 13)
+        .Select(hour => new ScheduleTimeSlot(TimeSpan.FromHours(hour), TimeSpan.FromHours(hour + 1)))
+        .ToArray();
+
+    private bool IsBookingCanvasOpen { get; set; }
+
+    private DateTime? SelectedDate { get; set; }
+
+    private ScheduleTimeSlot? SelectedSlot { get; set; }
+
+    private string? SelectedSlotId { get; set; }
+
+    private string MonthTitle => VisibleMonth.ToString("MMMM yyyy", IndonesianCulture);
+
+    private string SelectedSlotTitle
+    {
+        get
+        {
+            if (SelectedDate is null || SelectedSlot is null)
+            {
+                return string.Empty;
+            }
+
+            return $"{SelectedDate.Value.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} Â· {SelectedSlot.Value.Label}";
+        }
+    }
+
+    private void GoToPreviousMonth()
+    {
+        VisibleMonth = VisibleMonth.AddMonths(-1);
+        CloseBookingCanvas();
+    }
+
+    private void GoToNextMonth()
+    {
+        VisibleMonth = VisibleMonth.AddMonths(1);
+        CloseBookingCanvas();
+    }
+
+    private void GoToCurrentMonth()
+    {
+        VisibleMonth = new DateTime(Today.Year, Today.Month, 1);
+        CloseBookingCanvas();
+    }
+
+    private void OpenBookingCanvas(DateTime date, ScheduleTimeSlot slot)
+    {
+        SelectedDate = date.Date;
+        SelectedSlot = slot;
+        SelectedSlotId = BuildCellId(date, slot);
+        IsBookingCanvasOpen = true;
+    }
+
+    private void CloseBookingCanvas()
+    {
+        IsBookingCanvasOpen = false;
+        SelectedDate = null;
+        SelectedSlot = null;
+        SelectedSlotId = null;
+    }
+
+    private static string BuildCellId(DateTime day, ScheduleTimeSlot slot)
+    {
+        return $"{day:yyyyMMdd}-{slot.Start:hhmm}";
+    }
+
+    private static string FormatTime(TimeSpan time)
+    {
+        return $"{(int)time.TotalHours:00}.00";
+    }
+
+    private static string GetDayName(DateTime day)
+    {
+        return day.ToString("ddd", IndonesianCulture);
+    }
+
+    private static string GetDayHeaderClass(DateTime day)
+    {
+        var className = "studio-schedule-day-head";
+
+        if (day.Date == DateTime.Today.Date)
+        {
+            className += " is-today";
+        }
+
+        if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+        {
+            className += " is-weekend";
+        }
+
+        return className;
+    }
+
+    private static string GetCellClass(bool isToday, bool isSelected)
+    {
+        var className = "studio-schedule-cell";
+
+        if (isToday)
+        {
+            className += " is-today";
+        }
+
+        if (isSelected)
+        {
+            className += " is-selected";
+        }
+
+        return className;
+    }
+
+    private static string BuildSlotTitle(DateTime day, ScheduleTimeSlot slot)
+    {
+        return $"{day.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} Â· {slot.Label}";
+    }
+
+    private static string BuildSlotAria(DateTime day, ScheduleTimeSlot slot)
+    {
+        return $"Buka form booking untuk {BuildSlotTitle(day, slot)}";
+    }
+
+    private readonly record struct ScheduleTimeSlot(TimeSpan Start, TimeSpan End)
+    {
+        public string Label => $"{FormatTime(Start)} - {FormatTime(End)}";
+    }
+}
