@@ -365,3 +365,5 @@ FodyWeavers.xsd
 .local/
 **/.local/
 *.local.json
+# Local-only auth credentials
+**/*.local.json
