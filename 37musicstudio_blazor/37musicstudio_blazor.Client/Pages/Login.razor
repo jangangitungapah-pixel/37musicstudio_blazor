@@ -7,11 +7,15 @@
 <main class="studio-login-page theme-container" aria-labelledby="studioLoginTitle">
     <section class="studio-login-panel" aria-label="Login admin 37 Music Studio">
         <aside class="studio-login-visual" aria-label="Informasi portal admin">
+            <div class="studio-login-orb studio-login-orb--one" aria-hidden="true"></div>
+            <div class="studio-login-orb studio-login-orb--two" aria-hidden="true"></div>
+
             <div class="studio-login-visual__top">
                 <div class="studio-login-brandmark" aria-hidden="true">37</div>
+
                 <div class="studio-login-status">
                     <span aria-hidden="true"></span>
-                    <strong>Local Admin</strong>
+                    <strong>Local Secure</strong>
                 </div>
             </div>
 
@@ -19,14 +23,23 @@
                 <p class="studio-login-eyebrow">Admin Portal</p>
                 <h1 id="studioLoginTitle">37 Music Studio</h1>
                 <p>
-                    Ruang kendali internal untuk mengelola operasional studio dengan tampilan yang bersih, ringan, dan siap dikembangkan.
+                    Ruang kendali internal dengan fondasi UI modern, ringan, dan siap dikembangkan untuk operasional studio.
                 </p>
             </div>
 
-            <div class="studio-login-visual__footer" aria-label="Fitur pondasi">
-                <span>Secure local auth</span>
-                <span>Responsive shell</span>
-                <span>Token based UI</span>
+            <div class="studio-login-metrics" aria-label="Fondasi sistem">
+                <div>
+                    <strong>01</strong>
+                    <span>Auth Local</span>
+                </div>
+                <div>
+                    <strong>02</strong>
+                    <span>Admin Shell</span>
+                </div>
+                <div>
+                    <strong>03</strong>
+                    <span>Fluent Ready</span>
+                </div>
             </div>
         </aside>
 
@@ -36,7 +49,7 @@
             <div class="studio-login-card__header">
                 <p class="studio-login-eyebrow">Secure Local Access</p>
                 <h2>Login Admin</h2>
-                <span>Masuk untuk membuka cangkang admin 37 Music Studio.</span>
+                <span>Masuk ke dashboard untuk mengelola cangkang admin 37 Music Studio.</span>
             </div>
 
             @if (HasError)
@@ -71,7 +84,7 @@
             </div>
 
             <button class="studio-login-submit" type="submit">
-                Masuk ke Admin
+                <span>Masuk ke Admin</span>
             </button>
 
             <p class="studio-login-note">

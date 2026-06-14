@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,16 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <ResourcePreloader />
+    <link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["37musicstudio_blazor.styles.css"]" />
     <ImportMap />
     <HeadOutlet @rendermode="InteractiveAuto" />
+    <link rel="stylesheet" href="css/studio-ambient-ui.css" />
 </head>
 
 <body>
     <Routes @rendermode="InteractiveAuto" />
-    <ReconnectModal />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
+        <StudioFluentProviders @rendermode="InteractiveAuto" />
+<ReconnectModal />
+        <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module" async></script>
+<script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
 </html>

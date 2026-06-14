@@ -1,3 +1,4 @@
+using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
@@ -33,6 +34,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<LocalAdminCredentialStore>();
 // </studio-local-admin-auth:services>
+
+// <studio-fluent-ui:http-client>
+builder.Services.AddHttpClient();
+// </studio-fluent-ui:http-client>
+
+// <studio-fluent-ui:services>
+builder.Services.AddFluentUIComponents();
+// </studio-fluent-ui:services>
 
 var app = builder.Build();
 

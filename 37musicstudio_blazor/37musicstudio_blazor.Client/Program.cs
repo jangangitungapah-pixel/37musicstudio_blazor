@@ -1,3 +1,4 @@
+using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http;
 using System;
@@ -17,5 +18,9 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthStateProvider>();
 // </studio-local-admin-auth:client-services>
+
+// <studio-fluent-ui:client-services>
+builder.Services.AddFluentUIComponents();
+// </studio-fluent-ui:client-services>
 
 await builder.Build().RunAsync();

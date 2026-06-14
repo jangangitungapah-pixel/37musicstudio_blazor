@@ -1,0 +1,77 @@
+:root {
+    color-scheme: light;
+    --ui-bg-page: #f6f1e8;
+    --ui-surface: #fffefa;
+    --ui-surface-raised: rgba(255, 254, 250, 0.82);
+    --ui-surface-glass: rgba(255, 254, 250, 0.68);
+    --ui-text-main: #26231f;
+    --ui-text-strong: #141210;
+    --ui-text-muted: #736b60;
+    --ui-border: rgba(38, 35, 31, 0.12);
+    --ui-border-strong: rgba(38, 35, 31, 0.18);
+    --ui-accent: #d7a957;
+    --ui-accent-contrast: #17120a;
+    --ui-control: #8173ff;
+    --ui-shadow-soft: 0 22px 70px rgba(48, 39, 26, 0.13);
+    --ui-shadow-panel: 0 30px 90px rgba(48, 39, 26, 0.15);
+    --ui-blur: blur(22px);
+}
+
+[data-theme="dark"],
+.theme-dark {
+    color-scheme: dark;
+    --ui-bg-page: #0d0d10;
+    --ui-surface: #17171c;
+    --ui-surface-raised: rgba(25, 25, 31, 0.84);
+    --ui-surface-glass: rgba(25, 25, 31, 0.66);
+    --ui-text-main: #f2eee6;
+    --ui-text-strong: #fffaf0;
+    --ui-text-muted: #afa89c;
+    --ui-border: rgba(255, 250, 240, 0.11);
+    --ui-border-strong: rgba(255, 250, 240, 0.18);
+    --ui-accent: #d7a957;
+    --ui-accent-contrast: #17120a;
+    --ui-control: #9b91ff;
+    --ui-shadow-soft: 0 22px 70px rgba(0, 0, 0, 0.34);
+    --ui-shadow-panel: 0 32px 96px rgba(0, 0, 0, 0.42);
+}
+
+html {
+    min-height: 100%;
+    background: var(--ui-bg-page);
+}
+
+body {
+    min-height: 100%;
+    margin: 0;
+    background: var(--ui-bg-page);
+    color: var(--ui-text-main);
+    font-family:
+        Inter,
+        "Plus Jakarta Sans",
+        "Segoe UI Variable",
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+.theme-container {
+    color: var(--ui-text-main);
+}
+
+::selection {
+    background: color-mix(in srgb, var(--ui-accent) 34%, transparent);
+    color: var(--ui-text-strong);
+}
