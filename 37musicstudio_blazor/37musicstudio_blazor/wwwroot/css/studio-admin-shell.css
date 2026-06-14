@@ -1,0 +1,950 @@
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat.thin.otf") format("opentype");
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat.extralight.otf") format("opentype");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat.extralight.otf") format("opentype");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat.regular.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat.extralight-italic.otf") format("opentype");
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat.medium-italic.otf") format("opentype");
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+:root {
+    --studio-body-font:
+        "Montserrat",
+        "Segoe UI Variable",
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select,
+.theme-container,
+.studio-admin-shell,
+.studio-admin-shell *,
+.studio-booking-modal,
+.studio-booking-modal * {
+    font-family: var(--studio-body-font) !important;
+}
+
+.studio-admin-shell,
+.studio-admin-shell * {
+    box-sizing: border-box;
+}
+
+.studio-admin-shell {
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);
+    background:
+        radial-gradient(circle at 10% 8%, color-mix(in srgb, var(--ui-accent, #d8a85f) 13%, transparent), transparent 24rem),
+        radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--ui-accent-2, #8d7cff) 8%, transparent), transparent 30rem),
+        linear-gradient(135deg, color-mix(in srgb, var(--ui-bg-page, #f4efe7) 95%, #ffffff), var(--ui-bg-page, #f4efe7));
+    color: var(--ui-text-main, #25231f);
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.studio-admin-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(color-mix(in srgb, var(--ui-text-main, #25231f) 2.8%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--ui-text-main, #25231f) 2.8%, transparent) 1px, transparent 1px);
+    background-size: 4.4rem 4.4rem;
+    mask-image: radial-gradient(circle at center, black, transparent 76%);
+    opacity: 0.16;
+}
+
+.studio-admin-sidebar {
+    height: 100dvh;
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 0.9rem;
+    padding: 0.82rem;
+    border-right: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 78%, transparent);
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 86%, transparent), color-mix(in srgb, var(--ui-bg-page, #f4efe7) 38%, transparent));
+    backdrop-filter: blur(24px);
+}
+
+.studio-shell-brand {
+    min-height: 4.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.72rem;
+    border-radius: 1.18rem;
+    padding: 0.55rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.studio-shell-brand-mark {
+    width: 2.7rem;
+    height: 2.7rem;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 0.86rem;
+    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 42%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        linear-gradient(160deg, color-mix(in srgb, #ffffff 44%, transparent), transparent),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 9%, var(--ui-surface, #fffefa));
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 52%, transparent);
+}
+
+.studio-shell-brand-copy {
+    display: grid;
+    gap: 0.06rem;
+    min-width: 0;
+}
+
+.studio-shell-brand-copy strong {
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.86rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+}
+
+.studio-shell-brand-copy small {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.64rem;
+    font-weight: 650;
+    letter-spacing: -0.012em;
+}
+
+.studio-shell-nav {
+    min-height: 0;
+    display: grid;
+    align-content: start;
+    gap: 0.34rem;
+    overflow: auto;
+    padding: 0.12rem;
+}
+
+.studio-shell-nav-item {
+    min-height: 2.92rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    padding: 0 0.78rem;
+    color: var(--ui-text-muted, #70685e);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 750;
+    letter-spacing: -0.018em;
+    transition:
+        border-color 150ms ease,
+        background 150ms ease,
+        color 150ms ease,
+        transform 150ms ease;
+}
+
+.studio-shell-nav-item:hover,
+.studio-shell-nav-item.is-active {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 12% 0%, color-mix(in srgb, #ffffff 40%, transparent), transparent 5rem),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 9%, var(--ui-surface, #fffefa));
+    color: var(--ui-text-strong, #11100e);
+}
+
+.studio-shell-nav-item:hover {
+    transform: translateX(1px);
+}
+
+.studio-shell-side-footer {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.studio-shell-status {
+    min-height: 2.55rem;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 76%, transparent);
+    border-radius: 1rem;
+    padding: 0 0.75rem;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 54%, transparent);
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.68rem;
+    font-weight: 760;
+}
+
+.studio-shell-status span {
+    width: 0.48rem;
+    height: 0.48rem;
+    border-radius: 999rem;
+    background: var(--ui-accent, #d8a85f);
+    box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--ui-accent, #d8a85f) 14%, transparent);
+}
+
+.studio-shell-side-footer form,
+.studio-mobile-topbar form {
+    margin: 0;
+}
+
+.studio-shell-logout,
+.studio-mobile-logout {
+    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 44%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 55%),
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 90%, #ffffff 10%), color-mix(in srgb, var(--ui-accent, #d8a85f) 94%, #8f682c 6%));
+    color: var(--ui-accent-contrast, #15100a);
+    cursor: pointer;
+}
+
+.studio-shell-logout {
+    min-height: 2.72rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border-radius: 1rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.studio-admin-main {
+    min-width: 0;
+    min-height: 100dvh;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    padding: clamp(0.7rem, 1.45vw, 1rem);
+    overflow: hidden;
+}
+
+.studio-mobile-topbar {
+    display: none;
+}
+
+.studio-schedule-page {
+    min-height: calc(100dvh - clamp(1.4rem, 2.9vw, 2rem));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.6rem;
+    padding: 0;
+    background: transparent;
+    color: var(--ui-text-main, #25231f);
+    overflow: hidden;
+}
+
+.studio-schedule-toolbar {
+    display: grid;
+    gap: 0.46rem;
+    padding: 0 0.1rem;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.studio-toolbar-main {
+    min-height: 3.35rem;
+    display: grid;
+    grid-template-columns: minmax(16rem, 1fr) auto;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.studio-toolbar-title {
+    min-width: 0;
+}
+
+.studio-toolbar-title p {
+    margin: 0;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.studio-toolbar-title h1 {
+    margin: 0.08rem 0 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1.22rem, 2.35vw, 1.62rem);
+    line-height: 1;
+    letter-spacing: -0.052em;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.studio-toolbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.34rem;
+}
+
+.studio-toolbar-actions button,
+.studio-control-button,
+.studio-booking-header button {
+    font-family: var(--studio-body-font) !important;
+}
+
+.studio-toolbar-actions button {
+    min-height: 2.28rem;
+    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 74%, transparent);
+    border-radius: 0.72rem;
+    padding: 0 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 90%, #ffffff), color-mix(in srgb, var(--ui-surface, #fffefa) 74%, var(--ui-bg-page, #f4efe7)));
+    color: var(--ui-text-main, #25231f);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: -0.012em;
+    cursor: pointer;
+    box-shadow:
+        0 0.35rem 0.9rem color-mix(in srgb, #000000 3%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 50%, transparent);
+}
+
+.studio-toolbar-actions .studio-nav-icon {
+    width: 2.28rem;
+    padding: 0;
+    font-size: 1.35rem;
+    line-height: 1;
+    font-weight: 500;
+}
+
+.studio-toolbar-actions button:hover,
+.studio-control-button:hover {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 42%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+}
+
+.studio-toolbar-rail {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem;
+    min-height: 2.28rem;
+}
+
+.studio-control-group {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.22rem;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.studio-control-label {
+    margin-right: 0.22rem;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.studio-control-button {
+    min-height: 2.05rem;
+    border: 1px solid transparent;
+    border-radius: 0.68rem;
+    padding: 0 0.68rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.32rem;
+    background: transparent;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: -0.012em;
+    cursor: pointer;
+}
+
+.studio-control-button.is-active {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 35%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, var(--ui-surface, #fffefa)), color-mix(in srgb, var(--ui-accent, #d8a85f) 7%, var(--ui-surface, #fffefa)));
+    color: var(--ui-text-strong, #11100e);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 50%, transparent);
+}
+
+.studio-status-dot {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999rem;
+    background: currentColor;
+    opacity: 0.68;
+}
+
+.studio-status-pending.is-active {
+    color: color-mix(in srgb, #8a5b10 76%, var(--ui-text-strong, #11100e));
+}
+
+.studio-status-dp.is-active {
+    color: color-mix(in srgb, #365cc9 72%, var(--ui-text-strong, #11100e));
+}
+
+.studio-status-paid.is-active {
+    color: color-mix(in srgb, #15794b 76%, var(--ui-text-strong, #11100e));
+}
+
+.studio-schedule-board,
+.studio-booking-panel,
+.studio-admin-empty-canvas {
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 76%, transparent)),
+        var(--ui-surface, #fffefa);
+    box-shadow:
+        0 1.25rem 3.6rem color-mix(in srgb, #000000 8%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+    backdrop-filter: blur(22px);
+}
+
+.studio-schedule-board {
+    min-height: 0;
+    border-radius: 1.18rem;
+    overflow: hidden;
+}
+
+.studio-schedule-table-wrap {
+    height: 100%;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 52%, transparent) transparent;
+}
+
+.studio-schedule-table {
+    width: max(100%, calc(5.9rem + 3.35rem * var(--schedule-days, 31)));
+    min-width: 100%;
+    height: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+}
+
+.studio-schedule-table th,
+.studio-schedule-table td {
+    border-right: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 82%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 82%, transparent);
+}
+
+.studio-schedule-time-head,
+.studio-schedule-time-cell {
+    position: sticky;
+    left: 0;
+    width: 5.9rem;
+    min-width: 5.9rem;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 94%, transparent), color-mix(in srgb, var(--ui-bg-page, #f4efe7) 32%, transparent)),
+        var(--ui-surface, #fffefa);
+}
+
+.studio-schedule-time-head {
+    top: 0;
+    z-index: 9;
+    height: 2.85rem;
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-align: left;
+    padding-left: 0.78rem;
+    vertical-align: middle;
+}
+
+.studio-schedule-time-cell {
+    z-index: 6;
+    height: 2.72rem;
+    color: var(--ui-text-main, #25231f);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.studio-schedule-time-cell > span {
+    display: inline-flex;
+    align-items: center;
+    padding-left: 0.78rem;
+    white-space: nowrap;
+}
+
+.studio-schedule-day-head {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    height: 2.85rem;
+    min-width: 3.35rem;
+    padding: 0.24rem 0.18rem;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 94%, transparent), color-mix(in srgb, var(--ui-bg-page, #f4efe7) 28%, transparent)),
+        var(--ui-surface, #fffefa);
+    color: var(--ui-text-main, #25231f);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.studio-schedule-day-head span,
+.studio-schedule-day-head strong {
+    display: block;
+}
+
+.studio-schedule-day-head span {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.studio-schedule-day-head strong {
+    margin-top: 0.08rem;
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.studio-schedule-day-head.is-today {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 14%, var(--ui-surface, #fffefa)), color-mix(in srgb, var(--ui-accent, #d8a85f) 5%, var(--ui-surface, #fffefa)));
+}
+
+.studio-schedule-day-head.is-weekend span,
+.studio-schedule-day-head.is-weekend strong {
+    color: color-mix(in srgb, var(--ui-text-muted, #70685e) 86%, var(--ui-accent, #d8a85f));
+}
+
+.studio-schedule-cell {
+    height: 2.72rem;
+    min-width: 3.35rem;
+    padding: 0;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 46%, transparent);
+}
+
+.studio-schedule-cell.is-today {
+    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 6%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-cell.is-selected {
+    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 14%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-slot {
+    width: 100%;
+    height: 100%;
+    min-height: 2.72rem;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.studio-schedule-slot span {
+    width: calc(100% - 0.48rem);
+    height: calc(100% - 0.48rem);
+    border-radius: 0.58rem;
+    border: 1px solid transparent;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        box-shadow 140ms ease,
+        transform 140ms ease;
+}
+
+.studio-schedule-slot:hover span,
+.studio-schedule-slot:focus-visible span {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 60%),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, var(--ui-surface, #fffefa));
+    box-shadow:
+        0 0.42rem 0.9rem color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 48%, transparent);
+    transform: translateY(-1px);
+}
+
+.studio-schedule-slot:focus-visible {
+    outline: 0;
+}
+
+.studio-schedule-slot .studio-icon {
+    width: 0.78rem;
+    height: 0.78rem;
+    opacity: 0;
+    color: color-mix(in srgb, var(--ui-accent, #d8a85f) 82%, var(--ui-text-main, #25231f));
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.studio-schedule-slot:hover .studio-icon,
+.studio-schedule-slot:focus-visible .studio-icon {
+    opacity: 1;
+    transform: scale(1.02);
+}
+
+.studio-booking-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+}
+
+.studio-booking-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background:
+        radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, transparent), transparent 22rem),
+        color-mix(in srgb, var(--ui-bg-page, #f4efe7) 66%, transparent);
+    backdrop-filter: blur(16px);
+    cursor: default;
+}
+
+.studio-booking-panel {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 42rem);
+    min-height: min(68dvh, 34rem);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    border-radius: 1.18rem;
+    overflow: hidden;
+}
+
+.studio-booking-header {
+    min-height: 4.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    padding: 0.88rem;
+}
+
+.studio-booking-header p {
+    margin: 0;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.studio-booking-header h2 {
+    margin: 0.16rem 0 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(0.96rem, 2vw, 1.1rem);
+    font-weight: 750;
+    letter-spacing: -0.035em;
+}
+
+.studio-booking-header button {
+    min-width: 4rem;
+    height: 2.32rem;
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    border-radius: 0.72rem;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 88%, var(--ui-bg-page, #f4efe7));
+    color: var(--ui-text-main, #25231f);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.studio-booking-canvas {
+    min-height: 20rem;
+    margin: 0.9rem;
+    border: 1px dashed color-mix(in srgb, var(--ui-border-strong, rgba(32, 28, 23, 0.18)) 82%, var(--ui-accent, #d8a85f));
+    border-radius: 0.92rem;
+    background:
+        radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--ui-accent, #d8a85f) 7%, transparent), transparent 16rem),
+        color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 72%, transparent);
+}
+
+.studio-admin-canvas-page {
+    min-height: calc(100dvh - clamp(1.4rem, 2.9vw, 2rem));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.7rem;
+}
+
+.studio-admin-canvas-page header {
+    min-height: 3.35rem;
+    display: grid;
+    align-content: center;
+}
+
+.studio-admin-canvas-page p {
+    margin: 0;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.studio-admin-canvas-page h1 {
+    margin: 0.08rem 0 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1.22rem, 2.35vw, 1.62rem);
+    line-height: 1;
+    letter-spacing: -0.052em;
+    font-weight: 800;
+}
+
+.studio-admin-empty-canvas {
+    min-height: 0;
+    border-radius: 1.18rem;
+}
+
+.studio-icon {
+    width: 1em;
+    height: 1em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    color: currentColor;
+    line-height: 1;
+}
+
+.studio-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.studio-shell-nav-item .studio-icon,
+.studio-shell-logout .studio-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.studio-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 980px) {
+    .studio-admin-shell {
+        display: block;
+        min-height: 100dvh;
+        overflow: auto;
+        padding-bottom: calc(4.8rem + env(safe-area-inset-bottom));
+    }
+
+    .studio-admin-sidebar {
+        display: none;
+    }
+
+    .studio-admin-main {
+        min-height: 100dvh;
+        padding: 0.66rem;
+        overflow: visible;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 0.6rem;
+    }
+
+    .studio-mobile-topbar {
+        min-height: 3.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+    }
+
+    .studio-mobile-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.62rem;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .studio-mobile-brand strong {
+        color: var(--ui-text-strong, #11100e);
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+    }
+
+    .studio-mobile-logout {
+        width: 2.55rem;
+        height: 2.55rem;
+        display: grid;
+        place-items: center;
+        border-radius: 0.78rem;
+    }
+
+    .studio-mobile-logout .studio-icon {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .studio-schedule-page,
+    .studio-admin-canvas-page {
+        min-height: calc(100dvh - 4.4rem - 5rem);
+    }
+
+    .studio-toolbar-main {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+        gap: 0.58rem;
+    }
+
+    .studio-toolbar-actions {
+        justify-content: stretch;
+        overflow-x: auto;
+        padding-bottom: 0.1rem;
+    }
+
+    .studio-toolbar-actions button {
+        flex: 1 0 auto;
+    }
+
+    .studio-toolbar-actions .studio-nav-icon {
+        flex: 0 0 2.28rem;
+    }
+
+    .studio-toolbar-rail {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.38rem;
+    }
+
+    .studio-control-group {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .studio-control-button {
+        flex: 1 0 auto;
+    }
+
+    .studio-schedule-board,
+    .studio-booking-panel,
+    .studio-admin-empty-canvas {
+        border-radius: 1.05rem;
+    }
+
+    .studio-schedule-time-head,
+    .studio-schedule-time-cell {
+        width: 5.55rem;
+        min-width: 5.55rem;
+    }
+
+    .studio-booking-panel {
+        min-height: min(74dvh, 34rem);
+    }
+
+    .studio-bottom-nav {
+        position: fixed;
+        left: 0.7rem;
+        right: 0.7rem;
+        bottom: max(0.7rem, env(safe-area-inset-bottom));
+        z-index: 60;
+        min-height: 4.1rem;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.22rem;
+        border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 78%, transparent);
+        border-radius: 1.25rem;
+        padding: 0.34rem;
+        background:
+            linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 88%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 78%, transparent));
+        box-shadow:
+            0 1.1rem 3rem color-mix(in srgb, #000000 12%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+        backdrop-filter: blur(24px);
+    }
+
+    .studio-bottom-nav-item {
+        min-width: 0;
+        min-height: 3.35rem;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 0.18rem;
+        border-radius: 0.95rem;
+        color: var(--ui-text-muted, #70685e);
+        text-decoration: none;
+        font-size: 0.62rem;
+        font-weight: 780;
+        letter-spacing: -0.018em;
+    }
+
+    .studio-bottom-nav-item .studio-icon {
+        width: 1.08rem;
+        height: 1.08rem;
+    }
+
+    .studio-bottom-nav-item.is-active {
+        background:
+            radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 32%, transparent), transparent 62%),
+            color-mix(in srgb, var(--ui-accent, #d8a85f) 13%, var(--ui-surface, #fffefa));
+        color: var(--ui-text-strong, #11100e);
+    }
+}

@@ -1,0 +1,85 @@
+@inherits Microsoft.AspNetCore.Components.LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Routing
+
+<div class="studio-admin-shell">
+    <aside class="studio-admin-sidebar" aria-label="Navigasi admin desktop">
+        <a class="studio-shell-brand" href="/schedule" aria-label="37 Music Studio Admin">
+            <span class="studio-shell-brand-mark">37</span>
+
+            <span class="studio-shell-brand-copy">
+                <strong>37 Music Studio</strong>
+                <small>Admin Portal</small>
+            </span>
+        </a>
+
+        <nav class="studio-shell-nav" aria-label="Menu admin">
+            @foreach (var item in NavigationItems)
+            {
+                <NavLink class="studio-shell-nav-item" ActiveClass="is-active" href="@item.Href" Match="NavLinkMatch.Prefix">
+                    <StudioIcon Name="@item.Icon" />
+                    <span>@item.Label</span>
+                </NavLink>
+            }
+        </nav>
+
+        <div class="studio-shell-side-footer">
+            <div class="studio-shell-status">
+                <span></span>
+                <strong>Local Access</strong>
+            </div>
+
+            <form method="post" action="/local-auth/sign-out">
+                <button class="studio-shell-logout" type="submit">
+                    <StudioIcon Name="log-out" />
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="studio-admin-main">
+        <div class="studio-mobile-topbar">
+            <a class="studio-mobile-brand" href="/schedule" aria-label="37 Music Studio Admin">
+                <span class="studio-shell-brand-mark">37</span>
+                <strong>37 Music Studio</strong>
+            </a>
+
+            <form method="post" action="/local-auth/sign-out">
+                <button class="studio-mobile-logout" type="submit" aria-label="Logout">
+                    <StudioIcon Name="log-out" />
+                </button>
+            </form>
+        </div>
+
+        @Body
+    </main>
+
+    <nav class="studio-bottom-nav" aria-label="Navigasi admin mobile">
+        @foreach (var item in BottomNavigationItems)
+        {
+            <NavLink class="studio-bottom-nav-item" ActiveClass="is-active" href="@item.Href" Match="NavLinkMatch.Prefix">
+                <StudioIcon Name="@item.Icon" />
+                <span>@item.ShortLabel</span>
+            </NavLink>
+        }
+    </nav>
+</div>
+
+@code {
+    private static readonly IReadOnlyList<StudioNavItem> NavigationItems = new[]
+    {
+        new StudioNavItem("Schedule", "Schedule", "/schedule", "calendar-days"),
+        new StudioNavItem("Booking", "Booking", "/booking", "calendar-plus"),
+        new StudioNavItem("Customer", "Customer", "/customers", "users"),
+        new StudioNavItem("Studio Room", "Rooms", "/rooms", "door-open"),
+        new StudioNavItem("Payment", "Payment", "/payments", "wallet-cards"),
+        new StudioNavItem("Reports", "Reports", "/reports", "chart-column"),
+        new StudioNavItem("Settings", "Settings", "/settings", "settings")
+    };
+
+    private static readonly IReadOnlyList<StudioNavItem> BottomNavigationItems = NavigationItems
+        .Where(item => item.Href is "/schedule" or "/booking" or "/customers" or "/rooms" or "/settings")
+        .ToArray();
+
+    private sealed record StudioNavItem(string Label, string ShortLabel, string Href, string Icon);
+}

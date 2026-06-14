@@ -1,0 +1,15 @@
+@page "/payments"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@layout StudioAdminLayout
+@rendermode InteractiveAuto
+
+<PageTitle>Payment | 37 Music Studio</PageTitle>
+
+<section class="studio-admin-canvas-page" aria-labelledby="adminCanvasTitle">
+    <header>
+        <p>Payment</p>
+        <h1 id="adminCanvasTitle">Payment</h1>
+    </header>
+
+    <div class="studio-admin-empty-canvas" aria-label="Payment canvas"></div>
+</section>

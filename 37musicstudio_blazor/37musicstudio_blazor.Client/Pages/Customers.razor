@@ -1,0 +1,15 @@
+@page "/customers"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@layout StudioAdminLayout
+@rendermode InteractiveAuto
+
+<PageTitle>Customer | 37 Music Studio</PageTitle>
+
+<section class="studio-admin-canvas-page" aria-labelledby="adminCanvasTitle">
+    <header>
+        <p>Customer</p>
+        <h1 id="adminCanvasTitle">Customer</h1>
+    </header>
+
+    <div class="studio-admin-empty-canvas" aria-label="Customer canvas"></div>
+</section>

@@ -1,0 +1,15 @@
+@page "/reports"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@layout StudioAdminLayout
+@rendermode InteractiveAuto
+
+<PageTitle>Reports | 37 Music Studio</PageTitle>
+
+<section class="studio-admin-canvas-page" aria-labelledby="adminCanvasTitle">
+    <header>
+        <p>Reports</p>
+        <h1 id="adminCanvasTitle">Reports</h1>
+    </header>
+
+    <div class="studio-admin-empty-canvas" aria-label="Reports canvas"></div>
+</section>

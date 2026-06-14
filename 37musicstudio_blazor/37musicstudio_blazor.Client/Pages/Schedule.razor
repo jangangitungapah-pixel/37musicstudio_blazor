@@ -2,135 +2,123 @@
 @page "/admin"
 @page "/schedule"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
-@layout AdminBlankLayout
+@layout StudioAdminLayout
 @rendermode InteractiveAuto
+
 @using System.Globalization
 
 <PageTitle>Schedule | 37 Music Studio</PageTitle>
 
-<main class="studio-schedule-page" aria-labelledby="scheduleTitle">
-    <section class="studio-schedule-shell">
-        <header class="studio-schedule-toolbar">
-            <div class="studio-toolbar-main">
-                <a class="studio-toolbar-brand" href="/schedule" aria-label="37 Music Studio Schedule">
-                    <span class="studio-brand-mark" aria-hidden="true">37</span>
-
-                    <span class="studio-brand-copy">
-                        <strong>37 Music Studio</strong>
-                        <small>Schedule</small>
-                    </span>
-                </a>
-
-                <div class="studio-toolbar-title">
-                    <p id="scheduleTitle">Kalender Booking</p>
-                    <h1>@CalendarTitle</h1>
-                </div>
-
-                <div class="studio-toolbar-actions" aria-label="Kontrol kalender">
-                    <button class="studio-nav-icon" type="button" @onclick="GoToPreviousRange" aria-label="Sebelumnya">
-                        <span aria-hidden="true">&#8249;</span>
-                    </button>
-
-                    <button class="studio-today-action" type="button" @onclick="GoToCurrentRange">
-                        Hari Ini
-                    </button>
-
-                    <button class="studio-nav-icon" type="button" @onclick="GoToNextRange" aria-label="Berikutnya">
-                        <span aria-hidden="true">&#8250;</span>
-                    </button>
-
-                    <form method="post" action="/local-auth/sign-out">
-                        <button class="studio-logout-action" type="submit">Logout</button>
-                    </form>
-                </div>
+<section class="studio-schedule-page" aria-labelledby="scheduleTitle">
+    <header class="studio-schedule-toolbar">
+        <div class="studio-toolbar-main">
+            <div class="studio-toolbar-title">
+                <p id="scheduleTitle">Kalender Booking</p>
+                <h1>@CalendarTitle</h1>
             </div>
 
-            <div class="studio-toolbar-rail" aria-label="Quick view dan quick filter">
-                <div class="studio-control-group" aria-label="Quick view mode">
-                    <span class="studio-control-label">View</span>
+            <div class="studio-toolbar-actions" aria-label="Kontrol kalender">
+                <button class="studio-nav-icon" type="button" @onclick="GoToPreviousRange" aria-label="Sebelumnya">
+                    <span aria-hidden="true">&#8249;</span>
+                </button>
 
-                    <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Day)" @onclick="() => SetViewMode(ScheduleViewMode.Day)">
-                        Hari
-                    </button>
+                <button class="studio-today-action" type="button" @onclick="GoToCurrentRange">
+                    Hari Ini
+                </button>
 
-                    <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Week)" @onclick="() => SetViewMode(ScheduleViewMode.Week)">
-                        Minggu
-                    </button>
-
-                    <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Month)" @onclick="() => SetViewMode(ScheduleViewMode.Month)">
-                        Bulan
-                    </button>
-                </div>
-
-                <div class="studio-control-group studio-filter-group" aria-label="Quick filter booking">
-                    <span class="studio-control-label">Filter</span>
-
-                    <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Pending)" @onclick="() => SetStatusFilter(BookingStatusFilter.Pending)">
-                        <span class="studio-status-dot"></span>
-                        Pending
-                    </button>
-
-                    <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Dp)" @onclick="() => SetStatusFilter(BookingStatusFilter.Dp)">
-                        <span class="studio-status-dot"></span>
-                        DP
-                    </button>
-
-                    <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Paid)" @onclick="() => SetStatusFilter(BookingStatusFilter.Paid)">
-                        <span class="studio-status-dot"></span>
-                        Lunas
-                    </button>
-                </div>
+                <button class="studio-nav-icon" type="button" @onclick="GoToNextRange" aria-label="Berikutnya">
+                    <span aria-hidden="true">&#8250;</span>
+                </button>
             </div>
-        </header>
+        </div>
 
-        <section class="studio-schedule-board" style="@ScheduleDayStyle" aria-label="Grid jadwal">
-            <div class="studio-schedule-table-wrap">
-                <table class="studio-schedule-table">
-                    <thead>
+        <div class="studio-toolbar-rail" aria-label="Quick view dan quick filter">
+            <div class="studio-control-group" aria-label="Quick view mode">
+                <span class="studio-control-label">View</span>
+
+                <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Day)" @onclick="() => SetViewMode(ScheduleViewMode.Day)">
+                    Hari
+                </button>
+
+                <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Week)" @onclick="() => SetViewMode(ScheduleViewMode.Week)">
+                    Minggu
+                </button>
+
+                <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Month)" @onclick="() => SetViewMode(ScheduleViewMode.Month)">
+                    Bulan
+                </button>
+            </div>
+
+            <div class="studio-control-group studio-filter-group" aria-label="Quick filter booking">
+                <span class="studio-control-label">Filter</span>
+
+                <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Pending)" @onclick="() => SetStatusFilter(BookingStatusFilter.Pending)">
+                    <span class="studio-status-dot"></span>
+                    Pending
+                </button>
+
+                <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Dp)" @onclick="() => SetStatusFilter(BookingStatusFilter.Dp)">
+                    <span class="studio-status-dot"></span>
+                    DP
+                </button>
+
+                <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Paid)" @onclick="() => SetStatusFilter(BookingStatusFilter.Paid)">
+                    <span class="studio-status-dot"></span>
+                    Lunas
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="studio-schedule-board" style="@ScheduleDayStyle" aria-label="Grid jadwal">
+        <div class="studio-schedule-table-wrap">
+            <table class="studio-schedule-table">
+                <thead>
+                    <tr>
+                        <th class="studio-schedule-time-head" scope="col">Jam</th>
+
+                        @foreach (var day in VisibleDays)
+                        {
+                            <th class="@GetDayHeaderClass(day)" scope="col">
+                                <span>@GetDayName(day)</span>
+                                <strong>@day.Day</strong>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var slot in TimeSlots)
+                    {
                         <tr>
-                            <th class="studio-schedule-time-head" scope="col">Jam</th>
+                            <th class="studio-schedule-time-cell" scope="row">
+                                <span>@FormatTimeSlot(slot)</span>
+                            </th>
 
                             @foreach (var day in VisibleDays)
                             {
-                                <th class="@GetDayHeaderClass(day)" scope="col">
-                                    <span>@GetDayName(day)</span>
-                                    <strong>@day.Day</strong>
-                                </th>
+                                var cellId = BuildCellId(day, slot);
+                                var isToday = day.Date == Today.Date;
+                                var isSelected = SelectedSlotId == cellId;
+
+                                <td class="@GetCellClass(isToday, isSelected)">
+                                    <button
+                                        type="button"
+                                        class="studio-schedule-slot"
+                                        title="@BuildSlotTitle(day, slot)"
+                                        aria-label="@BuildSlotAria(day, slot)"
+                                        @onclick="() => OpenBookingCanvas(day, slot)">
+                                        <span>
+                                            <StudioIcon Name="plus" />
+                                        </span>
+                                    </button>
+                                </td>
                             }
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach (var slot in TimeSlots)
-                        {
-                            <tr>
-                                <th class="studio-schedule-time-cell" scope="row">
-                                    <span>@FormatTimeSlot(slot)</span>
-                                </th>
-
-                                @foreach (var day in VisibleDays)
-                                {
-                                    var cellId = BuildCellId(day, slot);
-                                    var isToday = day.Date == Today.Date;
-                                    var isSelected = SelectedSlotId == cellId;
-
-                                    <td class="@GetCellClass(isToday, isSelected)">
-                                        <button
-                                            type="button"
-                                            class="studio-schedule-slot"
-                                            title="@BuildSlotTitle(day, slot)"
-                                            aria-label="@BuildSlotAria(day, slot)"
-                                            @onclick="() => OpenBookingCanvas(day, slot)">
-                                            <span></span>
-                                        </button>
-                                    </td>
-                                }
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </section>
+                    }
+                </tbody>
+            </table>
+        </div>
     </section>
 
     @if (IsBookingCanvasOpen)
@@ -154,7 +142,7 @@
             </section>
         </div>
     }
-</main>
+</section>
 
 @code {
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
