@@ -6,22 +6,37 @@
 
 <main class="studio-login-page theme-container" aria-labelledby="studioLoginTitle">
     <section class="studio-login-panel" aria-label="Login admin 37 Music Studio">
-        <div class="studio-login-brand">
-            <div class="studio-login-brand__mark" aria-hidden="true">37</div>
-
-            <div class="studio-login-brand__copy">
-                <p class="studio-login-brand__eyebrow">Admin Portal</p>
-                <h1 id="studioLoginTitle">37 Music Studio</h1>
-                <p>Masuk ke ruang kendali studio.</p>
+        <aside class="studio-login-visual" aria-label="Informasi portal admin">
+            <div class="studio-login-visual__top">
+                <div class="studio-login-brandmark" aria-hidden="true">37</div>
+                <div class="studio-login-status">
+                    <span aria-hidden="true"></span>
+                    <strong>Local Admin</strong>
+                </div>
             </div>
-        </div>
+
+            <div class="studio-login-visual__content">
+                <p class="studio-login-eyebrow">Admin Portal</p>
+                <h1 id="studioLoginTitle">37 Music Studio</h1>
+                <p>
+                    Ruang kendali internal untuk mengelola operasional studio dengan tampilan yang bersih, ringan, dan siap dikembangkan.
+                </p>
+            </div>
+
+            <div class="studio-login-visual__footer" aria-label="Fitur pondasi">
+                <span>Secure local auth</span>
+                <span>Responsive shell</span>
+                <span>Token based UI</span>
+            </div>
+        </aside>
 
         <form class="studio-login-card" method="post" action="/local-auth/sign-in" autocomplete="on">
             <input type="hidden" name="returnUrl" value="@SafeReturnUrl" />
 
             <div class="studio-login-card__header">
-                <p>Secure Local Access</p>
+                <p class="studio-login-eyebrow">Secure Local Access</p>
                 <h2>Login Admin</h2>
+                <span>Masuk untuk membuka cangkang admin 37 Music Studio.</span>
             </div>
 
             @if (HasError)
@@ -31,22 +46,36 @@
                 </div>
             }
 
-            <label class="studio-login-field">
-                <span>Username</span>
-                <input name="username" type="text" autocomplete="username" spellcheck="false" placeholder="Masukkan username" required />
-            </label>
+            <div class="studio-login-fields">
+                <label class="studio-login-field">
+                    <span>Username</span>
+                    <input
+                        name="username"
+                        type="text"
+                        autocomplete="username"
+                        inputmode="text"
+                        spellcheck="false"
+                        placeholder="admin"
+                        required />
+                </label>
 
-            <label class="studio-login-field">
-                <span>Password</span>
-                <input name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required />
-            </label>
+                <label class="studio-login-field">
+                    <span>Password</span>
+                    <input
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Masukkan password"
+                        required />
+                </label>
+            </div>
 
             <button class="studio-login-submit" type="submit">
                 Masuk ke Admin
             </button>
 
             <p class="studio-login-note">
-                Credential aktif dibaca dari file lokal yang tidak ikut commit.
+                Credential dibaca dari file lokal dan tidak ikut commit.
             </p>
         </form>
     </section>
