@@ -12,7 +12,9 @@
     <section class="studio-schedule-shell">
         <header class="studio-schedule-header">
             <a class="studio-schedule-brand" href="/schedule" aria-label="37 Music Studio Schedule">
-                <span class="studio-schedule-mark" aria-hidden="true">37</span>
+                <span class="studio-schedule-mark" aria-hidden="true">
+                    <StudioIcon Name="music" />
+                </span>
 
                 <span class="studio-schedule-brand-copy">
                     <strong>37 Music Studio</strong>
@@ -26,12 +28,26 @@
             </div>
 
             <div class="studio-schedule-actions" aria-label="Kontrol kalender">
-                <button type="button" @onclick="GoToPreviousMonth" aria-label="Bulan sebelumnya">Prev</button>
-                <button type="button" @onclick="GoToCurrentMonth">Bulan Ini</button>
-                <button type="button" @onclick="GoToNextMonth" aria-label="Bulan berikutnya">Next</button>
+                <button type="button" @onclick="GoToPreviousMonth" aria-label="Bulan sebelumnya">
+                    <StudioIcon Name="chevron-left" />
+                    <span>Prev</span>
+                </button>
+
+                <button type="button" @onclick="GoToCurrentMonth">
+                    <StudioIcon Name="calendar-days" />
+                    <span>Bulan Ini</span>
+                </button>
+
+                <button type="button" @onclick="GoToNextMonth" aria-label="Bulan berikutnya">
+                    <span>Next</span>
+                    <StudioIcon Name="chevron-right" />
+                </button>
 
                 <form method="post" action="/local-auth/sign-out">
-                    <button class="studio-schedule-logout" type="submit">Logout</button>
+                    <button class="studio-schedule-logout" type="submit">
+                        <StudioIcon Name="log-out" />
+                        <span>Logout</span>
+                    </button>
                 </form>
             </div>
         </header>
@@ -41,7 +57,12 @@
                 <table class="studio-schedule-table">
                     <thead>
                         <tr>
-                            <th class="studio-schedule-time-head" scope="col">TGL</th>
+                            <th class="studio-schedule-time-head" scope="col">
+                                <span class="studio-table-head-label">
+                                    <StudioIcon Name="calendar" />
+                                    <span>TGL</span>
+                                </span>
+                            </th>
 
                             @foreach (var day in MonthDays)
                             {
@@ -58,7 +79,10 @@
                         {
                             <tr>
                                 <th class="studio-schedule-time-cell" scope="row">
-                                    <span>@FormatTimeSlot(slot)</span>
+                                    <span>
+                                        <StudioIcon Name="clock" />
+                                        <span>@FormatTimeSlot(slot)</span>
+                                    </span>
                                 </th>
 
                                 @foreach (var day in MonthDays)
@@ -74,7 +98,9 @@
                                             title="@BuildSlotTitle(day, slot)"
                                             aria-label="@BuildSlotAria(day, slot)"
                                             @onclick="() => OpenBookingCanvas(day, slot)">
-                                            <span></span>
+                                            <span>
+                                                <StudioIcon Name="plus" />
+                                            </span>
                                         </button>
                                     </td>
                                 }
@@ -98,7 +124,10 @@
                         <h2>@SelectedSlotTitle</h2>
                     </div>
 
-                    <button type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas">Close</button>
+                    <button type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas">
+                        <StudioIcon Name="x" />
+                        <span>Close</span>
+                    </button>
                 </header>
 
                 <div class="studio-booking-canvas" aria-label="Canvas booking kosong"></div>

@@ -6,6 +6,7 @@
                 },
     "devDependencies":  {
                             "tailwindcss":  "latest",
-                            "@tailwindcss/cli":  "latest"
+                            "@tailwindcss/cli":  "latest",
+                            "@iconify-json/lucide":  "latest"
                         }
 }
