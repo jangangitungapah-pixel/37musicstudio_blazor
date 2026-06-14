@@ -8,17 +8,17 @@
 
 <PageTitle>Schedule | 37 Music Studio</PageTitle>
 
-<main class="studio-schedule-page theme-container" aria-labelledby="scheduleTitle">
+<main class="studio-schedule-page" aria-labelledby="scheduleTitle">
     <section class="studio-schedule-shell">
         <header class="studio-schedule-header">
-            <div class="studio-schedule-brand">
-                <div class="studio-schedule-mark" aria-hidden="true">37</div>
+            <a class="studio-schedule-brand" href="/schedule" aria-label="37 Music Studio Schedule">
+                <span class="studio-schedule-mark" aria-hidden="true">37</span>
 
-                <div>
-                    <p>37 Music Studio</p>
-                    <span>Schedule</span>
-                </div>
-            </div>
+                <span class="studio-schedule-brand-copy">
+                    <strong>37 Music Studio</strong>
+                    <small>Schedule</small>
+                </span>
+            </a>
 
             <div class="studio-schedule-title">
                 <p id="scheduleTitle">Kalender Booking</p>
@@ -26,9 +26,9 @@
             </div>
 
             <div class="studio-schedule-actions" aria-label="Kontrol kalender">
-                <button type="button" @onclick="GoToPreviousMonth" aria-label="Bulan sebelumnya">â€¹</button>
+                <button type="button" @onclick="GoToPreviousMonth" aria-label="Bulan sebelumnya">Prev</button>
                 <button type="button" @onclick="GoToCurrentMonth">Bulan Ini</button>
-                <button type="button" @onclick="GoToNextMonth" aria-label="Bulan berikutnya">â€º</button>
+                <button type="button" @onclick="GoToNextMonth" aria-label="Bulan berikutnya">Next</button>
 
                 <form method="post" action="/local-auth/sign-out">
                     <button class="studio-schedule-logout" type="submit">Logout</button>
@@ -36,7 +36,7 @@
             </div>
         </header>
 
-        <section class="studio-schedule-board" aria-label="Grid jadwal bulanan">
+        <section class="studio-schedule-board" style="@ScheduleDayStyle" aria-label="Grid jadwal bulanan">
             <div class="studio-schedule-table-wrap">
                 <table class="studio-schedule-table">
                     <thead>
@@ -58,7 +58,7 @@
                         {
                             <tr>
                                 <th class="studio-schedule-time-cell" scope="row">
-                                    <span>@slot.Label</span>
+                                    <span>@FormatTimeSlot(slot)</span>
                                 </th>
 
                                 @foreach (var day in MonthDays)
@@ -98,7 +98,7 @@
                         <h2>@SelectedSlotTitle</h2>
                     </div>
 
-                    <button type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas">Ã—</button>
+                    <button type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas">Close</button>
                 </header>
 
                 <div class="studio-booking-canvas" aria-label="Canvas booking kosong"></div>
@@ -134,6 +134,8 @@
 
     private string MonthTitle => VisibleMonth.ToString("MMMM yyyy", IndonesianCulture);
 
+    private string ScheduleDayStyle => $"--schedule-days:{MonthDays.Count};";
+
     private string SelectedSlotTitle
     {
         get
@@ -143,7 +145,7 @@
                 return string.Empty;
             }
 
-            return $"{SelectedDate.Value.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} Â· {SelectedSlot.Value.Label}";
+            return $"{SelectedDate.Value.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} - {FormatTimeSlot(SelectedSlot.Value)}";
         }
     }
 
@@ -183,12 +185,17 @@
 
     private static string BuildCellId(DateTime day, ScheduleTimeSlot slot)
     {
-        return $"{day:yyyyMMdd}-{slot.Start:hhmm}";
+        return $"{day:yyyyMMdd}-{(int)slot.Start.TotalHours:00}";
     }
 
     private static string FormatTime(TimeSpan time)
     {
         return $"{(int)time.TotalHours:00}.00";
+    }
+
+    private static string FormatTimeSlot(ScheduleTimeSlot slot)
+    {
+        return $"{FormatTime(slot.Start)} - {FormatTime(slot.End)}";
     }
 
     private static string GetDayName(DateTime day)
@@ -232,7 +239,7 @@
 
     private static string BuildSlotTitle(DateTime day, ScheduleTimeSlot slot)
     {
-        return $"{day.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} Â· {slot.Label}";
+        return $"{day.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} - {FormatTimeSlot(slot)}";
     }
 
     private static string BuildSlotAria(DateTime day, ScheduleTimeSlot slot)
@@ -240,8 +247,5 @@
         return $"Buka form booking untuk {BuildSlotTitle(day, slot)}";
     }
 
-    private readonly record struct ScheduleTimeSlot(TimeSpan Start, TimeSpan End)
-    {
-        public string Label => $"{FormatTime(Start)} - {FormatTime(End)}";
-    }
+    private readonly record struct ScheduleTimeSlot(TimeSpan Start, TimeSpan End);
 }
