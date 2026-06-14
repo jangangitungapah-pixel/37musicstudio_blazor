@@ -506,3 +506,220 @@
         }
     }
 }
+
+
+/* <studio-soft-login-controls> */
+@layer components {
+    .studio-field {
+        gap: 0.55rem;
+    }
+
+    .studio-field > span:first-child {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+        color: var(--ui-text-strong);
+        font-size: 0.82rem;
+        font-weight: 820;
+        letter-spacing: -0.018em;
+    }
+
+    .studio-input-shell {
+        position: relative;
+        min-height: 3.38rem;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        border: 1px solid color-mix(in srgb, var(--ui-border) 82%, transparent);
+        border-radius: 1.22rem;
+        background:
+            linear-gradient(180deg, color-mix(in srgb, var(--ui-surface) 94%, #ffffff 6%), color-mix(in srgb, var(--ui-surface) 74%, var(--ui-bg-page))),
+            color-mix(in srgb, var(--ui-surface) 90%, transparent);
+        box-shadow:
+            0 0.85rem 2rem color-mix(in srgb, #000000 4%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 56%, transparent),
+            inset 0 -1px 0 color-mix(in srgb, var(--ui-text-main) 4%, transparent);
+        transition:
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            background 160ms ease,
+            transform 160ms ease;
+    }
+
+    .studio-input-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 14% 0%, color-mix(in srgb, #ffffff 44%, transparent), transparent 9rem),
+            linear-gradient(90deg, color-mix(in srgb, var(--ui-accent) 8%, transparent), transparent 42%);
+        opacity: 0.65;
+    }
+
+    .studio-input-shell:focus-within {
+        border-color: color-mix(in srgb, var(--ui-accent) 68%, var(--ui-border));
+        transform: translateY(-1px);
+        box-shadow:
+            0 0 0 4px color-mix(in srgb, var(--ui-accent) 14%, transparent),
+            0 1.15rem 2.6rem color-mix(in srgb, var(--ui-accent) 11%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 64%, transparent);
+    }
+
+    .studio-input-icon {
+        position: relative;
+        z-index: 1;
+        width: 1.08rem;
+        height: 1.08rem;
+        margin-left: 1rem;
+        display: inline-flex;
+        color: color-mix(in srgb, var(--ui-text-muted) 72%, transparent);
+        flex: 0 0 auto;
+    }
+
+    .studio-input-icon svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        fill: currentColor;
+    }
+
+    .studio-input-shell input.studio-input,
+    .studio-field input.studio-input {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        min-height: 3.2rem !important;
+        border: 0 !important;
+        outline: 0 !important;
+        border-radius: 0 !important;
+        padding: 0.2rem 1rem 0.2rem 0.72rem !important;
+        background: transparent !important;
+        color: var(--ui-text-main) !important;
+        box-shadow: none !important;
+        font-size: 0.95rem;
+        font-weight: 620;
+        letter-spacing: -0.018em;
+        caret-color: var(--ui-accent);
+        appearance: none;
+    }
+
+    .studio-input-shell input.studio-input::placeholder {
+        color: color-mix(in srgb, var(--ui-text-muted) 64%, transparent);
+        font-weight: 520;
+    }
+
+    .studio-input-shell input.studio-input:-webkit-autofill,
+    .studio-input-shell input.studio-input:-webkit-autofill:hover,
+    .studio-input-shell input.studio-input:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--ui-text-main) !important;
+        caret-color: var(--ui-accent);
+        box-shadow: 0 0 0 1000px color-mix(in srgb, var(--ui-surface) 88%, transparent) inset !important;
+        transition: background-color 9999s ease-in-out 0s;
+    }
+
+    button.studio-button,
+    .studio-button {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        min-height: 3.48rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        border: 1px solid color-mix(in srgb, var(--ui-accent) 48%, #000000 8%) !important;
+        border-radius: 1.22rem !important;
+        background:
+            radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 30%, transparent), transparent 55%),
+            linear-gradient(180deg, color-mix(in srgb, var(--ui-accent) 88%, #ffffff 12%), color-mix(in srgb, var(--ui-accent) 94%, #8f682c 6%)) !important;
+        color: var(--ui-accent-contrast) !important;
+        font-size: 0.95rem;
+        font-weight: 860;
+        letter-spacing: -0.018em;
+        text-decoration: none;
+        box-shadow:
+            0 1rem 2.3rem color-mix(in srgb, var(--ui-accent) 24%, transparent),
+            0 0.25rem 0.7rem color-mix(in srgb, #000000 8%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 42%, transparent),
+            inset 0 -1px 0 color-mix(in srgb, #000000 12%, transparent) !important;
+        cursor: pointer;
+        appearance: none;
+        transition:
+            transform 160ms ease,
+            filter 160ms ease,
+            box-shadow 160ms ease,
+            border-color 160ms ease;
+    }
+
+    button.studio-button::before,
+    .studio-button::before {
+        content: "";
+        position: absolute;
+        inset: 1px;
+        z-index: -1;
+        border-radius: calc(1.22rem - 1px);
+        background:
+            linear-gradient(110deg, color-mix(in srgb, #ffffff 32%, transparent), transparent 38%),
+            radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 24%, transparent), transparent 62%);
+        opacity: 0.75;
+        pointer-events: none;
+    }
+
+    button.studio-button:hover,
+    .studio-button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.025) saturate(1.04);
+        box-shadow:
+            0 1.25rem 2.8rem color-mix(in srgb, var(--ui-accent) 30%, transparent),
+            0 0.32rem 0.85rem color-mix(in srgb, #000000 9%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 48%, transparent),
+            inset 0 -1px 0 color-mix(in srgb, #000000 12%, transparent) !important;
+    }
+
+    button.studio-button:active,
+    .studio-button:active {
+        transform: translateY(0);
+        filter: brightness(0.99);
+    }
+
+    button.studio-button:focus-visible,
+    .studio-button:focus-visible {
+        outline: 0;
+        box-shadow:
+            0 0 0 4px color-mix(in srgb, var(--ui-accent) 20%, transparent),
+            0 1.25rem 2.8rem color-mix(in srgb, var(--ui-accent) 30%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 48%, transparent) !important;
+    }
+
+    @media (max-width: 520px) {
+        .studio-input-shell {
+            min-height: 3.12rem;
+            border-radius: 1rem;
+        }
+
+        .studio-input-icon {
+            margin-left: 0.88rem;
+        }
+
+        .studio-input-shell input.studio-input {
+            min-height: 3rem !important;
+            font-size: 0.92rem;
+        }
+
+        button.studio-button,
+        .studio-button {
+            min-height: 3.14rem;
+            border-radius: 1rem !important;
+            font-size: 0.92rem;
+        }
+
+        button.studio-button::before,
+        .studio-button::before {
+            border-radius: calc(1rem - 1px);
+        }
+    }
+}
+/* </studio-soft-login-controls> */
