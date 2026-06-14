@@ -4,90 +4,80 @@
 
 <PageTitle>Login Admin | 37 Music Studio</PageTitle>
 
-<main class="studio-login-page theme-container" aria-labelledby="studioLoginTitle">
-    <section class="studio-login-panel" aria-label="Login admin 37 Music Studio">
-        <aside class="studio-login-visual" aria-label="Informasi portal admin">
-            <div class="studio-login-orb studio-login-orb--one" aria-hidden="true"></div>
-            <div class="studio-login-orb studio-login-orb--two" aria-hidden="true"></div>
+<main class="studio-page studio-center theme-container" aria-labelledby="studioLoginTitle">
+    <section class="studio-login-grid" aria-label="Login admin 37 Music Studio">
+        <aside class="studio-panel min-h-[29rem] p-5 sm:p-6 lg:p-8 grid grid-rows-[auto_minmax(0,1fr)_auto] gap-6" aria-label="Informasi portal admin">
+            <div class="absolute right-[-7rem] bottom-[-11rem] size-[34rem] rounded-full bg-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)]"></div>
+            <div class="absolute left-[8%] top-[18%] size-36 rounded-full bg-[color-mix(in_srgb,var(--ui-accent-2)_9%,transparent)] blur-md"></div>
 
-            <div class="studio-login-visual__top">
-                <div class="studio-login-brandmark" aria-hidden="true">37</div>
+            <div class="relative z-10 flex items-center justify-between gap-4">
+                <div class="studio-brand-tile" aria-hidden="true">37</div>
 
-                <div class="studio-login-status">
-                    <span aria-hidden="true"></span>
+                <div class="studio-pill">
+                    <span class="studio-pill-dot" aria-hidden="true"></span>
                     <strong>Local Secure</strong>
                 </div>
             </div>
 
-            <div class="studio-login-visual__content">
-                <p class="studio-login-eyebrow">Admin Portal</p>
-                <h1 id="studioLoginTitle">37 Music Studio</h1>
-                <p>
-                    Ruang kendali internal dengan fondasi UI modern, ringan, dan siap dikembangkan untuk operasional studio.
+            <div class="relative z-10 self-end max-w-[35rem] pb-0 lg:pb-5">
+                <p class="studio-kicker">Admin Portal</p>
+                <h1 id="studioLoginTitle" class="studio-title-xl max-w-[12ch]">37 Music Studio</h1>
+                <p class="studio-copy mt-4 max-w-[34rem]">
+                    Ruang kendali internal dengan fondasi UI modern, ringan, spatial, dan siap dikembangkan untuk operasional studio.
                 </p>
             </div>
 
-            <div class="studio-login-metrics" aria-label="Fondasi sistem">
-                <div>
-                    <strong>01</strong>
-                    <span>Auth Local</span>
+            <div class="relative z-10 hidden sm:grid grid-cols-3 gap-2">
+                <div class="rounded-2xl border border-[var(--ui-border)] bg-[color-mix(in_srgb,var(--ui-surface)_54%,transparent)] p-3">
+                    <strong class="block text-sm font-black text-[var(--ui-text-strong)]">01</strong>
+                    <span class="text-xs font-bold text-[var(--ui-text-muted)]">Auth Local</span>
                 </div>
-                <div>
-                    <strong>02</strong>
-                    <span>Admin Shell</span>
+                <div class="rounded-2xl border border-[var(--ui-border)] bg-[color-mix(in_srgb,var(--ui-surface)_54%,transparent)] p-3">
+                    <strong class="block text-sm font-black text-[var(--ui-text-strong)]">02</strong>
+                    <span class="text-xs font-bold text-[var(--ui-text-muted)]">Admin Shell</span>
                 </div>
-                <div>
-                    <strong>03</strong>
-                    <span>Fluent Ready</span>
+                <div class="rounded-2xl border border-[var(--ui-border)] bg-[color-mix(in_srgb,var(--ui-surface)_54%,transparent)] p-3">
+                    <strong class="block text-sm font-black text-[var(--ui-text-strong)]">03</strong>
+                    <span class="text-xs font-bold text-[var(--ui-text-muted)]">Radzen Ready</span>
                 </div>
             </div>
         </aside>
 
-        <form class="studio-login-card" method="post" action="/local-auth/sign-in" autocomplete="on">
+        <form class="studio-panel min-h-[29rem] p-5 sm:p-6 lg:p-8 flex flex-col justify-center gap-5" method="post" action="/local-auth/sign-in" autocomplete="on">
             <input type="hidden" name="returnUrl" value="@SafeReturnUrl" />
 
-            <div class="studio-login-card__header">
-                <p class="studio-login-eyebrow">Secure Local Access</p>
-                <h2>Login Admin</h2>
-                <span>Masuk ke dashboard untuk mengelola cangkang admin 37 Music Studio.</span>
+            <div>
+                <p class="studio-kicker">Secure Local Access</p>
+                <h2 class="studio-title-lg">Login Admin</h2>
+                <span class="studio-copy mt-3 block max-w-[25rem]">
+                    Masuk ke dashboard untuk membuka cangkang admin 37 Music Studio.
+                </span>
             </div>
 
             @if (HasError)
             {
-                <div class="studio-login-alert" role="alert">
+                <div class="studio-alert" role="alert">
                     @ErrorMessage
                 </div>
             }
 
-            <div class="studio-login-fields">
-                <label class="studio-login-field">
+            <div class="grid gap-4">
+                <label class="studio-field">
                     <span>Username</span>
-                    <input
-                        name="username"
-                        type="text"
-                        autocomplete="username"
-                        inputmode="text"
-                        spellcheck="false"
-                        placeholder="admin"
-                        required />
+                    <input class="studio-input" name="username" type="text" autocomplete="username" inputmode="text" spellcheck="false" placeholder="admin" required />
                 </label>
 
-                <label class="studio-login-field">
+                <label class="studio-field">
                     <span>Password</span>
-                    <input
-                        name="password"
-                        type="password"
-                        autocomplete="current-password"
-                        placeholder="Masukkan password"
-                        required />
+                    <input class="studio-input" name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required />
                 </label>
             </div>
 
-            <button class="studio-login-submit" type="submit">
-                <span>Masuk ke Admin</span>
+            <button class="studio-button" type="submit">
+                Masuk ke Admin
             </button>
 
-            <p class="studio-login-note">
+            <p class="m-0 text-sm leading-relaxed text-[var(--ui-text-muted)]">
                 Credential dibaca dari file lokal dan tidak ikut commit.
             </p>
         </form>

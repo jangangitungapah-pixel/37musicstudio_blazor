@@ -1,0 +1,508 @@
+@import "tailwindcss";
+
+@source "../../Components/**/*.razor";
+@source "../../../37musicstudio_blazor.Client/**/*.razor";
+
+@layer base {
+    :root {
+        color-scheme: light;
+        --ui-bg-page: #f4efe7;
+        --ui-surface: #fffefa;
+        --ui-surface-soft: rgba(255, 254, 250, 0.72);
+        --ui-surface-glass: rgba(255, 254, 250, 0.62);
+        --ui-elevated: rgba(255, 254, 250, 0.84);
+        --ui-text-main: #25231f;
+        --ui-text-strong: #11100e;
+        --ui-text-muted: #70685e;
+        --ui-border: rgba(32, 28, 23, 0.12);
+        --ui-border-strong: rgba(32, 28, 23, 0.18);
+        --ui-accent: #d8a85f;
+        --ui-accent-2: #8d7cff;
+        --ui-accent-contrast: #15100a;
+        --ui-danger: #e05252;
+        --ui-shadow-soft: 0 18px 60px rgba(44, 36, 25, 0.12);
+        --ui-shadow-panel: 0 28px 92px rgba(44, 36, 25, 0.16);
+        --ui-shadow-floating: 0 18px 48px rgba(44, 36, 25, 0.14);
+        --ui-blur: blur(24px);
+        --ui-radius-xl: 1.75rem;
+        --ui-radius-2xl: 2.15rem;
+    }
+
+    [data-theme="dark"],
+    .theme-dark {
+        color-scheme: dark;
+        --ui-bg-page: #0e0e12;
+        --ui-surface: #18181f;
+        --ui-surface-soft: rgba(24, 24, 31, 0.72);
+        --ui-surface-glass: rgba(24, 24, 31, 0.62);
+        --ui-elevated: rgba(28, 28, 36, 0.84);
+        --ui-text-main: #f3eee6;
+        --ui-text-strong: #fffaf0;
+        --ui-text-muted: #aaa397;
+        --ui-border: rgba(255, 250, 240, 0.11);
+        --ui-border-strong: rgba(255, 250, 240, 0.18);
+        --ui-accent: #d8a85f;
+        --ui-accent-2: #9f95ff;
+        --ui-accent-contrast: #15100a;
+        --ui-danger: #ff6b6b;
+        --ui-shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.34);
+        --ui-shadow-panel: 0 32px 96px rgba(0, 0, 0, 0.42);
+        --ui-shadow-floating: 0 18px 48px rgba(0, 0, 0, 0.34);
+    }
+
+    html,
+    body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--ui-bg-page);
+        color: var(--ui-text-main);
+        font-family: Inter, "Plus Jakarta Sans", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        text-rendering: geometricPrecision;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+        font: inherit;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--ui-accent) 34%, transparent);
+        color: var(--ui-text-strong);
+    }
+}
+
+@layer components {
+    .studio-page {
+        min-height: 100dvh;
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 10% 10%, color-mix(in srgb, var(--ui-accent) 18%, transparent), transparent 24rem),
+            radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--ui-accent-2) 12%, transparent), transparent 26rem),
+            radial-gradient(circle at 52% 100%, color-mix(in srgb, var(--ui-accent) 9%, transparent), transparent 32rem),
+            linear-gradient(135deg, color-mix(in srgb, var(--ui-bg-page) 92%, #ffffff), var(--ui-bg-page));
+        color: var(--ui-text-main);
+    }
+
+    .studio-page::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image:
+            linear-gradient(color-mix(in srgb, var(--ui-text-main) 4%, transparent) 1px, transparent 1px),
+            linear-gradient(90deg, color-mix(in srgb, var(--ui-text-main) 4%, transparent) 1px, transparent 1px);
+        background-size: 4.75rem 4.75rem;
+        mask-image: radial-gradient(circle at center, black, transparent 74%);
+        opacity: 0.22;
+    }
+
+    .studio-page::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+            linear-gradient(115deg, transparent 0 42%, color-mix(in srgb, #ffffff 24%, transparent) 48%, transparent 58%),
+            radial-gradient(circle at 50% 50%, transparent 0 54%, color-mix(in srgb, var(--ui-text-main) 4%, transparent));
+        opacity: 0.54;
+    }
+
+    .studio-center {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: clamp(1rem, 4vw, 3rem);
+    }
+
+    .studio-login-grid {
+        width: min(100%, 72rem);
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.92fr);
+        gap: clamp(1rem, 2.5vw, 1.6rem);
+        align-items: stretch;
+        perspective: 1400px;
+    }
+
+    .studio-panel {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--ui-border);
+        border-radius: var(--ui-radius-2xl);
+        background:
+            linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass) 72%, transparent)),
+            var(--ui-surface);
+        box-shadow:
+            var(--ui-shadow-panel),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 50%, transparent),
+            inset 0 -1px 0 color-mix(in srgb, var(--ui-text-main) 5%, transparent);
+        backdrop-filter: var(--ui-blur);
+    }
+
+    .studio-panel-soft {
+        position: relative;
+        border: 1px solid var(--ui-border);
+        border-radius: var(--ui-radius-xl);
+        background:
+            linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated) 88%, transparent), color-mix(in srgb, var(--ui-surface-glass) 62%, transparent)),
+            var(--ui-surface);
+        box-shadow: var(--ui-shadow-soft);
+        backdrop-filter: var(--ui-blur);
+    }
+
+    .studio-brand-tile {
+        width: 4.1rem;
+        height: 4.1rem;
+        display: grid;
+        place-items: center;
+        border-radius: 1.2rem;
+        border: 1px solid color-mix(in srgb, var(--ui-accent) 44%, var(--ui-border));
+        background:
+            linear-gradient(160deg, color-mix(in srgb, #ffffff 38%, transparent), transparent),
+            color-mix(in srgb, var(--ui-accent) 11%, var(--ui-surface));
+        color: var(--ui-text-strong);
+        font-size: 1.28rem;
+        font-weight: 880;
+        letter-spacing: -0.06em;
+        box-shadow:
+            0 1rem 2.4rem color-mix(in srgb, var(--ui-accent) 14%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 55%, transparent);
+    }
+
+    .studio-pill {
+        min-height: 2.28rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.52rem;
+        border: 1px solid var(--ui-border);
+        border-radius: 999rem;
+        padding: 0 0.82rem;
+        background: color-mix(in srgb, var(--ui-surface) 68%, transparent);
+        color: var(--ui-text-muted);
+        font-size: 0.76rem;
+        font-weight: 760;
+        box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 36%, transparent);
+    }
+
+    .studio-pill-dot {
+        width: 0.48rem;
+        height: 0.48rem;
+        border-radius: 999rem;
+        background: var(--ui-accent);
+        box-shadow: 0 0 0 0.3rem color-mix(in srgb, var(--ui-accent) 16%, transparent);
+    }
+
+    .studio-kicker {
+        margin: 0 0 0.72rem;
+        color: var(--ui-text-muted);
+        font-size: 0.72rem;
+        font-weight: 820;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+    .studio-title-xl {
+        margin: 0;
+        color: var(--ui-text-strong);
+        font-size: clamp(2.45rem, 6vw, 4.85rem);
+        line-height: 0.94;
+        letter-spacing: -0.09em;
+        font-weight: 880;
+    }
+
+    .studio-title-lg {
+        margin: 0;
+        color: var(--ui-text-strong);
+        font-size: clamp(1.85rem, 4vw, 2.42rem);
+        line-height: 1;
+        letter-spacing: -0.065em;
+        font-weight: 880;
+    }
+
+    .studio-copy {
+        color: var(--ui-text-muted);
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .studio-field {
+        display: grid;
+        gap: 0.42rem;
+    }
+
+    .studio-field span {
+        color: var(--ui-text-strong);
+        font-size: 0.84rem;
+        font-weight: 780;
+        letter-spacing: -0.01em;
+    }
+
+    .studio-input {
+        width: 100%;
+        min-height: 3.25rem;
+        border: 1px solid var(--ui-border);
+        border-radius: 1rem;
+        padding: 0 1rem;
+        outline: none;
+        background:
+            linear-gradient(180deg, color-mix(in srgb, var(--ui-surface) 88%, transparent), color-mix(in srgb, var(--ui-bg-page) 34%, transparent)),
+            var(--ui-surface);
+        color: var(--ui-text-main);
+        font-size: 0.95rem;
+        font-weight: 540;
+        letter-spacing: -0.015em;
+        box-shadow:
+            inset 0 1px 0 color-mix(in srgb, #ffffff 44%, transparent),
+            0 0.7rem 1.6rem color-mix(in srgb, #000000 4%, transparent);
+        transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .studio-input::placeholder {
+        color: color-mix(in srgb, var(--ui-text-muted) 72%, transparent);
+    }
+
+    .studio-input:focus {
+        border-color: color-mix(in srgb, var(--ui-accent) 72%, var(--ui-border));
+        box-shadow:
+            0 0 0 4px color-mix(in srgb, var(--ui-accent) 16%, transparent),
+            0 0.9rem 2rem color-mix(in srgb, var(--ui-accent) 8%, transparent);
+    }
+
+    .studio-button {
+        min-height: 3.3rem;
+        border: 0;
+        border-radius: 1rem;
+        cursor: pointer;
+        background:
+            linear-gradient(180deg, color-mix(in srgb, var(--ui-accent) 92%, #ffffff), var(--ui-accent));
+        color: var(--ui-accent-contrast);
+        font-size: 0.95rem;
+        font-weight: 860;
+        letter-spacing: -0.015em;
+        box-shadow:
+            0 1rem 2.2rem color-mix(in srgb, var(--ui-accent) 26%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 36%, transparent),
+            inset 0 -1px 0 color-mix(in srgb, #000000 10%, transparent);
+        transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+    }
+
+    .studio-button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.02);
+    }
+
+    .studio-alert {
+        border: 1px solid color-mix(in srgb, var(--ui-danger) 45%, var(--ui-border));
+        border-radius: 1rem;
+        padding: 0.85rem 0.95rem;
+        background: color-mix(in srgb, var(--ui-danger) 10%, var(--ui-surface));
+        color: var(--ui-text-strong);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .studio-admin-shell {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-columns: 18rem minmax(0, 1fr);
+        background: var(--ui-bg-page);
+        color: var(--ui-text-main);
+    }
+
+    .studio-admin-sidebar {
+        position: sticky;
+        top: 0;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        border-right: 1px solid var(--ui-border);
+        background: color-mix(in srgb, var(--ui-surface-glass) 92%, transparent);
+        backdrop-filter: var(--ui-blur);
+    }
+
+    .studio-admin-main {
+        min-width: 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        padding: clamp(1rem, 2vw, 1.5rem);
+    }
+
+    .studio-admin-topbar {
+        min-height: 5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem clamp(1rem, 2vw, 1.5rem);
+    }
+
+    .studio-admin-workspace {
+        min-height: 0;
+        margin-top: 1rem;
+        border: 1px dashed color-mix(in srgb, var(--ui-border-strong) 84%, var(--ui-accent));
+        border-radius: var(--ui-radius-xl);
+        background:
+            radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--ui-accent) 8%, transparent), transparent 22rem),
+            color-mix(in srgb, var(--ui-surface-glass) 68%, transparent);
+        box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 24%, transparent);
+    }
+
+    .studio-admin-nav {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .studio-admin-nav a,
+    .studio-admin-nav button,
+    .studio-admin-bottom a,
+    .studio-admin-bottom button {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .studio-admin-nav-item {
+        min-height: 3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-radius: 1rem;
+        padding: 0 0.85rem;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--ui-text-muted);
+        font-size: 0.9rem;
+        font-weight: 780;
+        cursor: pointer;
+    }
+
+    .studio-admin-nav-item.is-active,
+    .studio-admin-nav-item:hover {
+        border-color: var(--ui-border);
+        background: color-mix(in srgb, var(--ui-accent) 11%, var(--ui-surface));
+        color: var(--ui-text-strong);
+    }
+
+    .studio-admin-bottom {
+        display: none;
+    }
+
+    @media (max-width: 900px) {
+        .studio-center {
+            min-height: 100svh;
+            place-items: start center;
+            padding: clamp(0.9rem, 4vw, 1.25rem);
+        }
+
+        .studio-login-grid {
+            width: min(100%, 43rem);
+            grid-template-columns: 1fr;
+        }
+
+        .studio-panel {
+            border-radius: 1.5rem;
+        }
+
+        .studio-title-xl {
+            font-size: clamp(2rem, 9vw, 3.2rem);
+            letter-spacing: -0.075em;
+        }
+
+        .studio-admin-shell {
+            display: block;
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+        }
+
+        .studio-admin-sidebar {
+            display: none;
+        }
+
+        .studio-admin-main {
+            min-height: 100dvh;
+            padding: 1rem;
+        }
+
+        .studio-admin-workspace {
+            min-height: calc(100dvh - 8rem);
+        }
+
+        .studio-admin-bottom {
+            position: fixed;
+            left: 0.75rem;
+            right: 0.75rem;
+            bottom: max(0.75rem, env(safe-area-inset-bottom));
+            z-index: 20;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.35rem;
+            padding: 0.45rem;
+            border: 1px solid var(--ui-border);
+            border-radius: 1.35rem;
+            background: color-mix(in srgb, var(--ui-surface-glass) 94%, transparent);
+            box-shadow: var(--ui-shadow-floating);
+            backdrop-filter: var(--ui-blur);
+        }
+
+        .studio-admin-bottom a,
+        .studio-admin-bottom button {
+            min-height: 3.3rem;
+            display: grid;
+            place-items: center;
+            gap: 0.12rem;
+            border: 0;
+            border-radius: 1rem;
+            background: transparent;
+            color: var(--ui-text-muted);
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .studio-admin-bottom strong {
+            font-size: 0.7rem;
+            font-weight: 850;
+            line-height: 1;
+        }
+
+        .studio-admin-bottom .is-active {
+            background: color-mix(in srgb, var(--ui-accent) 15%, var(--ui-surface));
+            color: var(--ui-text-strong);
+        }
+    }
+
+    @media (max-width: 520px) {
+        .studio-center {
+            padding: 0.75rem;
+        }
+
+        .studio-panel {
+            border-radius: 1.25rem;
+        }
+
+        .studio-brand-tile {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            font-size: 1.15rem;
+        }
+
+        .studio-title-lg {
+            font-size: 1.78rem;
+        }
+
+        .studio-input,
+        .studio-button {
+            min-height: 3.05rem;
+            border-radius: 0.9rem;
+            font-size: 0.92rem;
+        }
+    }
+}

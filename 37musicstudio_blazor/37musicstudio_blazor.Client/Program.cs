@@ -1,3 +1,4 @@
+using Radzen;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http;
@@ -22,5 +23,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, CookieAuthStateProvider>
 // <studio-fluent-ui:client-services>
 builder.Services.AddFluentUIComponents();
 // </studio-fluent-ui:client-services>
+
+// <studio-ui:radzen-client-services>
+builder.Services.AddRadzenComponents();
+// </studio-ui:radzen-client-services>
 
 await builder.Build().RunAsync();

@@ -1,3 +1,4 @@
+using Radzen;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -42,6 +43,10 @@ builder.Services.AddHttpClient();
 // <studio-fluent-ui:services>
 builder.Services.AddFluentUIComponents();
 // </studio-fluent-ui:services>
+
+// <studio-ui:radzen-services>
+builder.Services.AddRadzenComponents();
+// </studio-ui:radzen-services>
 
 var app = builder.Build();
 

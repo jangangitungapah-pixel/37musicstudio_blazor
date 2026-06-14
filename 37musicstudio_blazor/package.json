@@ -1,0 +1,11 @@
+{
+    "private":  true,
+    "scripts":  {
+                    "build:css":  "tailwindcss -i ./37musicstudio_blazor/wwwroot/css/studio.tailwind.css -o ./37musicstudio_blazor/wwwroot/css/studio.css --minify",
+                    "watch:css":  "tailwindcss -i ./37musicstudio_blazor/wwwroot/css/studio.tailwind.css -o ./37musicstudio_blazor/wwwroot/css/studio.css --watch"
+                },
+    "devDependencies":  {
+                            "tailwindcss":  "latest",
+                            "@tailwindcss/cli":  "latest"
+                        }
+}

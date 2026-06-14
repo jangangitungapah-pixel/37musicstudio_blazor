@@ -23,4 +23,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.14.2" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Radzen.Blazor" Version="10.0.5" />
+  </ItemGroup>
 </Project>

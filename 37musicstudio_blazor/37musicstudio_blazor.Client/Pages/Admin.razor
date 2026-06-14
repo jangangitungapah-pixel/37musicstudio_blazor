@@ -4,48 +4,42 @@
 
 <PageTitle>Admin | 37 Music Studio</PageTitle>
 
-<div class="studio-admin-shell theme-container">
-    <input class="studio-admin-sidebar-toggle" id="studioAdminSidebarToggle" type="checkbox" aria-label="Collapse sidebar" />
-
+<div class="studio-page studio-admin-shell theme-container">
     <aside class="studio-admin-sidebar" aria-label="Navigasi admin desktop">
-        <div class="studio-admin-sidebar__top">
-            <a class="studio-admin-brand" href="/admin" aria-label="37 Music Studio Admin">
-                <span class="studio-admin-brand__mark" aria-hidden="true">37</span>
-                <span class="studio-admin-brand__text">
-                    <strong>37 Studio</strong>
-                    <small>Admin</small>
+        <div class="flex items-center justify-between gap-3">
+            <a class="flex min-w-0 items-center gap-3 text-inherit no-underline" href="/admin" aria-label="37 Music Studio Admin">
+                <span class="studio-brand-tile !size-12 !rounded-2xl !text-base" aria-hidden="true">37</span>
+                <span class="grid min-w-0">
+                    <strong class="text-[0.95rem] font-black tracking-[-0.04em] text-[var(--ui-text-strong)]">37 Studio</strong>
+                    <small class="text-[0.72rem] font-black uppercase tracking-[0.14em] text-[var(--ui-text-muted)]">Admin</small>
                 </span>
             </a>
-
-            <label class="studio-admin-collapse" for="studioAdminSidebarToggle" title="Collapse sidebar">
-                <span aria-hidden="true">â€¹</span>
-            </label>
         </div>
 
         <nav class="studio-admin-nav" aria-label="Menu admin">
-            <a class="studio-admin-nav__item is-active" href="/admin">
+            <a class="studio-admin-nav-item is-active" href="/admin">
                 <span aria-hidden="true">âŒ‚</span>
                 <strong>Dashboard</strong>
             </a>
 
-            <a class="studio-admin-nav__item" href="/admin">
+            <a class="studio-admin-nav-item" href="/admin">
                 <span aria-hidden="true">â™«</span>
                 <strong>Studio</strong>
             </a>
 
-            <a class="studio-admin-nav__item" href="/admin">
+            <a class="studio-admin-nav-item" href="/admin">
                 <span aria-hidden="true">â—Ž</span>
                 <strong>Booking</strong>
             </a>
 
-            <a class="studio-admin-nav__item" href="/admin">
+            <a class="studio-admin-nav-item" href="/admin">
                 <span aria-hidden="true">â˜°</span>
                 <strong>Settings</strong>
             </a>
         </nav>
 
-        <form class="studio-admin-logout" method="post" action="/local-auth/sign-out">
-            <button type="submit">
+        <form class="mt-auto" method="post" action="/local-auth/sign-out">
+            <button class="studio-admin-nav-item w-full" type="submit">
                 <span aria-hidden="true">âŽ‹</span>
                 <strong>Logout</strong>
             </button>
@@ -53,21 +47,23 @@
     </aside>
 
     <main class="studio-admin-main" aria-label="Area utama admin">
-        <header class="studio-admin-header">
+        <header class="studio-panel-soft studio-admin-topbar">
             <div>
-                <p>Admin Shell</p>
-                <h1>Dashboard</h1>
+                <p class="studio-kicker !mb-1">Admin Shell</p>
+                <h1 class="studio-title-lg">Dashboard</h1>
             </div>
 
             <form method="post" action="/local-auth/sign-out">
-                <button class="studio-admin-header__logout" type="submit">Logout</button>
+                <button class="hidden rounded-full border border-[var(--ui-border)] bg-[color-mix(in_srgb,var(--ui-surface)_78%,var(--ui-bg-page))] px-4 py-3 text-sm font-black text-[var(--ui-text-main)] md:inline-flex" type="submit">
+                    Logout
+                </button>
             </form>
         </header>
 
         <section class="studio-admin-workspace" aria-label="Konten admin kosong"></section>
     </main>
 
-    <nav class="studio-admin-bottom-bar" aria-label="Navigasi admin mobile">
+    <nav class="studio-admin-bottom" aria-label="Navigasi admin mobile">
         <a class="is-active" href="/admin">
             <span aria-hidden="true">âŒ‚</span>
             <strong>Home</strong>
