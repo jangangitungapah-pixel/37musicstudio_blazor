@@ -1,3 +1,25 @@
+/* <studio-victory-striker-font> */
+@font-face {
+    font-family: "Victory Striker Sans Demo";
+    src:
+        url("/fonts/victory-striker-sans-demo/victory-striker-sans-demo.woff2") format("woff2"),
+        url("/fonts/victory-striker-sans-demo/victory-striker-sans-demo.otf") format("opentype");
+    font-weight: 400 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --studio-display-font:
+        "Victory Striker Sans Demo",
+        "Plus Jakarta Sans",
+        "Segoe UI Variable",
+        "Segoe UI",
+        system-ui,
+        sans-serif;
+}
+/* </studio-victory-striker-font> */
+
 .studio-login-page {
     min-height: 100dvh;
     display: grid;
@@ -344,3 +366,28 @@
         transform: none;
     }
 }
+
+/* <studio-victory-striker-hero-usage> */
+.studio-login-mark,
+.studio-login-brand__text p,
+.studio-login-header h1,
+.studio-title-xl,
+.studio-title-lg {
+    font-family: var(--studio-display-font);
+}
+
+.studio-login-header h1 {
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    line-height: 0.96;
+}
+
+.studio-login-brand__text p {
+    letter-spacing: -0.015em;
+    text-transform: uppercase;
+}
+
+.studio-login-mark {
+    letter-spacing: -0.02em;
+}
+/* </studio-victory-striker-hero-usage> */
