@@ -10,83 +10,74 @@
 
 <main class="studio-schedule-page" aria-labelledby="scheduleTitle">
     <section class="studio-schedule-shell">
-        <header class="studio-schedule-header">
-            <div class="studio-schedule-topbar">
-                <a class="studio-schedule-brand" href="/schedule" aria-label="37 Music Studio Schedule">
-                    <span class="studio-schedule-mark" aria-hidden="true">
-                        <StudioIcon Name="music" />
-                    </span>
+        <header class="studio-schedule-toolbar">
+            <div class="studio-toolbar-main">
+                <a class="studio-toolbar-brand" href="/schedule" aria-label="37 Music Studio Schedule">
+                    <span class="studio-brand-mark" aria-hidden="true">37</span>
 
-                    <span class="studio-schedule-brand-copy">
+                    <span class="studio-brand-copy">
                         <strong>37 Music Studio</strong>
                         <small>Schedule</small>
                     </span>
                 </a>
 
-                <div class="studio-schedule-title">
+                <div class="studio-toolbar-title">
                     <p id="scheduleTitle">Kalender Booking</p>
                     <h1>@CalendarTitle</h1>
                 </div>
 
-                <div class="studio-schedule-actions" aria-label="Kontrol kalender">
-                    <button class="studio-icon-button" type="button" @onclick="GoToPreviousRange" aria-label="Sebelumnya">
-                        <StudioIcon Name="chevron-left" />
+                <div class="studio-toolbar-actions" aria-label="Kontrol kalender">
+                    <button class="studio-nav-icon" type="button" @onclick="GoToPreviousRange" aria-label="Sebelumnya">
+                        <span aria-hidden="true">&#8249;</span>
                     </button>
 
-                    <button class="studio-today-button" type="button" @onclick="GoToCurrentRange">
-                        <StudioIcon Name="calendar-days" />
-                        <span>Hari Ini</span>
+                    <button class="studio-today-action" type="button" @onclick="GoToCurrentRange">
+                        Hari Ini
                     </button>
 
-                    <button class="studio-icon-button" type="button" @onclick="GoToNextRange" aria-label="Berikutnya">
-                        <StudioIcon Name="chevron-right" />
+                    <button class="studio-nav-icon" type="button" @onclick="GoToNextRange" aria-label="Berikutnya">
+                        <span aria-hidden="true">&#8250;</span>
                     </button>
 
                     <form method="post" action="/local-auth/sign-out">
-                        <button class="studio-schedule-logout" type="submit">
-                            <StudioIcon Name="log-out" />
-                            <span>Logout</span>
-                        </button>
+                        <button class="studio-logout-action" type="submit">Logout</button>
                     </form>
                 </div>
             </div>
 
-            <div class="studio-schedule-quickbar" aria-label="Quick view dan quick filter">
-                <div class="studio-schedule-segment" aria-label="Quick view mode">
-                    <span class="studio-quick-label">View</span>
+            <div class="studio-toolbar-rail" aria-label="Quick view dan quick filter">
+                <div class="studio-control-group" aria-label="Quick view mode">
+                    <span class="studio-control-label">View</span>
 
                     <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Day)" @onclick="() => SetViewMode(ScheduleViewMode.Day)">
-                        <StudioIcon Name="calendar" />
-                        <span>Hari</span>
+                        Hari
                     </button>
 
                     <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Week)" @onclick="() => SetViewMode(ScheduleViewMode.Week)">
-                        <StudioIcon Name="calendar-range" />
-                        <span>Minggu</span>
+                        Minggu
                     </button>
 
                     <button type="button" class="@GetViewModeButtonClass(ScheduleViewMode.Month)" @onclick="() => SetViewMode(ScheduleViewMode.Month)">
-                        <StudioIcon Name="calendar-days" />
-                        <span>Bulan</span>
+                        Bulan
                     </button>
                 </div>
 
-                <div class="studio-schedule-segment studio-schedule-filter" aria-label="Quick filter booking">
-                    <span class="studio-quick-label">Filter</span>
+                <div class="studio-control-group studio-filter-group" aria-label="Quick filter booking">
+                    <span class="studio-control-label">Filter</span>
 
                     <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Pending)" @onclick="() => SetStatusFilter(BookingStatusFilter.Pending)">
-                        <StudioIcon Name="timer" />
-                        <span>Pending</span>
+                        <span class="studio-status-dot"></span>
+                        Pending
                     </button>
 
                     <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Dp)" @onclick="() => SetStatusFilter(BookingStatusFilter.Dp)">
-                        <StudioIcon Name="credit-card" />
-                        <span>DP</span>
+                        <span class="studio-status-dot"></span>
+                        DP
                     </button>
 
                     <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Paid)" @onclick="() => SetStatusFilter(BookingStatusFilter.Paid)">
-                        <StudioIcon Name="circle-check" />
-                        <span>Lunas</span>
+                        <span class="studio-status-dot"></span>
+                        Lunas
                     </button>
                 </div>
             </div>
@@ -97,12 +88,7 @@
                 <table class="studio-schedule-table">
                     <thead>
                         <tr>
-                            <th class="studio-schedule-time-head" scope="col">
-                                <span class="studio-table-head-label">
-                                    <StudioIcon Name="clock" />
-                                    <span>Jam</span>
-                                </span>
-                            </th>
+                            <th class="studio-schedule-time-head" scope="col">Jam</th>
 
                             @foreach (var day in VisibleDays)
                             {
@@ -135,9 +121,7 @@
                                             title="@BuildSlotTitle(day, slot)"
                                             aria-label="@BuildSlotAria(day, slot)"
                                             @onclick="() => OpenBookingCanvas(day, slot)">
-                                            <span>
-                                                <StudioIcon Name="plus" />
-                                            </span>
+                                            <span></span>
                                         </button>
                                     </td>
                                 }
@@ -162,8 +146,7 @@
                     </div>
 
                     <button type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas">
-                        <StudioIcon Name="x" />
-                        <span>Close</span>
+                        Close
                     </button>
                 </header>
 
@@ -297,15 +280,17 @@
     private string GetViewModeButtonClass(ScheduleViewMode viewMode)
     {
         return ActiveViewMode == viewMode
-            ? "studio-segment-button is-active"
-            : "studio-segment-button";
+            ? "studio-control-button is-active"
+            : "studio-control-button";
     }
 
     private string GetStatusFilterButtonClass(BookingStatusFilter statusFilter)
     {
+        var key = statusFilter.ToString().ToLowerInvariant();
+
         return ActiveStatusFilter == statusFilter
-            ? $"studio-segment-button studio-status-{statusFilter.ToString().ToLowerInvariant()} is-active"
-            : $"studio-segment-button studio-status-{statusFilter.ToString().ToLowerInvariant()}";
+            ? $"studio-control-button studio-status-{key} is-active"
+            : $"studio-control-button studio-status-{key}";
     }
 
     private string BuildWeekTitle()

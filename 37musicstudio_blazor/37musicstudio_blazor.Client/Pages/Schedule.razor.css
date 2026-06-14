@@ -62,12 +62,12 @@
 
 .studio-schedule-page {
     min-height: 100dvh;
-    padding: clamp(0.75rem, 1.6vw, 1.15rem);
+    padding: clamp(0.7rem, 1.45vw, 1rem);
     overflow: hidden;
     isolation: isolate;
     background:
-        radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, transparent), transparent 24rem),
-        radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--ui-accent-2, #8d7cff) 8%, transparent), transparent 28rem),
+        radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--ui-accent, #d8a85f) 11%, transparent), transparent 24rem),
+        radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--ui-accent-2, #8d7cff) 7%, transparent), transparent 28rem),
         linear-gradient(135deg, color-mix(in srgb, var(--ui-bg-page, #f4efe7) 95%, #ffffff), var(--ui-bg-page, #f4efe7));
     color: var(--ui-text-main, #25231f);
 }
@@ -79,228 +79,228 @@
     z-index: -1;
     pointer-events: none;
     background-image:
-        linear-gradient(color-mix(in srgb, var(--ui-text-main, #25231f) 3%, transparent) 1px, transparent 1px),
-        linear-gradient(90deg, color-mix(in srgb, var(--ui-text-main, #25231f) 3%, transparent) 1px, transparent 1px);
-    background-size: 4.5rem 4.5rem;
+        linear-gradient(color-mix(in srgb, var(--ui-text-main, #25231f) 2.8%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--ui-text-main, #25231f) 2.8%, transparent) 1px, transparent 1px);
+    background-size: 4.4rem 4.4rem;
     mask-image: radial-gradient(circle at center, black, transparent 76%);
-    opacity: 0.18;
+    opacity: 0.16;
 }
 
 .studio-schedule-shell {
-    min-height: calc(100dvh - clamp(1.5rem, 3.2vw, 2.3rem));
+    min-height: calc(100dvh - clamp(1.4rem, 2.9vw, 2rem));
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    gap: 0.85rem;
+    gap: 0.6rem;
 }
 
-.studio-schedule-header,
-.studio-schedule-board,
-.studio-booking-panel {
-    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
-    background:
-        linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 76%, transparent)),
-        var(--ui-surface, #fffefa);
-    box-shadow:
-        0 1.35rem 4rem color-mix(in srgb, #000000 9%, transparent),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
-    backdrop-filter: blur(22px);
-}
-
-.studio-schedule-header {
+.studio-schedule-toolbar {
     display: grid;
-    gap: 0.68rem;
-    border-radius: 1.35rem;
-    padding: 0.72rem;
+    gap: 0.46rem;
+    padding: 0 0.1rem;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
-.studio-schedule-topbar {
-    min-height: 3.8rem;
+.studio-toolbar-main {
+    min-height: 3.35rem;
     display: grid;
-    grid-template-columns: minmax(12rem, 0.92fr) minmax(14rem, 1.28fr) auto;
-    gap: 1rem;
+    grid-template-columns: minmax(12rem, 0.95fr) minmax(16rem, 1.15fr) minmax(16rem, 0.95fr);
     align-items: center;
+    gap: 0.9rem;
 }
 
-.studio-schedule-brand {
+.studio-toolbar-brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.72rem;
+    gap: 0.62rem;
     min-width: 0;
     color: inherit;
     text-decoration: none;
 }
 
-.studio-schedule-mark {
-    width: 2.85rem;
-    height: 2.85rem;
+.studio-brand-mark {
+    width: 2.55rem;
+    height: 2.55rem;
     display: grid;
     place-items: center;
     flex: 0 0 auto;
-    border-radius: 0.9rem;
-    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 40%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    border-radius: 0.78rem;
+    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
     background:
-        linear-gradient(160deg, color-mix(in srgb, #ffffff 42%, transparent), transparent),
-        color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, var(--ui-surface, #fffefa));
+        linear-gradient(160deg, color-mix(in srgb, #ffffff 44%, transparent), transparent),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 9%, var(--ui-surface, #fffefa));
     color: var(--ui-text-strong, #11100e);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 52%, transparent);
 }
 
-.studio-schedule-brand-copy {
+.studio-brand-copy {
     display: grid;
-    gap: 0.1rem;
+    gap: 0.06rem;
     min-width: 0;
 }
 
-.studio-schedule-brand-copy strong {
+.studio-brand-copy strong {
     color: var(--ui-text-strong, #11100e);
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 800;
     letter-spacing: -0.04em;
     white-space: nowrap;
 }
 
-.studio-schedule-brand-copy small {
+.studio-brand-copy small {
     color: var(--ui-text-muted, #70685e);
-    font-size: 0.68rem;
+    font-size: 0.63rem;
     font-weight: 600;
     letter-spacing: -0.012em;
 }
 
-.studio-schedule-title {
+.studio-toolbar-title {
     min-width: 0;
     text-align: center;
 }
 
-.studio-schedule-title p {
+.studio-toolbar-title p {
     margin: 0;
     color: var(--ui-text-muted, #70685e);
-    font-size: 0.66rem;
+    font-size: 0.6rem;
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
 }
 
-.studio-schedule-title h1 {
-    margin: 0.14rem 0 0;
+.studio-toolbar-title h1 {
+    margin: 0.08rem 0 0;
     color: var(--ui-text-strong, #11100e);
-    font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+    font-size: clamp(1.22rem, 2.35vw, 1.62rem);
     line-height: 1;
-    letter-spacing: -0.055em;
+    letter-spacing: -0.052em;
     font-weight: 800;
     text-transform: capitalize;
 }
 
-.studio-schedule-actions {
+.studio-toolbar-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.42rem;
+    gap: 0.34rem;
 }
 
-.studio-schedule-actions form {
+.studio-toolbar-actions form {
     margin: 0;
 }
 
-.studio-schedule-actions button,
-.studio-segment-button,
+.studio-toolbar-actions button,
+.studio-control-button,
 .studio-booking-header button {
     font-family: var(--studio-body-font) !important;
 }
 
-.studio-schedule-actions button {
-    min-height: 2.5rem;
-    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
-    border-radius: 0.82rem;
-    padding: 0 0.82rem;
+.studio-toolbar-actions button {
+    min-height: 2.28rem;
+    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 74%, transparent);
+    border-radius: 0.72rem;
+    padding: 0 0.7rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.42rem;
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 94%, #ffffff), color-mix(in srgb, var(--ui-surface, #fffefa) 80%, var(--ui-bg-page, #f4efe7)));
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 90%, #ffffff), color-mix(in srgb, var(--ui-surface, #fffefa) 74%, var(--ui-bg-page, #f4efe7)));
     color: var(--ui-text-main, #25231f);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: -0.012em;
     cursor: pointer;
     box-shadow:
-        0 0.45rem 1rem color-mix(in srgb, #000000 4%, transparent),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 56%, transparent);
+        0 0.35rem 0.9rem color-mix(in srgb, #000000 3%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 50%, transparent);
 }
 
-.studio-schedule-actions .studio-icon-button {
-    width: 2.5rem;
+.studio-toolbar-actions .studio-nav-icon {
+    width: 2.28rem;
     padding: 0;
+    font-size: 1.35rem;
+    line-height: 1;
+    font-weight: 500;
 }
 
-.studio-schedule-actions button:hover,
-.studio-segment-button:hover {
+.studio-toolbar-actions button:hover,
+.studio-control-button:hover {
     border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 42%, var(--ui-border, rgba(32, 28, 23, 0.12)));
 }
 
-.studio-schedule-actions .studio-schedule-logout {
-    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 50%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+.studio-toolbar-actions .studio-logout-action {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 48%, var(--ui-border, rgba(32, 28, 23, 0.12)));
     background:
-        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 30%, transparent), transparent 55%),
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 55%),
         linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 90%, #ffffff 10%), color-mix(in srgb, var(--ui-accent, #d8a85f) 94%, #8f682c 6%));
     color: var(--ui-accent-contrast, #15100a);
+    min-width: 4.2rem;
 }
 
-.studio-schedule-quickbar {
+.studio-toolbar-rail {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.7rem;
-    padding-top: 0.66rem;
-    border-top: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 70%, transparent);
+    gap: 0.55rem;
+    min-height: 2.28rem;
 }
 
-.studio-schedule-segment {
+.studio-control-group {
     min-width: 0;
     display: inline-flex;
     align-items: center;
-    gap: 0.34rem;
-    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 72%, transparent);
-    border-radius: 1rem;
-    padding: 0.32rem;
-    background: color-mix(in srgb, var(--ui-surface, #fffefa) 62%, transparent);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 42%, transparent);
+    gap: 0.22rem;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
-.studio-quick-label {
-    padding: 0 0.56rem 0 0.42rem;
+.studio-control-label {
+    margin-right: 0.22rem;
     color: var(--ui-text-muted, #70685e);
-    font-size: 0.64rem;
+    font-size: 0.58rem;
     font-weight: 800;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     white-space: nowrap;
 }
 
-.studio-segment-button {
-    min-height: 2.16rem;
+.studio-control-button {
+    min-height: 2.05rem;
     border: 1px solid transparent;
-    border-radius: 0.76rem;
-    padding: 0 0.66rem;
+    border-radius: 0.68rem;
+    padding: 0 0.68rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.38rem;
+    gap: 0.32rem;
     background: transparent;
     color: var(--ui-text-muted, #70685e);
-    font-size: 0.74rem;
+    font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: -0.012em;
     cursor: pointer;
 }
 
-.studio-segment-button.is-active {
-    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 36%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+.studio-control-button.is-active {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 35%, var(--ui-border, rgba(32, 28, 23, 0.12)));
     background:
-        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 13%, var(--ui-surface, #fffefa)), color-mix(in srgb, var(--ui-accent, #d8a85f) 8%, var(--ui-surface, #fffefa)));
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, var(--ui-surface, #fffefa)), color-mix(in srgb, var(--ui-accent, #d8a85f) 7%, var(--ui-surface, #fffefa)));
     color: var(--ui-text-strong, #11100e);
-    box-shadow:
-        0 0.45rem 1rem color-mix(in srgb, var(--ui-accent, #d8a85f) 8%, transparent),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 52%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 50%, transparent);
+}
+
+.studio-status-dot {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999rem;
+    background: currentColor;
+    opacity: 0.68;
 }
 
 .studio-status-pending.is-active {
@@ -315,9 +315,21 @@
     color: color-mix(in srgb, #15794b 76%, var(--ui-text-strong, #11100e));
 }
 
+.studio-schedule-board,
+.studio-booking-panel {
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 76%, transparent)),
+        var(--ui-surface, #fffefa);
+    box-shadow:
+        0 1.25rem 3.6rem color-mix(in srgb, #000000 8%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+    backdrop-filter: blur(22px);
+}
+
 .studio-schedule-board {
     min-height: 0;
-    border-radius: 1.35rem;
+    border-radius: 1.18rem;
     overflow: hidden;
 }
 
@@ -357,26 +369,21 @@
 .studio-schedule-time-head {
     top: 0;
     z-index: 9;
-    height: 3.05rem;
+    height: 2.85rem;
     color: var(--ui-text-strong, #11100e);
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-align: left;
     padding-left: 0.78rem;
-}
-
-.studio-table-head-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.36rem;
+    vertical-align: middle;
 }
 
 .studio-schedule-time-cell {
     z-index: 6;
-    height: 2.82rem;
+    height: 2.72rem;
     color: var(--ui-text-main, #25231f);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-align: left;
     vertical-align: middle;
@@ -385,7 +392,7 @@
 .studio-schedule-time-cell > span {
     display: inline-flex;
     align-items: center;
-    padding-left: 0.8rem;
+    padding-left: 0.78rem;
     white-space: nowrap;
 }
 
@@ -393,9 +400,9 @@
     position: sticky;
     top: 0;
     z-index: 8;
-    height: 3.05rem;
+    height: 2.85rem;
     min-width: 3.35rem;
-    padding: 0.28rem 0.18rem;
+    padding: 0.24rem 0.18rem;
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 94%, transparent), color-mix(in srgb, var(--ui-bg-page, #f4efe7) 28%, transparent)),
         var(--ui-surface, #fffefa);
@@ -411,15 +418,15 @@
 
 .studio-schedule-day-head span {
     color: var(--ui-text-muted, #70685e);
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     font-weight: 700;
     text-transform: capitalize;
 }
 
 .studio-schedule-day-head strong {
-    margin-top: 0.1rem;
+    margin-top: 0.08rem;
     color: var(--ui-text-strong, #11100e);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 800;
 }
 
@@ -434,7 +441,7 @@
 }
 
 .studio-schedule-cell {
-    height: 2.82rem;
+    height: 2.72rem;
     min-width: 3.35rem;
     padding: 0;
     background: color-mix(in srgb, var(--ui-surface, #fffefa) 46%, transparent);
@@ -451,7 +458,7 @@
 .studio-schedule-slot {
     width: 100%;
     height: 100%;
-    min-height: 2.82rem;
+    min-height: 2.72rem;
     display: grid;
     place-items: center;
     border: 0;
@@ -460,9 +467,9 @@
 }
 
 .studio-schedule-slot span {
-    width: calc(100% - 0.5rem);
-    height: calc(100% - 0.5rem);
-    border-radius: 0.62rem;
+    width: calc(100% - 0.48rem);
+    height: calc(100% - 0.48rem);
+    border-radius: 0.58rem;
     border: 1px solid transparent;
     background: transparent;
     display: grid;
@@ -476,12 +483,12 @@
 
 .studio-schedule-slot:hover span,
 .studio-schedule-slot:focus-visible span {
-    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 40%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
     background:
         radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 60%),
-        color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, var(--ui-surface, #fffefa));
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, var(--ui-surface, #fffefa));
     box-shadow:
-        0 0.5rem 1rem color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, transparent),
+        0 0.42rem 0.9rem color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, transparent),
         inset 0 1px 0 color-mix(in srgb, #ffffff 48%, transparent);
     transform: translateY(-1px);
 }
@@ -517,159 +524,106 @@
     min-height: min(68dvh, 34rem);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    border-radius: 1.35rem;
+    border-radius: 1.18rem;
     overflow: hidden;
 }
 
 .studio-booking-header {
-    min-height: 4.55rem;
+    min-height: 4.35rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     border-bottom: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
-    padding: 0.95rem;
+    padding: 0.88rem;
 }
 
 .studio-booking-header p {
     margin: 0;
     color: var(--ui-text-muted, #70685e);
-    font-size: 0.66rem;
+    font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
 }
 
 .studio-booking-header h2 {
-    margin: 0.18rem 0 0;
+    margin: 0.16rem 0 0;
     color: var(--ui-text-strong, #11100e);
-    font-size: clamp(1rem, 2vw, 1.16rem);
+    font-size: clamp(0.96rem, 2vw, 1.1rem);
     font-weight: 750;
     letter-spacing: -0.035em;
 }
 
 .studio-booking-header button {
-    min-width: 4.2rem;
-    height: 2.5rem;
+    min-width: 4rem;
+    height: 2.32rem;
     border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
-    border-radius: 0.82rem;
+    border-radius: 0.72rem;
     background: color-mix(in srgb, var(--ui-surface, #fffefa) 88%, var(--ui-bg-page, #f4efe7));
     color: var(--ui-text-main, #25231f);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.38rem;
 }
 
 .studio-booking-canvas {
     min-height: 20rem;
-    margin: 1rem;
-    border: 1px dashed color-mix(in srgb, var(--ui-border-strong, rgba(32, 28, 23, 0.18)) 86%, var(--ui-accent, #d8a85f));
-    border-radius: 1rem;
+    margin: 0.9rem;
+    border: 1px dashed color-mix(in srgb, var(--ui-border-strong, rgba(32, 28, 23, 0.18)) 82%, var(--ui-accent, #d8a85f));
+    border-radius: 0.92rem;
     background:
         radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--ui-accent, #d8a85f) 7%, transparent), transparent 16rem),
         color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 72%, transparent);
 }
 
-.studio-icon {
-    width: 1em;
-    height: 1em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    color: currentColor;
-    line-height: 1;
-}
-
-.studio-icon svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
-.studio-schedule-mark .studio-icon {
-    width: 1.08rem;
-    height: 1.08rem;
-}
-
-.studio-schedule-actions .studio-icon,
-.studio-segment-button .studio-icon,
-.studio-booking-header .studio-icon {
-    width: 0.94rem;
-    height: 0.94rem;
-}
-
-.studio-table-head-label .studio-icon {
-    width: 0.82rem;
-    height: 0.82rem;
-    color: color-mix(in srgb, var(--ui-text-muted, #70685e) 78%, transparent);
-}
-
-.studio-schedule-slot .studio-icon {
-    width: 0.78rem;
-    height: 0.78rem;
-    opacity: 0;
-    color: color-mix(in srgb, var(--ui-accent, #d8a85f) 82%, var(--ui-text-main, #25231f));
-    transition: opacity 140ms ease, transform 140ms ease;
-}
-
-.studio-schedule-slot:hover .studio-icon,
-.studio-schedule-slot:focus-visible .studio-icon {
-    opacity: 1;
-    transform: scale(1.02);
-}
-
 @media (max-width: 980px) {
     .studio-schedule-page {
-        padding: 0.7rem;
+        padding: 0.66rem;
     }
 
-    .studio-schedule-topbar {
+    .studio-toolbar-main {
         grid-template-columns: 1fr;
         align-items: stretch;
-        gap: 0.72rem;
+        gap: 0.58rem;
     }
 
-    .studio-schedule-title {
+    .studio-toolbar-title {
         text-align: left;
     }
 
-    .studio-schedule-actions {
+    .studio-toolbar-actions {
         justify-content: stretch;
         overflow-x: auto;
         padding-bottom: 0.1rem;
     }
 
-    .studio-schedule-actions button {
+    .studio-toolbar-actions button {
         flex: 1 0 auto;
     }
 
-    .studio-schedule-quickbar {
-        flex-direction: column;
-        align-items: stretch;
+    .studio-toolbar-actions .studio-nav-icon {
+        flex: 0 0 2.28rem;
     }
 
-    .studio-schedule-segment {
+    .studio-toolbar-rail {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.38rem;
+    }
+
+    .studio-control-group {
         width: 100%;
         overflow-x: auto;
     }
 
-    .studio-segment-button {
+    .studio-control-button {
         flex: 1 0 auto;
     }
 
     .studio-schedule-board,
-    .studio-schedule-header {
-        border-radius: 1.15rem;
+    .studio-booking-panel {
+        border-radius: 1.05rem;
     }
 
     .studio-schedule-time-head,
@@ -680,6 +634,5 @@
 
     .studio-booking-panel {
         min-height: min(74dvh, 34rem);
-        border-radius: 1.15rem;
     }
 }
