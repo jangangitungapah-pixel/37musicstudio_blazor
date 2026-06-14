@@ -1,3 +1,56 @@
+/* <studio-montserrat-body-font> */
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat-regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat-medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat-semibold.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat-bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("/fonts/montserrat/montserrat-extrabold.woff2") format("woff2");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --studio-body-font:
+        "Montserrat",
+        "Segoe UI Variable",
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+}
+/* </studio-montserrat-body-font> */
+
 /* <studio-victory-striker-font> */
 @font-face {
     font-family: "Victory Striker Sans Demo";
@@ -829,4 +882,51 @@
     }
 }
 /* </studio-login-heading-spacing> */
+}
+
+@layer base {
+/* <studio-montserrat-body-usage> */
+html,
+body,
+button,
+input,
+textarea,
+select,
+.theme-container,
+.studio-login-page,
+.studio-blank-layout {
+    font-family: var(--studio-body-font);
+}
+
+.studio-login-brand__text span,
+.studio-login-header p,
+.studio-login-field > span,
+.studio-login-input input,
+.studio-login-submit,
+.studio-login-alert {
+    font-family: var(--studio-body-font);
+}
+
+.studio-login-brand__text span,
+.studio-login-header p,
+.studio-login-field > span {
+    font-weight: 700;
+}
+
+.studio-login-input input {
+    font-weight: 500;
+}
+
+.studio-login-submit {
+    font-weight: 700;
+}
+
+.studio-login-brand__text p,
+.studio-login-mark,
+.studio-login-header h1,
+.studio-login-title,
+#studioLoginTitle {
+    font-family: var(--studio-display-font, "Victory Striker Sans Demo", var(--studio-body-font));
+}
+/* </studio-montserrat-body-usage> */
 }
