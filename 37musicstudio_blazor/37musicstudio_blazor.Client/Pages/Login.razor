@@ -2,98 +2,71 @@
 @attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
 @layout AdminBlankLayout
 
-<PageTitle>Login Admin | 37 Music Studio</PageTitle>
+<PageTitle>Admin Login | 37 Music Studio</PageTitle>
 
-<main class="studio-page studio-center theme-container" aria-labelledby="studioLoginTitle">
-    <section class="studio-login-grid" aria-label="Login admin 37 Music Studio">
-        <aside class="studio-panel min-h-[29rem] p-5 sm:p-6 lg:p-8 grid grid-rows-[auto_minmax(0,1fr)_auto] gap-6" aria-label="Informasi portal admin">
-            <div class="absolute right-[-7rem] bottom-[-11rem] size-[34rem] rounded-full bg-[color-mix(in_srgb,var(--ui-accent)_10%,transparent)]"></div>
-            <div class="absolute left-[8%] top-[18%] size-36 rounded-full bg-[color-mix(in_srgb,var(--ui-accent-2)_9%,transparent)] blur-md"></div>
+<main class="studio-login-page theme-container" aria-labelledby="studioLoginTitle">
+    <section class="studio-login-card" aria-label="Login admin 37 Music Studio">
+        <div class="studio-login-brand">
+            <div class="studio-login-mark" aria-hidden="true">37</div>
 
-            <div class="relative z-10 flex items-center justify-between gap-4">
-                <div class="studio-brand-tile" aria-hidden="true">37</div>
-
-                <div class="studio-pill">
-                    <span class="studio-pill-dot" aria-hidden="true"></span>
-                    <strong>Local Secure</strong>
-                </div>
+            <div class="studio-login-brand__text">
+                <p>37 Music Studio</p>
+                <span>Admin Access</span>
             </div>
+        </div>
 
-            <div class="relative z-10 self-end max-w-[35rem] pb-0 lg:pb-5">
-                <p class="studio-kicker">Admin Portal</p>
-                <h1 id="studioLoginTitle" class="studio-title-xl max-w-[12ch]">37 Music Studio</h1>
-                <p class="studio-copy mt-4 max-w-[34rem]">
-                    Ruang kendali internal dengan fondasi UI modern, ringan, spatial, dan siap dikembangkan untuk operasional studio.
-                </p>
+        <header class="studio-login-header">
+            <p>Secure Area</p>
+            <h1 id="studioLoginTitle">Masuk Admin</h1>
+        </header>
+
+        @if (HasError)
+        {
+            <div class="studio-login-alert" role="alert">
+                @ErrorMessage
             </div>
+        }
 
-            <div class="relative z-10 hidden sm:grid grid-cols-3 gap-2">
-                <div class="rounded-2xl border border-[var(--ui-border)] bg-[color-mix(in_srgb,var(--ui-surface)_54%,transparent)] p-3">
-                    <strong class="block text-sm font-black text-[var(--ui-text-strong)]">01</strong>
-                    <span class="text-xs font-bold text-[var(--ui-text-muted)]">Auth Local</span>
-                </div>
-                <div class="rounded-2xl border border-[var(--ui-border)] bg-[color-mix(in_srgb,var(--ui-surface)_54%,transparent)] p-3">
-                    <strong class="block text-sm font-black text-[var(--ui-text-strong)]">02</strong>
-                    <span class="text-xs font-bold text-[var(--ui-text-muted)]">Admin Shell</span>
-                </div>
-                <div class="rounded-2xl border border-[var(--ui-border)] bg-[color-mix(in_srgb,var(--ui-surface)_54%,transparent)] p-3">
-                    <strong class="block text-sm font-black text-[var(--ui-text-strong)]">03</strong>
-                    <span class="text-xs font-bold text-[var(--ui-text-muted)]">Radzen Ready</span>
-                </div>
-            </div>
-        </aside>
-
-        <form class="studio-panel min-h-[29rem] p-5 sm:p-6 lg:p-8 flex flex-col justify-center gap-5" method="post" action="/local-auth/sign-in" autocomplete="on">
+        <form class="studio-login-form" method="post" action="/local-auth/sign-in" autocomplete="on">
             <input type="hidden" name="returnUrl" value="@SafeReturnUrl" />
 
-            <div>
-                <p class="studio-kicker">Secure Local Access</p>
-                <h2 class="studio-title-lg">Login Admin</h2>
-                <span class="studio-copy mt-3 block max-w-[25rem]">
-                    Masuk ke dashboard untuk membuka cangkang admin 37 Music Studio.
-                </span>
-            </div>
+            <label class="studio-login-field">
+                <span>Username</span>
+                <div class="studio-login-input">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 12.25a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5Zm0 2c-4.14 0-7.5 2.17-7.5 4.85 0 .63.51 1.15 1.15 1.15h12.7c.64 0 1.15-.52 1.15-1.15 0-2.68-3.36-4.85-7.5-4.85Z" />
+                    </svg>
 
-            @if (HasError)
-            {
-                <div class="studio-alert" role="alert">
-                    @ErrorMessage
+                    <input
+                        name="username"
+                        type="text"
+                        autocomplete="username"
+                        inputmode="text"
+                        spellcheck="false"
+                        placeholder="Username"
+                        required />
                 </div>
-            }
+            </label>
 
-            <div class="grid gap-4">
-                <label class="studio-field">
-                    <span>Username</span>
-                    <div class="studio-input-shell">
-                        <span class="studio-input-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" focusable="false">
-                                <path d="M12 12.25a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5Zm0 2c-4.14 0-7.5 2.17-7.5 4.85 0 .63.51 1.15 1.15 1.15h12.7c.64 0 1.15-.52 1.15-1.15 0-2.68-3.36-4.85-7.5-4.85Z" />
-                            </svg>
-                        </span>
-                        <input class="studio-input" name="username" type="text" autocomplete="username" inputmode="text" spellcheck="false" placeholder="admin" required />
-                    </div>
-                </label>
+            <label class="studio-login-field">
+                <span>Password</span>
+                <div class="studio-login-input">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M7.75 10V8.25a4.25 4.25 0 0 1 8.5 0V10h.25A2.5 2.5 0 0 1 19 12.5v5A2.5 2.5 0 0 1 16.5 20h-9A2.5 2.5 0 0 1 5 17.5v-5A2.5 2.5 0 0 1 7.5 10h.25Zm1.75 0h5V8.25a2.5 2.5 0 0 0-5 0V10Zm2.5 3.25a1.25 1.25 0 0 0-.75 2.25v1.25a.75.75 0 0 0 1.5 0V15.5a1.25 1.25 0 0 0-.75-2.25Z" />
+                    </svg>
 
-                <label class="studio-field">
-                    <span>Password</span>
-                    <div class="studio-input-shell">
-                        <span class="studio-input-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" focusable="false">
-                                <path d="M7.75 10V8.25a4.25 4.25 0 0 1 8.5 0V10h.25A2.5 2.5 0 0 1 19 12.5v5A2.5 2.5 0 0 1 16.5 20h-9A2.5 2.5 0 0 1 5 17.5v-5A2.5 2.5 0 0 1 7.5 10h.25Zm1.75 0h5V8.25a2.5 2.5 0 0 0-5 0V10Zm2.5 3.25a1.25 1.25 0 0 0-.75 2.25v1.25a.75.75 0 0 0 1.5 0V15.5a1.25 1.25 0 0 0-.75-2.25Z" />
-                            </svg>
-                        </span>
-                        <input class="studio-input" name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required />
-                    </div>
-                </label>
-            </div>
+                    <input
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Password"
+                        required />
+                </div>
+            </label>
 
-            <button class="studio-button" type="submit">
-                Masuk ke Admin
+            <button class="studio-login-submit" type="submit">
+                Masuk
             </button>
-
-            <p class="m-0 text-sm leading-relaxed text-[var(--ui-text-muted)]">
-                Credential dibaca dari file lokal dan tidak ikut commit.
-            </p>
         </form>
     </section>
 </main>
@@ -111,7 +84,7 @@
 
     private string ErrorMessage => Error?.Trim().ToLowerInvariant() switch
     {
-        "config" => "File auth lokal belum siap atau tidak bisa dibaca. Cek .local/auth.local.json.",
-        _ => "Username atau password belum cocok."
+        "config" => "Akses belum tersedia. Periksa konfigurasi login lokal.",
+        _ => "Username atau password tidak sesuai."
     };
 }
