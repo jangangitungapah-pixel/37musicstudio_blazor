@@ -1,0 +1,644 @@
+@page "/gallery"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@layout StudioAdminLayout
+
+@using System.Globalization
+@using System.Net.Http.Headers
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JsRuntime
+@inject HttpClient Http
+
+<PageTitle>Gallery | 37 Music Studio</PageTitle>
+
+<section class="studio-gallery-page" aria-labelledby="galleryTitle">
+    <header class="studio-gallery-header">
+        <div>
+            <p>Gallery</p>
+            <h1 id="galleryTitle">Cloudinary Gallery</h1>
+            <span>Upload foto langsung ke Cloudinary dan tampilkan gallery dari URL Cloudinary.</span>
+        </div>
+
+        <button type="button" class="studio-gallery-primary-action" @onclick="SaveCloudinarySettingsAsync">
+            Simpan Cloudinary Settings
+        </button>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(FormMessage))
+    {
+        <div class="studio-gallery-alert" role="alert">@FormMessage</div>
+    }
+
+    <section class="studio-gallery-setup-card" aria-label="Cloudinary settings">
+        <div class="studio-gallery-setup-copy">
+            <p>Cloudinary Config</p>
+            <h2>Direct unsigned upload</h2>
+            <span>Isi Cloud Name dan unsigned upload preset. Jangan masukkan API Secret di aplikasi client.</span>
+        </div>
+
+        <label class="studio-gallery-field">
+            <span>Cloud Name</span>
+            <input type="text" placeholder="contoh: demo-cloud" @bind="CloudinarySettings.CloudName" @bind:event="oninput" />
+        </label>
+
+        <label class="studio-gallery-field">
+            <span>Upload Preset</span>
+            <input type="text" placeholder="unsigned preset" @bind="CloudinarySettings.UploadPreset" @bind:event="oninput" />
+        </label>
+
+        <label class="studio-gallery-field">
+            <span>Folder <small>Opsional</small></span>
+            <input type="text" placeholder="37-music-studio/gallery" @bind="CloudinarySettings.Folder" @bind:event="oninput" />
+        </label>
+    </section>
+
+    <section class="studio-gallery-upload-card" aria-label="Upload foto">
+        <div class="studio-gallery-upload-copy">
+            <p>Upload Foto</p>
+            <h2>Tambah Foto Gallery</h2>
+            <span>Pilih foto, beri judul, lalu upload. Setelah sukses, gambar tampil dari secure URL Cloudinary.</span>
+        </div>
+
+        <div class="studio-gallery-upload-grid">
+            <label class="studio-gallery-field">
+                <span>Judul Foto</span>
+                <input type="text" placeholder="Contoh: Studio Room A" @bind="DraftTitle" @bind:event="oninput" />
+            </label>
+
+            <label class="studio-gallery-field">
+                <span>Kategori</span>
+                <select @bind="DraftCategory">
+                    @foreach (var category in CategoryOptions)
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </label>
+
+            <label class="studio-gallery-field is-wide">
+                <span>Caption <small>Opsional</small></span>
+                <input type="text" placeholder="Deskripsi pendek foto..." @bind="DraftCaption" @bind:event="oninput" />
+            </label>
+
+            <label class="studio-gallery-file-field is-wide">
+                <span>File Foto</span>
+                <InputFile OnChange="OnGalleryFileSelected" accept="image/*" />
+                <small>@SelectedFileLabel</small>
+            </label>
+
+            <button type="button" class="studio-gallery-primary-action is-upload" disabled="@IsUploadDisabled" @onclick="UploadSelectedImageAsync">
+                @(IsUploading ? "Uploading..." : "Upload ke Cloudinary")
+            </button>
+        </div>
+    </section>
+
+    <section class="studio-gallery-toolbar">
+        <label class="studio-gallery-field">
+            <span>Cari Foto</span>
+            <input type="search" placeholder="Judul, caption, kategori..." @bind="SearchText" @bind:event="oninput" />
+        </label>
+
+        <label class="studio-gallery-field">
+            <span>Filter Kategori</span>
+            <select @bind="ActiveCategoryFilter">
+                <option value="">Semua Kategori</option>
+
+                @foreach (var category in GalleryCategoryOptions)
+                {
+                    <option value="@category">@category</option>
+                }
+            </select>
+        </label>
+    </section>
+
+    <section class="studio-gallery-grid-panel" aria-label="Daftar foto gallery">
+        @if (!HasLoadedGallery)
+        {
+            <div class="studio-gallery-empty">
+                <StudioIcon Name="image" />
+                <strong>Memuat gallery...</strong>
+                <span>Sedang membaca daftar foto lokal.</span>
+            </div>
+        }
+        else if (!VisibleImages.Any())
+        {
+            <div class="studio-gallery-empty">
+                <StudioIcon Name="image" />
+                <strong>Belum ada foto</strong>
+                <span>Upload foto pertama ke Cloudinary untuk mulai mengisi gallery.</span>
+            </div>
+        }
+        else
+        {
+            <div class="studio-gallery-grid">
+                @foreach (var image in VisibleImages)
+                {
+                    <article class="studio-gallery-card">
+                        <figure>
+                            <img src="@image.SecureUrl" alt="@image.Title" loading="lazy" />
+                        </figure>
+
+                        <div class="studio-gallery-card-body">
+                            <span>@image.Category</span>
+                            <h2>@image.Title</h2>
+
+                            @if (!string.IsNullOrWhiteSpace(image.Caption))
+                            {
+                                <p>@image.Caption</p>
+                            }
+
+                            <small>@image.UploadedAt.ToString("dd MMM yyyy HH:mm", IndonesianCulture)</small>
+                        </div>
+
+                        <footer>
+                            <a href="@image.SecureUrl" target="_blank" rel="noopener noreferrer">
+                                Buka URL
+                            </a>
+
+                            <button type="button" @onclick="() => RemoveImageAsync(image.Id)">
+                                Hapus dari List
+                            </button>
+                        </footer>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+</section>
+
+@code {
+    private const string LocalCloudinarySettingsKey = "37musicstudio.cloudinary-settings.v1";
+    private const string LocalGalleryStorageKey = "37musicstudio.gallery.v1";
+    private const long MaxUploadBytes = 12 * 1024 * 1024;
+
+    private static readonly CultureInfo IndonesianCulture = new("id-ID");
+    private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
+
+    private readonly List<StudioGalleryImage> GalleryImages = new();
+
+    private StudioCloudinarySettings CloudinarySettings { get; set; } = StudioCloudinarySettings.CreateDefault();
+
+    private IBrowserFile? SelectedFile { get; set; }
+
+    private string DraftTitle { get; set; } = string.Empty;
+
+    private string DraftCaption { get; set; } = string.Empty;
+
+    private string DraftCategory { get; set; } = "Studio";
+
+    private string SearchText { get; set; } = string.Empty;
+
+    private string ActiveCategoryFilter { get; set; } = string.Empty;
+
+    private string? FormMessage { get; set; }
+
+    private bool HasLoadedGallery { get; set; }
+
+    private bool IsUploading { get; set; }
+
+    private string SelectedFileLabel => SelectedFile is null
+        ? "Belum ada file dipilih."
+        : $"{SelectedFile.Name} â€¢ {FormatBytes(SelectedFile.Size)}";
+
+    private bool IsUploadDisabled =>
+        IsUploading ||
+        SelectedFile is null ||
+        string.IsNullOrWhiteSpace(CloudinarySettings.CloudName) ||
+        string.IsNullOrWhiteSpace(CloudinarySettings.UploadPreset);
+
+    private IReadOnlyList<string> CategoryOptions => new[]
+    {
+        "Studio",
+        "Recording",
+        "Rehearsal",
+        "Event",
+        "Equipment",
+        "Behind The Scene",
+        "Lainnya"
+    };
+
+    private IReadOnlyList<string> GalleryCategoryOptions => CategoryOptions
+        .Concat(GalleryImages.Select(image => image.Category))
+        .Where(category => !string.IsNullOrWhiteSpace(category))
+        .Select(category => category.Trim())
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .OrderBy(category => category)
+        .ToArray();
+
+    private IEnumerable<StudioGalleryImage> VisibleImages
+    {
+        get
+        {
+            var query = GalleryImages
+                .OrderByDescending(image => image.UploadedAt)
+                .AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var keyword = SearchText.Trim();
+
+                query = query.Where(image =>
+                    image.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    image.Caption.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    image.Category.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(ActiveCategoryFilter))
+            {
+                query = query.Where(image =>
+                    string.Equals(image.Category, ActiveCategoryFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return query.ToArray();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || HasLoadedGallery)
+        {
+            return;
+        }
+
+        HasLoadedGallery = true;
+        await LoadCloudinarySettingsAsync();
+        await LoadGalleryImagesAsync();
+        StateHasChanged();
+    }
+
+    private static JsonSerializerOptions CreateLocalJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            WriteIndented = false
+        };
+
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        return options;
+    }
+
+    private async Task LoadCloudinarySettingsAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalCloudinarySettingsKey);
+
+            CloudinarySettings = string.IsNullOrWhiteSpace(json)
+                ? StudioCloudinarySettings.CreateDefault()
+                : JsonSerializer.Deserialize<StudioCloudinarySettings>(json, LocalJsonOptions)?.Normalize() ?? StudioCloudinarySettings.CreateDefault();
+        }
+        catch
+        {
+            CloudinarySettings = StudioCloudinarySettings.CreateDefault();
+        }
+    }
+
+    private async Task SaveCloudinarySettingsAsync()
+    {
+        try
+        {
+            CloudinarySettings = CloudinarySettings.Normalize();
+
+            var json = JsonSerializer.Serialize(CloudinarySettings, LocalJsonOptions);
+            await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalCloudinarySettingsKey, json);
+
+            FormMessage = "Cloudinary settings berhasil disimpan lokal.";
+        }
+        catch (Exception ex)
+        {
+            FormMessage = $"Gagal menyimpan Cloudinary settings: {ex.Message}";
+        }
+    }
+
+    private async Task LoadGalleryImagesAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalGalleryStorageKey);
+            var records = string.IsNullOrWhiteSpace(json)
+                ? new List<StudioGalleryImageLocalRecord>()
+                : JsonSerializer.Deserialize<List<StudioGalleryImageLocalRecord>>(json, LocalJsonOptions) ?? new();
+
+            GalleryImages.Clear();
+            GalleryImages.AddRange(records.Select(record => record.ToGalleryImage()).Where(image => !string.IsNullOrWhiteSpace(image.SecureUrl)));
+        }
+        catch (Exception ex)
+        {
+            GalleryImages.Clear();
+            FormMessage = $"Gallery gagal dibaca. Data lokal diabaikan sementara: {ex.Message}";
+        }
+    }
+
+    private async Task PersistGalleryImagesAsync()
+    {
+        var records = GalleryImages
+            .OrderByDescending(image => image.UploadedAt)
+            .Select(StudioGalleryImageLocalRecord.FromGalleryImage)
+            .ToList();
+
+        var json = JsonSerializer.Serialize(records, LocalJsonOptions);
+        await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalGalleryStorageKey, json);
+    }
+
+    private void OnGalleryFileSelected(InputFileChangeEventArgs args)
+    {
+        SelectedFile = args.File;
+        FormMessage = null;
+
+        if (string.IsNullOrWhiteSpace(DraftTitle) && SelectedFile is not null)
+        {
+            DraftTitle = Path.GetFileNameWithoutExtension(SelectedFile.Name);
+        }
+    }
+
+    private async Task UploadSelectedImageAsync()
+    {
+        if (SelectedFile is null)
+        {
+            FormMessage = "Pilih file foto terlebih dahulu.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CloudinarySettings.CloudName) ||
+            string.IsNullOrWhiteSpace(CloudinarySettings.UploadPreset))
+        {
+            FormMessage = "Cloud Name dan Upload Preset wajib diisi.";
+            return;
+        }
+
+        if (SelectedFile.Size > MaxUploadBytes)
+        {
+            FormMessage = $"Ukuran file terlalu besar. Maksimal {FormatBytes(MaxUploadBytes)}.";
+            return;
+        }
+
+        IsUploading = true;
+        FormMessage = null;
+
+        try
+        {
+            await SaveCloudinarySettingsAsync();
+
+            using var formData = new MultipartFormDataContent();
+            using var fileStream = SelectedFile.OpenReadStream(MaxUploadBytes);
+            using var fileContent = new StreamContent(fileStream);
+
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(
+                string.IsNullOrWhiteSpace(SelectedFile.ContentType)
+                    ? "application/octet-stream"
+                    : SelectedFile.ContentType);
+
+            formData.Add(new StringContent(CloudinarySettings.UploadPreset.Trim()), "upload_preset");
+
+            if (!string.IsNullOrWhiteSpace(CloudinarySettings.Folder))
+            {
+                formData.Add(new StringContent(CloudinarySettings.Folder.Trim()), "folder");
+            }
+
+            formData.Add(fileContent, "file", SelectedFile.Name);
+
+            var cloudName = Uri.EscapeDataString(CloudinarySettings.CloudName.Trim());
+            var endpoint = $"https://api.cloudinary.com/v1_1/{cloudName}/image/upload";
+
+            using var response = await Http.PostAsync(endpoint, formData);
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                FormMessage = $"Upload Cloudinary gagal: {(int)response.StatusCode} {response.ReasonPhrase}. {TrimResponse(responseText)}";
+                return;
+            }
+
+            var upload = JsonSerializer.Deserialize<CloudinaryUploadResponse>(responseText, LocalJsonOptions);
+
+            if (upload is null || string.IsNullOrWhiteSpace(upload.SecureUrl))
+            {
+                FormMessage = "Upload sukses, tapi response Cloudinary tidak membawa secure_url.";
+                return;
+            }
+
+            var title = string.IsNullOrWhiteSpace(DraftTitle)
+                ? Path.GetFileNameWithoutExtension(SelectedFile.Name)
+                : DraftTitle.Trim();
+
+            GalleryImages.Add(new StudioGalleryImage(
+                Guid.NewGuid().ToString("N"),
+                title,
+                DraftCaption.Trim(),
+                string.IsNullOrWhiteSpace(DraftCategory) ? "Studio" : DraftCategory.Trim(),
+                upload.SecureUrl.Trim(),
+                upload.PublicId?.Trim() ?? string.Empty,
+                upload.Format?.Trim() ?? string.Empty,
+                upload.Width,
+                upload.Height,
+                upload.Bytes,
+                DateTime.Now
+            ));
+
+            await PersistGalleryImagesAsync();
+
+            SelectedFile = null;
+            DraftTitle = string.Empty;
+            DraftCaption = string.Empty;
+            DraftCategory = "Studio";
+
+            FormMessage = "Foto berhasil diupload ke Cloudinary dan ditambahkan ke gallery.";
+        }
+        catch (Exception ex)
+        {
+            FormMessage = $"Upload gagal: {ex.Message}";
+        }
+        finally
+        {
+            IsUploading = false;
+        }
+    }
+
+    private async Task RemoveImageAsync(string id)
+    {
+        var image = GalleryImages.FirstOrDefault(item => item.Id == id);
+
+        if (image is null)
+        {
+            return;
+        }
+
+        GalleryImages.Remove(image);
+
+        try
+        {
+            await PersistGalleryImagesAsync();
+            FormMessage = "Foto dihapus dari list lokal. File di Cloudinary tidak ikut dihapus.";
+        }
+        catch (Exception ex)
+        {
+            GalleryImages.Add(image);
+            FormMessage = $"Gagal menghapus foto dari list lokal: {ex.Message}";
+        }
+    }
+
+    private static string TrimResponse(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = value.Trim();
+
+        return trimmed.Length <= 220
+            ? trimmed
+            : $"{trimmed[..220]}...";
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024)
+        {
+            return $"{bytes} B";
+        }
+
+        if (bytes < 1024 * 1024)
+        {
+            return $"{bytes / 1024d:0.0} KB";
+        }
+
+        return $"{bytes / 1024d / 1024d:0.0} MB";
+    }
+
+    private sealed class StudioCloudinarySettings
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string CloudName { get; set; } = string.Empty;
+
+        public string UploadPreset { get; set; } = string.Empty;
+
+        public string Folder { get; set; } = "37-music-studio/gallery";
+
+        public static StudioCloudinarySettings CreateDefault()
+        {
+            return new StudioCloudinarySettings
+            {
+                SchemaVersion = 1,
+                CloudName = string.Empty,
+                UploadPreset = string.Empty,
+                Folder = "37-music-studio/gallery"
+            };
+        }
+
+        public StudioCloudinarySettings Normalize()
+        {
+            SchemaVersion = 1;
+            CloudName = CloudName?.Trim() ?? string.Empty;
+            UploadPreset = UploadPreset?.Trim() ?? string.Empty;
+            Folder = string.IsNullOrWhiteSpace(Folder) ? "37-music-studio/gallery" : Folder.Trim();
+
+            return this;
+        }
+    }
+
+    private sealed record StudioGalleryImage(
+        string Id,
+        string Title,
+        string Caption,
+        string Category,
+        string SecureUrl,
+        string PublicId,
+        string Format,
+        int Width,
+        int Height,
+        long Bytes,
+        DateTime UploadedAt);
+
+    private sealed class StudioGalleryImageLocalRecord
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string Id { get; set; } = string.Empty;
+
+        public string Title { get; set; } = string.Empty;
+
+        public string Caption { get; set; } = string.Empty;
+
+        public string Category { get; set; } = string.Empty;
+
+        public string SecureUrl { get; set; } = string.Empty;
+
+        public string PublicId { get; set; } = string.Empty;
+
+        public string Format { get; set; } = string.Empty;
+
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+
+        public long Bytes { get; set; }
+
+        public DateTime UploadedAt { get; set; }
+
+        public static StudioGalleryImageLocalRecord FromGalleryImage(StudioGalleryImage image)
+        {
+            return new StudioGalleryImageLocalRecord
+            {
+                SchemaVersion = 1,
+                Id = image.Id,
+                Title = image.Title,
+                Caption = image.Caption,
+                Category = image.Category,
+                SecureUrl = image.SecureUrl,
+                PublicId = image.PublicId,
+                Format = image.Format,
+                Width = image.Width,
+                Height = image.Height,
+                Bytes = image.Bytes,
+                UploadedAt = image.UploadedAt
+            };
+        }
+
+        public StudioGalleryImage ToGalleryImage()
+        {
+            return new StudioGalleryImage(
+                string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString("N") : Id,
+                string.IsNullOrWhiteSpace(Title) ? "Foto Gallery" : Title.Trim(),
+                Caption?.Trim() ?? string.Empty,
+                string.IsNullOrWhiteSpace(Category) ? "Studio" : Category.Trim(),
+                SecureUrl?.Trim() ?? string.Empty,
+                PublicId?.Trim() ?? string.Empty,
+                Format?.Trim() ?? string.Empty,
+                Width,
+                Height,
+                Bytes,
+                UploadedAt == default ? DateTime.Now : UploadedAt
+            );
+        }
+    }
+
+    private sealed class CloudinaryUploadResponse
+    {
+        [JsonPropertyName("public_id")]
+        public string? PublicId { get; set; }
+
+        [JsonPropertyName("secure_url")]
+        public string? SecureUrl { get; set; }
+
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
+
+        [JsonPropertyName("format")]
+        public string? Format { get; set; }
+
+        [JsonPropertyName("width")]
+        public int Width { get; set; }
+
+        [JsonPropertyName("height")]
+        public int Height { get; set; }
+
+        [JsonPropertyName("bytes")]
+        public long Bytes { get; set; }
+    }
+}
