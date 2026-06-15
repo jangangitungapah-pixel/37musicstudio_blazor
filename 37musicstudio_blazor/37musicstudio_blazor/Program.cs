@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
 using System.Security.Cryptography;
@@ -186,6 +187,88 @@ app.MapPost("/cloudinary/sign-upload", async (string? folder, IWebHostEnvironmen
     {
         return Results.Problem(
             title: "Cloudinary signature failed",
+            detail: ex.Message,
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
+}).RequireAuthorization();
+app.MapPost("/cloudinary/upload", async (HttpRequest request, IWebHostEnvironment environment, IHttpClientFactory httpClientFactory) =>
+{
+    try
+    {
+        if (!request.HasFormContentType)
+        {
+            return Results.BadRequest(new
+            {
+                error = new
+                {
+                    message = "Upload request wajib multipart/form-data."
+                }
+            });
+        }
+
+        var options = await CloudinaryUploadSupport.LoadOptionsAsync(environment.ContentRootPath);
+        var form = await request.ReadFormAsync();
+        var file = form.Files.GetFile("file");
+
+        if (file is null || file.Length <= 0)
+        {
+            return Results.BadRequest(new
+            {
+                error = new
+                {
+                    message = "File upload tidak ditemukan."
+                }
+            });
+        }
+
+        var folder = form.TryGetValue("folder", out var folderValues)
+            ? folderValues.ToString().Trim()
+            : options.Folder;
+
+        if (string.IsNullOrWhiteSpace(folder))
+        {
+            folder = options.Folder;
+        }
+
+        using var formData = new MultipartFormDataContent();
+        using var fileStream = file.OpenReadStream();
+        using var fileContent = new StreamContent(fileStream);
+
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(
+            string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/octet-stream"
+                : file.ContentType);
+
+        formData.Add(fileContent, "file", string.IsNullOrWhiteSpace(file.FileName) ? "gallery-upload" : file.FileName);
+
+        if (!string.IsNullOrWhiteSpace(folder))
+        {
+            formData.Add(new StringContent(folder), "folder");
+        }
+
+        var endpoint = $"https://api.cloudinary.com/v1_1/{Uri.EscapeDataString(options.CloudName)}/image/upload";
+        var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{options.ApiKey}:{options.ApiSecret}"));
+
+        var http = httpClientFactory.CreateClient();
+        using var outbound = new HttpRequestMessage(HttpMethod.Post, endpoint)
+        {
+            Content = formData
+        };
+
+        outbound.Headers.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+
+        using var cloudinaryResponse = await http.SendAsync(outbound);
+        var responseText = await cloudinaryResponse.Content.ReadAsStringAsync();
+
+        return Results.Content(
+            responseText,
+            contentType: "application/json",
+            statusCode: (int)cloudinaryResponse.StatusCode);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            title: "Cloudinary upload failed",
             detail: ex.Message,
             statusCode: StatusCodes.Status500InternalServerError);
     }

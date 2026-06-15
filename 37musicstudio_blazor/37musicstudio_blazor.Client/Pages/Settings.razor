@@ -253,8 +253,8 @@
                 <header class="studio-settings-card-head">
                     <div>
                         <p>Cloudinary Config</p>
-                        <h2>Direct unsigned upload</h2>
-                        <span>Isi Cloud Name dan unsigned upload preset. Jangan masukkan API Secret di aplikasi client.</span>
+                        <h2>Server proxy upload</h2>
+                        <span>Upload gambar berjalan lewat endpoint server. API Secret tetap disimpan di file .local, bukan di Blazor Client.</span>
                     </div>
                 </header>
 
@@ -278,7 +278,7 @@
 
             <div class="studio-settings-gallery-note">
                 <strong>Catatan keamanan</strong>
-                <span>Gunakan unsigned upload preset untuk upload langsung dari browser. API Secret Cloudinary jangan disimpan di Blazor Client. Folder sebaiknya juga diatur dari upload preset Cloudinary.</span>
+                <span>Upload sekarang lewat server proxy, bukan unsigned browser upload. API Secret Cloudinary tetap hanya ada di server lokal.</span>
             </div>
         </section>
     }
@@ -322,7 +322,7 @@
     private string CurrentSubPageDescription => ActiveSubPage switch
     {
         SettingsSubPageProfile => "Edit nama studio, nomor HP/WA, dan alamat studio.",
-        SettingsSubPageGallery => "Atur Cloudinary Cloud Name, unsigned upload preset, dan folder gallery.",
+        SettingsSubPageGallery => "Atur folder gallery. Credential Cloudinary dibaca dari server lokal.",
         _ => "Atur harga latihan, paket recording, dan diskon sesi latihan."
     };
 

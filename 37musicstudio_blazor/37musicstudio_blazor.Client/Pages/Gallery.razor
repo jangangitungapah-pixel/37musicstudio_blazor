@@ -355,28 +355,6 @@
         {
             await SaveCloudinarySettingsAsync();
 
-            var signatureEndpoint = BuildCloudinarySignatureUri();
-            var signatureResponse = await Http.PostAsync(signatureEndpoint, content: null);
-
-            var signatureResponseText = await signatureResponse.Content.ReadAsStringAsync();
-
-            if (!signatureResponse.IsSuccessStatusCode)
-            {
-                FormMessage = $"Gagal membuat signature Cloudinary: {(int)signatureResponse.StatusCode}. {TrimResponse(signatureResponseText)}";
-                return;
-            }
-
-            var signature = await signatureResponse.Content.ReadFromJsonAsync<CloudinarySignatureResponse>(LocalJsonOptions);
-
-            if (signature is null ||
-                string.IsNullOrWhiteSpace(signature.CloudName) ||
-                string.IsNullOrWhiteSpace(signature.ApiKey) ||
-                string.IsNullOrWhiteSpace(signature.Signature))
-            {
-                FormMessage = "Signature Cloudinary tidak lengkap.";
-                return;
-            }
-
             using var formData = new MultipartFormDataContent();
             using var fileStream = SelectedFile.OpenReadStream(MaxUploadBytes);
             using var fileContent = new StreamContent(fileStream);
@@ -386,26 +364,21 @@
                     ? "application/octet-stream"
                     : SelectedFile.ContentType);
 
-            formData.Add(new StringContent(signature.ApiKey), "api_key");
-            formData.Add(new StringContent(signature.Timestamp.ToString(CultureInfo.InvariantCulture)), "timestamp");
-            formData.Add(new StringContent(signature.Signature), "signature");
-
-            if (!string.IsNullOrWhiteSpace(signature.Folder))
+            if (!string.IsNullOrWhiteSpace(CloudinarySettings.Folder))
             {
-                formData.Add(new StringContent(signature.Folder.Trim()), "folder");
+                formData.Add(new StringContent(CloudinarySettings.Folder.Trim()), "folder");
             }
 
             formData.Add(fileContent, "file", SelectedFile.Name);
 
-            var cloudName = Uri.EscapeDataString(signature.CloudName.Trim());
-            var endpoint = $"https://api.cloudinary.com/v1_1/{cloudName}/image/upload";
-
-            using var response = await Http.PostAsync(endpoint, formData);
+            using var response = await Http.PostAsync(
+                NavigationManager.ToAbsoluteUri("/cloudinary/upload"),
+                formData);
             var responseText = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                FormMessage = $"Upload Cloudinary gagal: {(int)response.StatusCode} {response.ReasonPhrase}. {TrimResponse(responseText)}";
+                FormMessage = $"Upload Cloudinary via server gagal: {(int)response.StatusCode} {response.ReasonPhrase}. {TrimResponse(responseText)}";
                 return;
             }
 
