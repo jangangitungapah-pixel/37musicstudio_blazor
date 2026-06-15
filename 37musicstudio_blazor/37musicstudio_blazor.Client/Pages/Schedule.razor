@@ -111,22 +111,25 @@
                                         title="@BuildSlotTitle(day, slot)"
                                         aria-label="@BuildSlotAria(day, slot)"
                                         @onclick="() => OpenBookingCanvas(day, slot, booking)">
-                                        <span>
-                                            @if (segment is null)
-                                            {
+                                        @if (segment is null)
+                                        {
+                                            <span class="studio-empty-slot-indicator">
                                                 <StudioIcon Name="plus" />
-                                            }
-                                            else if (segment.IsStart)
-                                            {
+                                            </span>
+                                        }
+                                        else if (segment.IsStart)
+                                        {
+                                            <span class="studio-booking-block" style="@BuildBookingBlockStyle(segment.Booking)">
                                                 <strong>@segment.Booking.DisplayName</strong>
                                                 <em>@BuildBookingChipMeta(segment.Booking)</em>
-                                            }
-                                            else
-                                            {
-                                                <strong>@segment.Booking.DisplayName</strong>
-                                                <em>@GetPaymentStatusLabel(segment.Booking.Status)</em>
-                                            }
-                                        </span>
+                                                <small>@segment.Booking.CustomerName</small>
+                                                <b>@GetPaymentStatusLabel(segment.Booking.Status)</b>
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="studio-booking-block-ghost" aria-hidden="true"></span>
+                                        }
                                     </button>
                                 </td>
                             }
@@ -618,7 +621,12 @@
 
     private static string BuildBookingChipMeta(StudioBooking booking)
     {
-        return $"{FormatTime(booking.StartAt.TimeOfDay)} - {FormatTime(booking.EndAt.TimeOfDay)} | {GetPaymentStatusLabel(booking.Status)}";
+        return $"{FormatTime(booking.StartAt.TimeOfDay)} - {FormatTime(booking.EndAt.TimeOfDay)} | {booking.DurationHours} Jam";
+    }
+
+    private static string BuildBookingBlockStyle(StudioBooking booking)
+    {
+        return $"--booking-hours:{Math.Max(1, booking.DurationHours)};";
     }
 
     private static string GetSlotButtonClass(StudioBookingSegment? segment, bool isFilteredOut)
@@ -629,7 +637,8 @@
         }
 
         var statusKey = segment.Booking.Status.ToString().ToLowerInvariant();
-        var className = $"studio-schedule-slot has-booking status-{statusKey}";
+        var durationKey = Math.Clamp(segment.Booking.DurationHours, 1, 6);
+        var className = $"studio-schedule-slot has-booking status-{statusKey} duration-{durationKey}";
 
         if (segment.IsStart)
         {
@@ -670,6 +679,20 @@
         if (segment is not null)
         {
             className += " has-booking";
+
+            if (segment.IsStart)
+            {
+                className += " is-range-start";
+            }
+            else
+            {
+                className += " is-range-covered";
+            }
+
+            if (segment.IsEnd)
+            {
+                className += " is-range-end";
+            }
         }
 
         if (isFilteredOut)
