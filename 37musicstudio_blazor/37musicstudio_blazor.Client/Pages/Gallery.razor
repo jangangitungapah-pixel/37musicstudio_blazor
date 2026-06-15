@@ -21,41 +21,13 @@
             <h1 id="galleryTitle">Cloudinary Gallery</h1>
             <span>Upload foto langsung ke Cloudinary dan tampilkan gallery dari URL Cloudinary.</span>
         </div>
-
-        <button type="button" class="studio-gallery-primary-action" @onclick="SaveCloudinarySettingsAsync">
-            Simpan Cloudinary Settings
-        </button>
     </header>
 
     @if (!string.IsNullOrWhiteSpace(FormMessage))
     {
         <div class="studio-gallery-alert" role="alert">@FormMessage</div>
     }
-
-    <section class="studio-gallery-setup-card" aria-label="Cloudinary settings">
-        <div class="studio-gallery-setup-copy">
-            <p>Cloudinary Config</p>
-            <h2>Direct unsigned upload</h2>
-            <span>Isi Cloud Name dan unsigned upload preset. Jangan masukkan API Secret di aplikasi client.</span>
-        </div>
-
-        <label class="studio-gallery-field">
-            <span>Cloud Name</span>
-            <input type="text" placeholder="contoh: demo-cloud" @bind="CloudinarySettings.CloudName" @bind:event="oninput" />
-        </label>
-
-        <label class="studio-gallery-field">
-            <span>Upload Preset</span>
-            <input type="text" placeholder="unsigned preset" @bind="CloudinarySettings.UploadPreset" @bind:event="oninput" />
-        </label>
-
-        <label class="studio-gallery-field">
-            <span>Folder <small>Opsional</small></span>
-            <input type="text" placeholder="37-music-studio/gallery" @bind="CloudinarySettings.Folder" @bind:event="oninput" />
-        </label>
-    </section>
-
-    <section class="studio-gallery-upload-card" aria-label="Upload foto">
+<section class="studio-gallery-upload-card" aria-label="Upload foto">
         <div class="studio-gallery-upload-copy">
             <p>Upload Foto</p>
             <h2>Tambah Foto Gallery</h2>

@@ -42,6 +42,7 @@
             <select value="@ActiveSubPage" @onchange="OnSubPageChanged">
                 <option value="@SettingsSubPagePricing">Pricing</option>
                 <option value="@SettingsSubPageProfile">Profile Studio</option>
+                <option value="@SettingsSubPageGallery">Gallery</option>
             </select>
         </label>
 
@@ -249,9 +250,11 @@
 @code {
     private const string LocalPricingStorageKey = "37musicstudio.pricing-settings.v1";
     private const string LocalStudioProfileStorageKey = "37musicstudio.studio-profile.v1";
+    private const string LocalCloudinarySettingsKey = "37musicstudio.cloudinary-settings.v1";
 
     private const string SettingsSubPagePricing = "pricing";
     private const string SettingsSubPageProfile = "profile";
+    private const string SettingsSubPageGallery = "gallery";
 
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
     private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
@@ -259,6 +262,7 @@
     private StudioPricingSettings PricingModel { get; set; } = StudioPricingSettings.CreateDefault();
 
     private StudioProfileSettings ProfileModel { get; set; } = StudioProfileSettings.CreateDefault();
+    private StudioCloudinarySettings CloudinarySettings { get; set; } = StudioCloudinarySettings.CreateDefault();
 
     private RecordingPackageDraft PackageDraft { get; set; } = new();
 
@@ -270,13 +274,19 @@
 
     private bool HasLoadedSettings { get; set; }
 
-    private string CurrentSubPageTitle => ActiveSubPage == SettingsSubPageProfile
-        ? "Profile Studio"
-        : "Pricing";
+    private string CurrentSubPageTitle => ActiveSubPage switch
+    {
+        SettingsSubPageProfile => "Profile Studio",
+        SettingsSubPageGallery => "Gallery",
+        _ => "Pricing"
+    };
 
-    private string CurrentSubPageDescription => ActiveSubPage == SettingsSubPageProfile
-        ? "Edit nama studio, nomor HP/WA, dan alamat studio."
-        : "Atur harga latihan, paket recording, dan diskon sesi latihan.";
+    private string CurrentSubPageDescription => ActiveSubPage switch
+    {
+        SettingsSubPageProfile => "Edit nama studio, nomor HP/WA, dan alamat studio.",
+        SettingsSubPageGallery => "Atur Cloudinary Cloud Name, unsigned upload preset, dan folder gallery.",
+        _ => "Atur harga latihan, paket recording, dan diskon sesi latihan."
+    };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -288,6 +298,7 @@
         HasLoadedSettings = true;
         await LoadPricingSettingsAsync();
         await LoadProfileSettingsAsync();
+        await LoadCloudinarySettingsAsync();
         StateHasChanged();
     }
 
@@ -339,11 +350,34 @@
         }
     }
 
+    private async Task LoadCloudinarySettingsAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalCloudinarySettingsKey);
+
+            CloudinarySettings = string.IsNullOrWhiteSpace(json)
+                ? StudioCloudinarySettings.CreateDefault()
+                : JsonSerializer.Deserialize<StudioCloudinarySettings>(json, LocalJsonOptions)?.Normalize() ?? StudioCloudinarySettings.CreateDefault();
+        }
+        catch (Exception ex)
+        {
+            CloudinarySettings = StudioCloudinarySettings.CreateDefault();
+            FormMessage = $"Cloudinary settings gagal dibaca. Default dipakai sementara: {ex.Message}";
+        }
+    }
+
     private async Task SaveCurrentSubPageAsync()
     {
         if (ActiveSubPage == SettingsSubPageProfile)
         {
             await SaveProfileSettingsAsync();
+            return;
+        }
+
+        if (ActiveSubPage == SettingsSubPageGallery)
+        {
+            await SaveCloudinarySettingsAsync();
             return;
         }
 
@@ -364,6 +398,23 @@
         catch (Exception ex)
         {
             FormMessage = $"Gagal menyimpan pricing settings: {ex.Message}";
+        }
+    }
+
+    private async Task SaveCloudinarySettingsAsync()
+    {
+        try
+        {
+            CloudinarySettings = CloudinarySettings.Normalize();
+
+            var json = JsonSerializer.Serialize(CloudinarySettings, LocalJsonOptions);
+            await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalCloudinarySettingsKey, json);
+
+            FormMessage = "Cloudinary settings berhasil disimpan lokal.";
+        }
+        catch (Exception ex)
+        {
+            FormMessage = $"Gagal menyimpan Cloudinary settings: {ex.Message}";
         }
     }
 
@@ -394,6 +445,14 @@
             return;
         }
 
+        if (ActiveSubPage == SettingsSubPageGallery)
+        {
+            CloudinarySettings = StudioCloudinarySettings.CreateDefault();
+            await SaveCloudinarySettingsAsync();
+            FormMessage = "Cloudinary settings dikembalikan ke default.";
+            return;
+        }
+
         PricingModel = StudioPricingSettings.CreateDefault();
         PackageDraft = new RecordingPackageDraft();
         DiscountDraft = TrainingDiscountDraft.CreateDefault();
@@ -406,9 +465,12 @@
     {
         var nextPage = args.Value?.ToString();
 
-        ActiveSubPage = nextPage == SettingsSubPageProfile
-            ? SettingsSubPageProfile
-            : SettingsSubPagePricing;
+        ActiveSubPage = nextPage switch
+        {
+            SettingsSubPageProfile => SettingsSubPageProfile,
+            SettingsSubPageGallery => SettingsSubPageGallery,
+            _ => SettingsSubPagePricing
+        };
 
         FormMessage = null;
     }
@@ -515,6 +577,38 @@
                 Amount = 60000,
                 AppliesMultiple = true
             };
+        }
+    }
+
+    private sealed class StudioCloudinarySettings
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string CloudName { get; set; } = string.Empty;
+
+        public string UploadPreset { get; set; } = string.Empty;
+
+        public string Folder { get; set; } = "37-music-studio/gallery";
+
+        public static StudioCloudinarySettings CreateDefault()
+        {
+            return new StudioCloudinarySettings
+            {
+                SchemaVersion = 1,
+                CloudName = string.Empty,
+                UploadPreset = string.Empty,
+                Folder = "37-music-studio/gallery"
+            };
+        }
+
+        public StudioCloudinarySettings Normalize()
+        {
+            SchemaVersion = 1;
+            CloudName = CloudName?.Trim() ?? string.Empty;
+            UploadPreset = UploadPreset?.Trim() ?? string.Empty;
+            Folder = string.IsNullOrWhiteSpace(Folder) ? "37-music-studio/gallery" : Folder.Trim();
+
+            return this;
         }
     }
 
