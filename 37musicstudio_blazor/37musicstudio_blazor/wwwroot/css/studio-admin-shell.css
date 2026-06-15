@@ -2225,3 +2225,590 @@ textarea,
     pointer-events: auto !important;
 }
 /* </studio-interaction-layer-reset> */
+
+
+/* <studio-billing-pos-page> */
+.studio-pos-page,
+.studio-pos-page * {
+    box-sizing: border-box;
+    font-family: var(--studio-body-font, "Montserrat", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif) !important;
+}
+
+.studio-pos-page {
+    min-height: calc(100dvh - clamp(1.4rem, 2.9vw, 2rem));
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 0.68rem;
+    color: var(--ui-text-main, #25231f);
+}
+
+.studio-pos-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.studio-pos-header p {
+    margin: 0;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.58rem;
+    font-weight: 850;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.studio-pos-header h1 {
+    margin: 0.06rem 0 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1.24rem, 2.25vw, 1.72rem);
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -0.06em;
+}
+
+.studio-pos-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.studio-pos-soft-action,
+.studio-pos-primary-link,
+.studio-pos-save-action {
+    min-height: 2.28rem;
+    border-radius: 0.74rem;
+    padding: 0 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 78%, transparent);
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 70%, transparent);
+    color: var(--ui-text-main, #25231f);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.studio-pos-primary-link,
+.studio-pos-save-action {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 52%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 55%),
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 90%, #ffffff 10%), color-mix(in srgb, var(--ui-accent, #d8a85f) 94%, #8f682c 6%));
+    color: var(--ui-accent-contrast, #15100a);
+}
+
+.studio-pos-heroes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.48rem;
+}
+
+.studio-pos-hero {
+    --hero-color: var(--ui-accent, #d8a85f);
+    min-width: 0;
+    min-height: 4.1rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-content: center;
+    gap: 0.08rem 0.55rem;
+    border-radius: 1rem;
+    padding: 0.58rem 0.74rem;
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 50%, transparent), transparent 5.5rem),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--hero-color) 22%, transparent), transparent 6rem),
+        color-mix(in srgb, var(--hero-color) 9%, transparent);
+}
+
+.studio-pos-hero span {
+    color: color-mix(in srgb, var(--ui-text-main, #25231f) 72%, var(--hero-color));
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.studio-pos-hero strong {
+    grid-row: 1 / 3;
+    grid-column: 2;
+    align-self: center;
+    color: var(--hero-color);
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    font-weight: 950;
+    line-height: 0.95;
+    letter-spacing: -0.08em;
+    font-variant-numeric: tabular-nums;
+}
+
+.studio-pos-hero small {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.64rem;
+    font-weight: 750;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.studio-pos-hero.hero-pending {
+    --hero-color: var(--booking-pending-color, #ff2d2d);
+}
+
+.studio-pos-hero.hero-dp {
+    --hero-color: var(--booking-dp-color, #1677ff);
+}
+
+.studio-pos-hero.hero-paid {
+    --hero-color: var(--booking-paid-color, #00b96b);
+}
+
+.studio-pos-shell {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(18rem, 0.86fr) minmax(22rem, 1.14fr);
+    gap: 0.68rem;
+}
+
+.studio-pos-list-panel,
+.studio-pos-checkout-panel {
+    min-height: 0;
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    border-radius: 1.16rem;
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 76%, transparent)),
+        var(--ui-surface, #fffefa);
+    box-shadow:
+        0 1.1rem 3rem color-mix(in srgb, #000000 7%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+    backdrop-filter: blur(22px);
+    overflow: hidden;
+}
+
+.studio-pos-list-panel {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 0.52rem;
+    padding: 0.68rem;
+}
+
+.studio-pos-filter-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.28rem;
+}
+
+.studio-pos-filter {
+    min-height: 2rem;
+    border: 1px solid transparent;
+    border-radius: 0.66rem;
+    background: transparent;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.66rem;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.studio-pos-filter.is-active {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 35%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 9%, var(--ui-surface, #fffefa));
+    color: var(--ui-text-strong, #11100e);
+}
+
+.studio-pos-search {
+    display: grid;
+    gap: 0.22rem;
+}
+
+.studio-pos-search span,
+.studio-pos-money-grid span,
+.studio-pos-note span,
+.studio-pos-meta-grid span {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.58rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.studio-pos-search input,
+.studio-pos-money-grid input,
+.studio-pos-note textarea {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 84%, transparent);
+    border-radius: 0.72rem;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 78%, transparent);
+    color: var(--ui-text-main, #25231f);
+    outline: 0;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.studio-pos-search input,
+.studio-pos-money-grid input {
+    min-height: 2.36rem;
+    padding: 0 0.72rem;
+}
+
+.studio-pos-note textarea {
+    min-height: 4rem;
+    resize: vertical;
+    padding: 0.62rem 0.72rem;
+}
+
+.studio-pos-booking-list {
+    min-height: 0;
+    display: grid;
+    align-content: start;
+    gap: 0.42rem;
+    overflow: auto;
+    padding-right: 0.12rem;
+}
+
+.studio-pos-booking-item {
+    --item-color: var(--ui-accent, #d8a85f);
+    width: 100%;
+    min-height: 4.1rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    gap: 0.04rem 0.55rem;
+    border: 1px solid transparent;
+    border-radius: 0.92rem;
+    padding: 0.54rem 0.58rem;
+    background: color-mix(in srgb, var(--item-color) 5%, transparent);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.studio-pos-booking-item.is-active {
+    border-color: color-mix(in srgb, var(--item-color) 54%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 44%, transparent), transparent 5rem),
+        color-mix(in srgb, var(--item-color) 12%, var(--ui-surface, #fffefa));
+}
+
+.studio-pos-booking-status {
+    grid-row: 1 / 4;
+    width: 0.52rem;
+    height: 2.8rem;
+    border-radius: 999rem;
+    background: var(--item-color);
+}
+
+.studio-pos-booking-item strong,
+.studio-pos-booking-item em,
+.studio-pos-booking-item small {
+    min-width: 0;
+    grid-column: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-pos-booking-item strong {
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.78rem;
+    font-weight: 950;
+    letter-spacing: -0.045em;
+}
+
+.studio-pos-booking-item em {
+    color: var(--ui-text-main, #25231f);
+    font-style: normal;
+    font-size: 0.64rem;
+    font-weight: 750;
+}
+
+.studio-pos-booking-item small {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.58rem;
+    font-weight: 700;
+}
+
+.studio-pos-booking-item b {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    min-width: 2.6rem;
+    min-height: 1.24rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999rem;
+    padding: 0 0.42rem;
+    background: var(--item-color);
+    color: #ffffff;
+    font-size: 0.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    --item-color: var(--booking-pending-color, #ff2d2d);
+}
+
+.status-dp {
+    --item-color: var(--booking-dp-color, #1677ff);
+}
+
+.status-paid {
+    --item-color: var(--booking-paid-color, #00b96b);
+}
+
+.studio-pos-checkout-panel {
+    display: grid;
+    grid-template-rows: auto auto auto auto minmax(0, auto) auto auto;
+    gap: 0.62rem;
+    padding: 0.78rem;
+}
+
+.studio-pos-empty-checkout,
+.studio-pos-empty-state {
+    min-height: 12rem;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.28rem;
+    text-align: center;
+    color: var(--ui-text-muted, #70685e);
+}
+
+.studio-pos-empty-checkout .studio-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    color: var(--ui-accent, #d8a85f);
+}
+
+.studio-pos-empty-checkout strong,
+.studio-pos-empty-state strong {
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.studio-pos-empty-checkout span,
+.studio-pos-empty-state span {
+    font-size: 0.72rem;
+    font-weight: 650;
+}
+
+.studio-pos-receipt-head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.studio-pos-receipt-head p {
+    margin: 0;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.58rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.studio-pos-receipt-head h2 {
+    margin: 0.08rem 0 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1.1rem, 2vw, 1.42rem);
+    font-weight: 950;
+    line-height: 1;
+    letter-spacing: -0.06em;
+}
+
+.studio-pos-receipt-head span {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.studio-pos-receipt-badge {
+    --item-color: var(--ui-accent, #d8a85f);
+    min-height: 1.52rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999rem;
+    padding: 0 0.56rem;
+    background: var(--item-color);
+    color: #ffffff;
+    font-size: 0.58rem;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.studio-pos-meta-grid,
+.studio-pos-money-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.42rem;
+}
+
+.studio-pos-money-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.studio-pos-meta-grid div,
+.studio-pos-money-grid div,
+.studio-pos-money-grid label {
+    min-width: 0;
+    display: grid;
+    gap: 0.22rem;
+    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 78%, transparent);
+    border-radius: 0.78rem;
+    padding: 0.48rem;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 56%, transparent);
+}
+
+.studio-pos-meta-grid strong,
+.studio-pos-money-grid strong {
+    min-width: 0;
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.72rem;
+    font-weight: 850;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-pos-payment-mode {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.34rem;
+}
+
+.studio-pos-payment-button {
+    --item-color: var(--ui-accent, #d8a85f);
+    min-height: 2.3rem;
+    border: 1px solid color-mix(in srgb, var(--item-color) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    border-radius: 0.74rem;
+    background: color-mix(in srgb, var(--item-color) 8%, transparent);
+    color: color-mix(in srgb, var(--ui-text-strong, #11100e) 78%, var(--item-color));
+    font-size: 0.72rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.studio-pos-payment-button.is-active {
+    background: var(--item-color);
+    color: #ffffff;
+    box-shadow: 0 0.7rem 1.5rem color-mix(in srgb, var(--item-color) 22%, transparent);
+}
+
+.studio-pos-note {
+    display: grid;
+    gap: 0.24rem;
+}
+
+.studio-pos-alert {
+    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    border-radius: 0.78rem;
+    padding: 0.58rem 0.68rem;
+    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 8%, var(--ui-surface, #fffefa));
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.studio-pos-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.42rem;
+}
+
+@media (max-width: 980px) {
+    .studio-pos-page {
+        min-height: calc(100dvh - 4.4rem - 5rem);
+    }
+
+    .studio-pos-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .studio-pos-header-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .studio-pos-heroes {
+        gap: 0.34rem;
+    }
+
+    .studio-pos-hero {
+        min-height: 3.25rem;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        padding: 0.46rem 0.52rem;
+    }
+
+    .studio-pos-hero strong {
+        grid-column: auto;
+        grid-row: auto;
+        font-size: 1.18rem;
+    }
+
+    .studio-pos-hero small {
+        display: none;
+    }
+
+    .studio-pos-shell {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .studio-pos-list-panel,
+    .studio-pos-checkout-panel {
+        border-radius: 1rem;
+    }
+
+    .studio-pos-list-panel {
+        max-height: 25rem;
+    }
+
+    .studio-pos-checkout-panel {
+        gap: 0.5rem;
+        padding: 0.62rem;
+    }
+
+    .studio-pos-meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .studio-pos-money-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .studio-pos-footer {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 420px) {
+    .studio-pos-filter-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .studio-pos-heroes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .studio-pos-hero span {
+        font-size: 0.46rem;
+    }
+
+    .studio-pos-hero strong {
+        font-size: 1rem;
+    }
+
+    .studio-pos-meta-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* </studio-billing-pos-page> */
