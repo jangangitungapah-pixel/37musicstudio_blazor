@@ -4719,3 +4719,51 @@ textarea,
     }
 }
 /* </studio-settings-gallery-config> */
+
+
+/* <studio-settings-gallery-visible-subpage> */
+.studio-settings-gallery-panel {
+    gap: 0.82rem;
+}
+
+.studio-settings-gallery-config-card {
+    gap: 0.82rem;
+}
+
+.studio-settings-gallery-config-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.62rem;
+}
+
+.studio-settings-gallery-note {
+    display: grid;
+    gap: 0.2rem;
+    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    border-radius: 1rem;
+    padding: 0.74rem 0.82rem;
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--ui-accent, #d8a85f) 14%, transparent), transparent 8rem),
+        color-mix(in srgb, var(--ui-surface, #fffefa) 72%, transparent);
+}
+
+.studio-settings-gallery-note strong {
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.82rem;
+    font-weight: 950;
+    letter-spacing: -0.035em;
+}
+
+.studio-settings-gallery-note span {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.7rem;
+    font-weight: 680;
+    line-height: 1.45;
+}
+
+@media (max-width: 980px) {
+    .studio-settings-gallery-config-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* </studio-settings-gallery-visible-subpage> */

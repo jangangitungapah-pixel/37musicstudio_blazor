@@ -245,6 +245,44 @@
             </div>
         </section>
     }
+    <!-- <studio-settings-gallery-subpage> -->
+    @if (ActiveSubPage == SettingsSubPageGallery)
+    {
+        <section class="studio-settings-panel studio-settings-gallery-panel">
+            <div class="studio-settings-card studio-settings-gallery-config-card">
+                <header class="studio-settings-card-head">
+                    <div>
+                        <p>Cloudinary Config</p>
+                        <h2>Direct unsigned upload</h2>
+                        <span>Isi Cloud Name dan unsigned upload preset. Jangan masukkan API Secret di aplikasi client.</span>
+                    </div>
+                </header>
+
+                <div class="studio-settings-gallery-config-grid">
+                    <label class="studio-settings-field">
+                        <span>Cloud Name</span>
+                        <input type="text" placeholder="contoh: dblvmxvyd" @bind="CloudinarySettings.CloudName" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-settings-field">
+                        <span>Upload Preset</span>
+                        <input type="text" placeholder="contoh: studio37" @bind="CloudinarySettings.UploadPreset" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-settings-field">
+                        <span>Folder <small>Opsional</small></span>
+                        <input type="text" placeholder="37-music-studio/gallery" @bind="CloudinarySettings.Folder" @bind:event="oninput" />
+                    </label>
+                </div>
+            </div>
+
+            <div class="studio-settings-gallery-note">
+                <strong>Catatan keamanan</strong>
+                <span>Gunakan unsigned upload preset untuk upload langsung dari browser. API Secret Cloudinary jangan disimpan di Blazor Client. Folder sebaiknya juga diatur dari upload preset Cloudinary.</span>
+            </div>
+        </section>
+    }
+    <!-- </studio-settings-gallery-subpage> -->
 </section>
 
 @code {
