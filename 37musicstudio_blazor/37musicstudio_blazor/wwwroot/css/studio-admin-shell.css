@@ -2085,3 +2085,103 @@ select,
     }
 }
 /* </studio-compact-status-hero-toolbar> */
+
+
+/* <studio-sticky-hour-layer-hotfix> */
+.studio-schedule-table-wrap {
+    position: relative !important;
+    isolation: isolate !important;
+}
+
+.studio-schedule-table {
+    isolation: isolate !important;
+}
+
+.studio-schedule-time-head,
+.studio-schedule-time-cell {
+    position: sticky !important;
+    left: 0 !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 98%, #ffffff), color-mix(in srgb, var(--ui-surface, #fffefa) 92%, var(--ui-bg-page, #f4efe7))),
+        var(--ui-surface, #fffefa) !important;
+    box-shadow:
+        1px 0 0 color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 88%, transparent),
+        0.7rem 0 1.1rem color-mix(in srgb, var(--ui-bg-page, #f4efe7) 72%, transparent) !important;
+}
+
+.studio-schedule-time-head {
+    z-index: 120 !important;
+}
+
+.studio-schedule-time-cell {
+    z-index: 110 !important;
+}
+
+.studio-schedule-day-head {
+    z-index: 80 !important;
+}
+
+.studio-schedule-cell,
+.studio-schedule-cell.is-rowspan-booking {
+    z-index: 1 !important;
+}
+
+.studio-schedule-slot.has-booking {
+    z-index: 2 !important;
+}
+
+.studio-schedule-slot.has-booking > .studio-booking-block {
+    z-index: 3 !important;
+}
+
+.studio-schedule-slot.has-booking:hover,
+.studio-schedule-slot.has-booking:focus-visible {
+    z-index: 4 !important;
+}
+
+.studio-schedule-slot.has-booking:hover > .studio-booking-block,
+.studio-schedule-slot.has-booking:focus-visible > .studio-booking-block {
+    z-index: 5 !important;
+}
+
+.studio-schedule-time-cell::after,
+.studio-schedule-time-head::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: -1px !important;
+    bottom: 0 !important;
+    width: 1px !important;
+    background: color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 92%, transparent) !important;
+    pointer-events: none !important;
+}
+
+.studio-schedule-time-cell > span {
+    position: relative !important;
+    z-index: 2 !important;
+    background: transparent !important;
+}
+
+@media (max-width: 720px) {
+    .studio-schedule-time-head,
+    .studio-schedule-time-cell {
+        box-shadow:
+            1px 0 0 color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 88%, transparent),
+            0.9rem 0 1.2rem color-mix(in srgb, var(--ui-bg-page, #f4efe7) 82%, transparent) !important;
+    }
+
+    .studio-schedule-time-head {
+        z-index: 140 !important;
+    }
+
+    .studio-schedule-time-cell {
+        z-index: 130 !important;
+    }
+
+    .studio-schedule-day-head {
+        z-index: 90 !important;
+    }
+}
+/* </studio-sticky-hour-layer-hotfix> */
