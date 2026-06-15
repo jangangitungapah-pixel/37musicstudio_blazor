@@ -291,6 +291,8 @@
 @code {
     private const string StorageKey = "37musicstudio.bookkeeping.v1";
 
+    private const string PendingMobileEditStorageKey = "37musicstudio.bookkeeping.pending-edit-id.v1";
+
     private const string IncomeType = "Pemasukan";
     private const string ExpenseType = "Pengeluaran";
     private const string TypeAll = "Semua";
@@ -382,11 +384,41 @@
         }
 
         await LoadEntriesAsync();
+        await TryOpenPendingMobileEditAsync();
     }
 
     private void OpenMobileLedgerTable()
     {
         NavigationManager.NavigateTo("/bookkeeping/table");
+    }
+
+    private async Task TryOpenPendingMobileEditAsync()
+    {
+        try
+        {
+            var pendingId = await JS.InvokeAsync<string?>("localStorage.getItem", PendingMobileEditStorageKey);
+
+            if (string.IsNullOrWhiteSpace(pendingId))
+            {
+                return;
+            }
+
+            await JS.InvokeVoidAsync("localStorage.removeItem", PendingMobileEditStorageKey);
+
+            var entry = Entries.FirstOrDefault(item => string.Equals(item.Id, pendingId, StringComparison.OrdinalIgnoreCase));
+
+            if (entry is null)
+            {
+                return;
+            }
+
+            OpenEditModal(entry);
+            StateHasChanged();
+        }
+        catch
+        {
+            // Browser/localStorage issues should not block the bookkeeping page.
+        }
     }
 
     private async Task LoadEntriesAsync()

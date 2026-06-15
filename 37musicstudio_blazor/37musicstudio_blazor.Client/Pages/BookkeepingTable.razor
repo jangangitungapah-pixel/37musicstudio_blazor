@@ -21,6 +21,11 @@
         <small>@Rows.Count.ToString(IndonesianCulture) transaksi</small>
     </header>
 
+    @if (!string.IsNullOrWhiteSpace(TableMessage))
+    {
+        <div class="studio-ledger-message">@TableMessage</div>
+    }
+
     @if (!OrientationLocked)
     {
         <div class="studio-ledger-orientation-note">
@@ -52,17 +57,13 @@
                         <tr>
                             <th>Tanggal</th>
                             <th>No Ref</th>
-                            <th>Tipe</th>
-                            <th>Kategori</th>
                             <th>Uraian</th>
-                            <th>Pihak</th>
-                            <th>Akun</th>
-                            <th>Status</th>
                             <th class="amount">Debit</th>
-                            <th class="amount">Kredit</th>
-                            <th class="amount">Saldo</th>
+                            <th class="amount">Credit</th>
+                            <th class="action">Action</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach (var row in Rows)
                         {
@@ -71,16 +72,24 @@
                                     <strong>@row.Entry.TransactionDate.ToString("dd MMM yyyy", IndonesianCulture)</strong>
                                     <span>@row.Entry.PaymentMethod</span>
                                 </td>
-                                <td><code>@row.Entry.ReferenceNumber</code></td>
-                                <td><span class="studio-ledger-type @row.Entry.TypeTone">@row.Entry.Type</span></td>
-                                <td>@row.Entry.Category</td>
-                                <td class="description">@row.Entry.Description</td>
-                                <td>@row.Entry.PartyName</td>
-                                <td>@row.Entry.AccountName</td>
-                                <td><span class="studio-ledger-status">@row.Entry.Status</span></td>
+
+                                <td>
+                                    <code>@row.Entry.ReferenceNumber</code>
+                                </td>
+
+                                <td class="description">
+                                    <strong>@row.Entry.Description</strong>
+                                    <span>@row.Entry.Category</span>
+                                </td>
+
                                 <td class="amount debit">@row.DebitLabel</td>
                                 <td class="amount credit">@row.CreditLabel</td>
-                                <td class="amount balance">@FormatCurrency(row.RunningBalance)</td>
+
+                                <td class="action">
+                                    <button type="button" @onclick="@(() => EditEntryAsync(row.Entry))">Edit</button>
+                                    <button type="button" class="danger" @onclick="@(() => DeleteEntryAsync(row.Entry))">Delete</button>
+                                    <button type="button" class="ghost" @onclick="@(() => OpenDetail(row.Entry))">Detail</button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -88,10 +97,84 @@
             </div>
         }
     </main>
+
+    @if (DetailEntry is not null)
+    {
+        <div class="studio-ledger-detail-backdrop" role="presentation" @onclick="CloseDetail">
+            <section class="studio-ledger-detail-modal" role="dialog" aria-modal="true" aria-labelledby="ledgerDetailTitle" @onclick:stopPropagation="true">
+                <header>
+                    <div>
+                        <span>Detail Transaksi</span>
+                        <h2 id="ledgerDetailTitle">@DetailEntry.Description</h2>
+                    </div>
+
+                    <button type="button" @onclick="CloseDetail" aria-label="Tutup">×</button>
+                </header>
+
+                <div class="studio-ledger-detail-grid">
+                    <article>
+                        <span>Tanggal</span>
+                        <strong>@DetailEntry.TransactionDate.ToString("dd MMM yyyy", IndonesianCulture)</strong>
+                    </article>
+
+                    <article>
+                        <span>No Ref</span>
+                        <strong>@DetailEntry.ReferenceNumber</strong>
+                    </article>
+
+                    <article>
+                        <span>Tipe</span>
+                        <strong>@DetailEntry.Type</strong>
+                    </article>
+
+                    <article>
+                        <span>Kategori</span>
+                        <strong>@DetailEntry.Category</strong>
+                    </article>
+
+                    <article>
+                        <span>Pihak</span>
+                        <strong>@DisplayValue(DetailEntry.PartyName)</strong>
+                    </article>
+
+                    <article>
+                        <span>Akun</span>
+                        <strong>@DetailEntry.AccountName</strong>
+                    </article>
+
+                    <article>
+                        <span>Metode</span>
+                        <strong>@DetailEntry.PaymentMethod</strong>
+                    </article>
+
+                    <article>
+                        <span>Status</span>
+                        <strong>@DetailEntry.Status</strong>
+                    </article>
+
+                    <article>
+                        <span>Jumlah</span>
+                        <strong>@FormatCurrency(DetailEntry.Amount)</strong>
+                    </article>
+
+                    <article class="full">
+                        <span>Catatan</span>
+                        <strong>@DisplayValue(DetailEntry.Note)</strong>
+                    </article>
+                </div>
+
+                <footer>
+                    <button type="button" class="ghost" @onclick="CloseDetail">Tutup</button>
+                    <button type="button" @onclick="@(() => EditEntryAsync(DetailEntry))">Edit</button>
+                </footer>
+            </section>
+        </div>
+    }
 </section>
 
 @code {
     private const string StorageKey = "37musicstudio.bookkeeping.v1";
+    private const string PendingMobileEditStorageKey = "37musicstudio.bookkeeping.pending-edit-id.v1";
     private const string IncomeType = "Pemasukan";
     private const string ExpenseType = "Pengeluaran";
 
@@ -106,7 +189,11 @@
 
     private bool OrientationLocked { get; set; } = true;
 
+    private string TableMessage { get; set; } = string.Empty;
+
     private List<BookkeepingEntry> Entries { get; set; } = new();
+
+    private BookkeepingEntry? DetailEntry { get; set; }
 
     private IReadOnlyList<BookkeepingRow> Rows => BuildRows();
 
@@ -139,14 +226,23 @@
                 .OrderByDescending(entry => entry.TransactionDate)
                 .ThenByDescending(entry => entry.CreatedAt)
                 .ToList();
+
+            TableMessage = string.Empty;
         }
         catch
         {
             Entries = new List<BookkeepingEntry>();
+            TableMessage = "Data pembukuan lokal belum bisa dibaca.";
         }
 
         IsLoading = false;
         StateHasChanged();
+    }
+
+    private async Task SaveEntriesAsync()
+    {
+        var json = JsonSerializer.Serialize(Entries, LocalJsonOptions);
+        await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
     }
 
     private async Task TryLockLandscapeAsync()
@@ -162,6 +258,42 @@
         }
 
         StateHasChanged();
+    }
+
+    private async Task EditEntryAsync(BookkeepingEntry entry)
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", PendingMobileEditStorageKey, entry.Id);
+        await UnlockOrientationAsync();
+
+        NavigationManager.NavigateTo("/bookkeeping");
+    }
+
+    private async Task DeleteEntryAsync(BookkeepingEntry entry)
+    {
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"Delete transaksi {entry.ReferenceNumber} sebesar {FormatCurrency(entry.Amount)}?");
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        DetailEntry = null;
+        Entries.RemoveAll(item => string.Equals(item.Id, entry.Id, StringComparison.OrdinalIgnoreCase));
+        await SaveEntriesAsync();
+
+        TableMessage = "Transaksi berhasil dihapus.";
+    }
+
+    private void OpenDetail(BookkeepingEntry entry)
+    {
+        DetailEntry = entry;
+    }
+
+    private void CloseDetail()
+    {
+        DetailEntry = null;
     }
 
     private async Task GoBackAsync()
@@ -214,6 +346,13 @@
         return value.ToString("C0", IndonesianCulture);
     }
 
+    private static string DisplayValue(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? "Belum diisi"
+            : value;
+    }
+
     private sealed record OrientationResult(bool FullscreenStarted, bool Locked, string? Orientation, string? Message);
 
     private sealed record BookkeepingRow(BookkeepingEntry Entry, decimal RunningBalance)
@@ -247,6 +386,8 @@
 
         public string Status { get; set; } = "Tercatat";
 
+        public string Note { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
@@ -254,8 +395,6 @@
         public bool IsIncome => string.Equals(Type, IncomeType, StringComparison.OrdinalIgnoreCase);
 
         public bool IsExpense => string.Equals(Type, ExpenseType, StringComparison.OrdinalIgnoreCase);
-
-        public string TypeTone => IsIncome ? "income" : "expense";
 
         public BookkeepingEntry Normalize()
         {
@@ -269,6 +408,7 @@
             AccountName = string.IsNullOrWhiteSpace(AccountName) ? "Kas Studio" : AccountName.Trim();
             PaymentMethod = string.IsNullOrWhiteSpace(PaymentMethod) ? "Cash" : PaymentMethod.Trim();
             Status = string.IsNullOrWhiteSpace(Status) ? "Tercatat" : Status.Trim();
+            Note = Note?.Trim() ?? string.Empty;
             Amount = Math.Max(0, Amount);
             CreatedAt = CreatedAt == DateTime.MinValue ? DateTime.Now : CreatedAt;
             UpdatedAt = UpdatedAt == DateTime.MinValue ? CreatedAt : UpdatedAt;
