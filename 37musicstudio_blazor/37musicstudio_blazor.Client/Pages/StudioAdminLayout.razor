@@ -49,17 +49,27 @@
     </aside>
 
     <main class="studio-admin-main">
-        <div class="studio-mobile-topbar">
+        <div class="studio-mobile-topbar" aria-label="Header admin mobile">
             <a class="studio-mobile-brand" href="/dashboard" aria-label="37 Music Studio Admin">
                 <span class="studio-shell-brand-mark">37</span>
-                <strong>37 Music Studio</strong>
+
+                <span class="studio-mobile-brand-copy">
+                    <strong>37 Music Studio</strong>
+                    <small>Admin Portal</small>
+                </span>
             </a>
 
-            <form method="post" action="/local-auth/sign-out">
-                <button class="studio-mobile-logout" type="submit" aria-label="Logout">
-                    <StudioIcon Name="log-out" />
-                </button>
-            </form>
+            <div class="studio-mobile-actions">
+                <NavLink class="studio-mobile-settings" ActiveClass="is-active" href="/settings" title="Settings" aria-label="Buka settings">
+                    <StudioIcon Name="settings" />
+                </NavLink>
+
+                <form method="post" action="/local-auth/sign-out">
+                    <button class="studio-mobile-logout" type="submit" aria-label="Logout">
+                        <StudioIcon Name="log-out" />
+                    </button>
+                </form>
+            </div>
         </div>
 
         @Body
