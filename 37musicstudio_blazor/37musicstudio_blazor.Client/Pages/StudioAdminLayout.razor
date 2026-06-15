@@ -76,12 +76,13 @@
         new StudioNavItem("Inventory", "Inventory", "/inventory", "settings"),
         new StudioNavItem("Gallery", "Gallery", "/gallery", "image"),
         new StudioNavItem("Billing / POS", "POS", "/billing", "wallet-cards"),
+        new StudioNavItem("Pembukuan", "Buku", "/bookkeeping", "book-open"),
         new StudioNavItem("Reports", "Reports", "/reports", "chart-column"),
         new StudioNavItem("Settings", "Settings", "/settings", "settings")
     };
 
     private static readonly IReadOnlyList<StudioNavItem> BottomNavigationItems = NavigationItems
-        .Where(item => item.Href is "/dashboard" or "/schedule" or "/booking" or "/billing" or "/inventory" or "/settings" or "/gallery")
+        .Where(item => item.Href is "/dashboard" or "/schedule" or "/booking" or "/billing" or "/inventory" or "/settings" or "/gallery" or "/bookkeeping")
         .ToArray();
 
     private sealed record StudioNavItem(string Label, string ShortLabel, string Href, string Icon);

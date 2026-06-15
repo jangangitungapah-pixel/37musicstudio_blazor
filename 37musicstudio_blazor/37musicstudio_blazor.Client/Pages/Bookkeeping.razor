@@ -1,0 +1,730 @@
+@page "/bookkeeping"
+@layout StudioAdminLayout
+@using System.Globalization
+@using System.Text.Json
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<PageTitle>Pembukuan | 37 Music Studio</PageTitle>
+
+<section class="studio-bookkeeping-page" aria-labelledby="bookkeepingTitle">
+    <header class="studio-bookkeeping-hero">
+        <div>
+            <span class="studio-bookkeeping-eyebrow">Kas Studio</span>
+            <h1 id="bookkeepingTitle">Pembukuan</h1>
+            <p>Catat kas masuk dan kas keluar studio dengan tabel rapi, mudah dibaca, dan tetap profesional.</p>
+        </div>
+
+        <div class="studio-bookkeeping-hero-actions">
+            <span>@LastSavedLabel</span>
+            <button type="button" class="studio-bookkeeping-secondary-button" @onclick="LoadEntriesAsync">Refresh</button>
+            <button type="button" class="studio-bookkeeping-primary-button" @onclick="OpenCreateModal">Tambah Transaksi</button>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(FormMessage))
+    {
+        <div class="studio-bookkeeping-message">@FormMessage</div>
+    }
+
+    <section class="studio-bookkeeping-summary" aria-label="Ringkasan pembukuan">
+        <article class="studio-bookkeeping-summary-card income">
+            <span>Total Pemasukan</span>
+            <strong>@FormatCurrency(SummaryIncome)</strong>
+            <small>Dari data yang sedang difilter</small>
+        </article>
+
+        <article class="studio-bookkeeping-summary-card expense">
+            <span>Total Pengeluaran</span>
+            <strong>@FormatCurrency(SummaryExpense)</strong>
+            <small>Biaya operasional dan kas keluar</small>
+        </article>
+
+        <article class="studio-bookkeeping-summary-card balance">
+            <span>Saldo Bersih</span>
+            <strong>@FormatCurrency(SummaryBalance)</strong>
+            <small>Pemasukan dikurangi pengeluaran</small>
+        </article>
+
+        <article class="studio-bookkeeping-summary-card count">
+            <span>Jumlah Transaksi</span>
+            <strong>@FilteredEntries.Count().ToString(IndonesianCulture)</strong>
+            <small>@Entries.Count.ToString(IndonesianCulture) total data tersimpan</small>
+        </article>
+    </section>
+
+    <section class="studio-bookkeeping-toolbar" aria-label="Filter pembukuan">
+        <label>
+            <span>Cari</span>
+            <input type="search" placeholder="Cari deskripsi, kategori, referensi..." @bind="SearchTerm" @bind:event="oninput" />
+        </label>
+
+        <label>
+            <span>Periode</span>
+            <select @bind="SelectedPeriod">
+                <option value="@PeriodThisMonth">Bulan ini</option>
+                <option value="@PeriodThisYear">Tahun ini</option>
+                <option value="@PeriodAll">Semua data</option>
+                <option value="@PeriodCustom">Custom</option>
+            </select>
+        </label>
+
+        <label>
+            <span>Tipe</span>
+            <select @bind="SelectedType">
+                <option value="@TypeAll">Semua</option>
+                <option value="@IncomeType">Pemasukan</option>
+                <option value="@ExpenseType">Pengeluaran</option>
+            </select>
+        </label>
+
+        @if (SelectedPeriod == PeriodCustom)
+        {
+            <label>
+                <span>Dari</span>
+                <input type="date" @bind="FilterStartDate" />
+            </label>
+
+            <label>
+                <span>Sampai</span>
+                <input type="date" @bind="FilterEndDate" />
+            </label>
+        }
+    </section>
+
+    <section class="studio-bookkeeping-table-card" aria-label="Tabel pembukuan">
+        <header class="studio-bookkeeping-table-head">
+            <div>
+                <span>Ledger</span>
+                <h2>List Pembukuan</h2>
+            </div>
+
+            <div class="studio-bookkeeping-table-hint">
+                <span>Debit = uang masuk</span>
+                <span>Kredit = uang keluar</span>
+            </div>
+        </header>
+
+        @if (IsLoading)
+        {
+            <div class="studio-bookkeeping-empty">
+                <strong>Memuat pembukuan...</strong>
+                <span>Sedang membaca data lokal studio.</span>
+            </div>
+        }
+        else if (TableRows.Count == 0)
+        {
+            <div class="studio-bookkeeping-empty">
+                <strong>Belum ada transaksi yang cocok.</strong>
+                <span>Tambahkan transaksi baru atau ubah filter periode.</span>
+            </div>
+        }
+        else
+        {
+            <div class="studio-bookkeeping-table-wrap">
+                <table class="studio-bookkeeping-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>No Ref</th>
+                            <th>Tipe</th>
+                            <th>Kategori</th>
+                            <th>Uraian</th>
+                            <th>Akun</th>
+                            <th>Status</th>
+                            <th class="amount">Debit</th>
+                            <th class="amount">Kredit</th>
+                            <th class="amount">Saldo</th>
+                            <th class="action">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in TableRows)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@row.Entry.TransactionDate.ToString("dd MMM yyyy", IndonesianCulture)</strong>
+                                    <span>@row.Entry.PaymentMethod</span>
+                                </td>
+                                <td>
+                                    <code>@row.Entry.ReferenceNumber</code>
+                                </td>
+                                <td>
+                                    <span class="studio-bookkeeping-type-pill @row.Entry.TypeTone">@row.Entry.Type</span>
+                                </td>
+                                <td>@row.Entry.Category</td>
+                                <td>
+                                    <strong>@row.Entry.Description</strong>
+                                    <span>@row.Entry.PartyName</span>
+                                </td>
+                                <td>@row.Entry.AccountName</td>
+                                <td>
+                                    <span class="studio-bookkeeping-status-pill">@row.Entry.Status</span>
+                                </td>
+                                <td class="amount debit">@row.DebitLabel</td>
+                                <td class="amount credit">@row.CreditLabel</td>
+                                <td class="amount balance">@FormatCurrency(row.RunningBalance)</td>
+                                <td class="action">
+                                    <button type="button" @onclick="@(() => OpenEditModal(row.Entry))">Edit</button>
+                                    <button type="button" class="danger" @onclick="@(() => DeleteEntryAsync(row.Entry.Id))">Hapus</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    @if (IsModalOpen)
+    {
+        <div class="studio-bookkeeping-modal-backdrop" role="presentation" @onclick="CloseModal">
+            <section class="studio-bookkeeping-modal" role="dialog" aria-modal="true" aria-labelledby="bookkeepingModalTitle" @onclick:stopPropagation="true">
+                <header>
+                    <div>
+                        <span>@(IsEditing ? "Edit Transaksi" : "Transaksi Baru")</span>
+                        <h2 id="bookkeepingModalTitle">@(IsEditing ? "Edit data pembukuan" : "Tambah data pembukuan")</h2>
+                    </div>
+
+                    <button type="button" class="studio-bookkeeping-close" @onclick="CloseModal" aria-label="Tutup">×</button>
+                </header>
+
+                <div class="studio-bookkeeping-form-grid">
+                    <label>
+                        <span>Tanggal</span>
+                        <input type="date" @bind="DraftDate" />
+                    </label>
+
+                    <label>
+                        <span>Tipe Transaksi</span>
+                        <select @bind="Draft.Type">
+                            <option value="@IncomeType">Pemasukan</option>
+                            <option value="@ExpenseType">Pengeluaran</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Kategori</span>
+                        <input list="bookkeepingCategorySuggestions" placeholder="Contoh: Sewa Studio" @bind="Draft.Category" @bind:event="oninput" />
+                    </label>
+
+                    <label>
+                        <span>Jumlah</span>
+                        <input type="number" min="0" step="1000" placeholder="0" @bind="Draft.Amount" />
+                    </label>
+
+                    <label>
+                        <span>Akun Kas/Bank</span>
+                        <select @bind="Draft.AccountName">
+                            <option>Kas Studio</option>
+                            <option>Bank</option>
+                            <option>E-Wallet</option>
+                            <option>Petty Cash</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Metode Bayar</span>
+                        <select @bind="Draft.PaymentMethod">
+                            <option>Cash</option>
+                            <option>Transfer Bank</option>
+                            <option>QRIS</option>
+                            <option>E-Wallet</option>
+                            <option>Lainnya</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>No Referensi</span>
+                        <input placeholder="AUTO jika kosong" @bind="Draft.ReferenceNumber" @bind:event="oninput" />
+                    </label>
+
+                    <label>
+                        <span>Status</span>
+                        <select @bind="Draft.Status">
+                            <option>Tercatat</option>
+                            <option>Pending</option>
+                            <option>Reconciled</option>
+                        </select>
+                    </label>
+
+                    <label class="full">
+                        <span>Uraian</span>
+                        <input placeholder="Contoh: Pembayaran sewa studio 2 jam" @bind="Draft.Description" @bind:event="oninput" />
+                    </label>
+
+                    <label>
+                        <span>Nama Pihak</span>
+                        <input placeholder="Customer / Vendor / Staff" @bind="Draft.PartyName" @bind:event="oninput" />
+                    </label>
+
+                    <label>
+                        <span>Catatan</span>
+                        <input placeholder="Opsional" @bind="Draft.Note" @bind:event="oninput" />
+                    </label>
+                </div>
+
+                <datalist id="bookkeepingCategorySuggestions">
+                    @foreach (var category in CategorySuggestions)
+                    {
+                        <option value="@category"></option>
+                    }
+                </datalist>
+
+                <footer>
+                    <button type="button" class="studio-bookkeeping-secondary-button" @onclick="CloseModal">Batal</button>
+                    <button type="button" class="studio-bookkeeping-primary-button" @onclick="SaveDraftAsync">Simpan</button>
+                </footer>
+            </section>
+        </div>
+    }
+</section>
+
+@code {
+    private const string StorageKey = "37musicstudio.bookkeeping.v1";
+
+    private const string IncomeType = "Pemasukan";
+    private const string ExpenseType = "Pengeluaran";
+    private const string TypeAll = "Semua";
+
+    private const string PeriodThisMonth = "this-month";
+    private const string PeriodThisYear = "this-year";
+    private const string PeriodAll = "all";
+    private const string PeriodCustom = "custom";
+
+    private static readonly CultureInfo IndonesianCulture = CultureInfo.GetCultureInfo("id-ID");
+
+    private static readonly JsonSerializerOptions LocalJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true
+    };
+
+    private bool IsLoading { get; set; } = true;
+
+    private bool IsModalOpen { get; set; }
+
+    private bool IsEditing { get; set; }
+
+    private string SearchTerm { get; set; } = string.Empty;
+
+    private string SelectedPeriod { get; set; } = PeriodThisMonth;
+
+    private string SelectedType { get; set; } = TypeAll;
+
+    private DateTime FilterStartDate { get; set; } = DateTime.Today.AddDays(-30);
+
+    private DateTime FilterEndDate { get; set; } = DateTime.Today;
+
+    private DateTime DraftDate { get; set; } = DateTime.Today;
+
+    private string FormMessage { get; set; } = string.Empty;
+
+    private DateTime? LastSavedAt { get; set; }
+
+    private string LastSavedLabel => LastSavedAt is null
+        ? "Belum ada perubahan"
+        : $"Tersimpan {LastSavedAt.Value.ToString("HH:mm", IndonesianCulture)}";
+
+    private List<BookkeepingEntry> Entries { get; set; } = new();
+
+    private BookkeepingEntry Draft { get; set; } = BookkeepingEntry.CreateDefault();
+
+    private IEnumerable<BookkeepingEntry> FilteredEntries => Entries
+        .Where(IsInsideSelectedPeriod)
+        .Where(entry => SelectedType == TypeAll || string.Equals(entry.Type, SelectedType, StringComparison.OrdinalIgnoreCase))
+        .Where(IsSearchMatch);
+
+    private IReadOnlyList<BookkeepingRow> TableRows => BuildTableRows();
+
+    private decimal SummaryIncome => FilteredEntries
+        .Where(entry => entry.IsIncome)
+        .Sum(entry => entry.Amount);
+
+    private decimal SummaryExpense => FilteredEntries
+        .Where(entry => entry.IsExpense)
+        .Sum(entry => entry.Amount);
+
+    private decimal SummaryBalance => SummaryIncome - SummaryExpense;
+
+    private IEnumerable<string> CategorySuggestions => Entries
+        .Select(entry => entry.Category)
+        .Where(category => !string.IsNullOrWhiteSpace(category))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .OrderBy(category => category)
+        .Concat(new[]
+        {
+            "Sewa Studio",
+            "Recording",
+            "DP Booking",
+            "Pelunasan Booking",
+            "Maintenance Alat",
+            "Listrik",
+            "Internet",
+            "Konsumsi",
+            "Operasional",
+            "Gaji / Fee"
+        })
+        .Distinct(StringComparer.OrdinalIgnoreCase);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await LoadEntriesAsync();
+    }
+
+    private async Task LoadEntriesAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var raw = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+
+            Entries = string.IsNullOrWhiteSpace(raw)
+                ? new List<BookkeepingEntry>()
+                : JsonSerializer.Deserialize<List<BookkeepingEntry>>(raw, LocalJsonOptions) ?? new List<BookkeepingEntry>();
+
+            Entries = Entries
+                .Select(entry => entry.Normalize())
+                .Where(entry => !string.IsNullOrWhiteSpace(entry.Id))
+                .OrderByDescending(entry => entry.TransactionDate)
+                .ThenByDescending(entry => entry.CreatedAt)
+                .ToList();
+
+            FormMessage = string.Empty;
+        }
+        catch
+        {
+            Entries = new List<BookkeepingEntry>();
+            FormMessage = "Data pembukuan lokal belum bisa dibaca. Data baru tetap bisa disimpan.";
+        }
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SaveEntriesAsync()
+    {
+        var json = JsonSerializer.Serialize(Entries, LocalJsonOptions);
+
+        await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+
+        LastSavedAt = DateTime.Now;
+    }
+
+    private void OpenCreateModal()
+    {
+        Draft = BookkeepingEntry.CreateDefault();
+        DraftDate = DateTime.Today;
+        IsEditing = false;
+        IsModalOpen = true;
+        FormMessage = string.Empty;
+    }
+
+    private void OpenEditModal(BookkeepingEntry entry)
+    {
+        Draft = entry.Clone();
+        DraftDate = Draft.TransactionDate.Date;
+        IsEditing = true;
+        IsModalOpen = true;
+        FormMessage = string.Empty;
+    }
+
+    private void CloseModal()
+    {
+        IsModalOpen = false;
+        IsEditing = false;
+        FormMessage = string.Empty;
+    }
+
+    private async Task SaveDraftAsync()
+    {
+        if (DraftDate == DateTime.MinValue)
+        {
+            FormMessage = "Tanggal transaksi belum valid.";
+            return;
+        }
+
+        Draft.TransactionDate = DraftDate.Date;
+        Draft.Normalize();
+
+        if (Draft.Amount <= 0)
+        {
+            FormMessage = "Jumlah transaksi wajib lebih dari 0.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Draft.Description))
+        {
+            FormMessage = "Uraian transaksi wajib diisi.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Draft.Category))
+        {
+            FormMessage = "Kategori transaksi wajib diisi.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Draft.ReferenceNumber))
+        {
+            Draft.ReferenceNumber = GenerateReferenceNumber(Draft.TransactionDate, Draft.Type);
+        }
+
+        var existingIndex = Entries.FindIndex(entry => entry.Id == Draft.Id);
+
+        if (existingIndex >= 0)
+        {
+            Draft.UpdatedAt = DateTime.Now;
+            Entries[existingIndex] = Draft.Clone();
+        }
+        else
+        {
+            Draft.Id = string.IsNullOrWhiteSpace(Draft.Id)
+                ? Guid.NewGuid().ToString("N")
+                : Draft.Id;
+
+            Draft.CreatedAt = DateTime.Now;
+            Draft.UpdatedAt = DateTime.Now;
+            Entries.Add(Draft.Clone());
+        }
+
+        Entries = Entries
+            .Select(entry => entry.Normalize())
+            .OrderByDescending(entry => entry.TransactionDate)
+            .ThenByDescending(entry => entry.CreatedAt)
+            .ToList();
+
+        await SaveEntriesAsync();
+
+        IsModalOpen = false;
+        IsEditing = false;
+        FormMessage = "Transaksi pembukuan berhasil disimpan.";
+    }
+
+    private async Task DeleteEntryAsync(string id)
+    {
+        var entry = Entries.FirstOrDefault(item => item.Id == id);
+
+        if (entry is null)
+        {
+            return;
+        }
+
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"Hapus transaksi {entry.ReferenceNumber} sebesar {FormatCurrency(entry.Amount)}?");
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        Entries.RemoveAll(item => item.Id == id);
+        await SaveEntriesAsync();
+
+        FormMessage = "Transaksi berhasil dihapus.";
+    }
+
+    private IReadOnlyList<BookkeepingRow> BuildTableRows()
+    {
+        var ordered = FilteredEntries
+            .OrderBy(entry => entry.TransactionDate)
+            .ThenBy(entry => entry.CreatedAt)
+            .ToList();
+
+        var runningBalance = 0m;
+        var rows = new List<BookkeepingRow>();
+
+        foreach (var entry in ordered)
+        {
+            runningBalance += entry.IsIncome
+                ? entry.Amount
+                : -entry.Amount;
+
+            rows.Add(new BookkeepingRow(entry, runningBalance));
+        }
+
+        return rows
+            .OrderByDescending(row => row.Entry.TransactionDate)
+            .ThenByDescending(row => row.Entry.CreatedAt)
+            .ToList();
+    }
+
+    private bool IsInsideSelectedPeriod(BookkeepingEntry entry)
+    {
+        var date = entry.TransactionDate.Date;
+        var today = DateTime.Today;
+
+        return SelectedPeriod switch
+        {
+            PeriodThisMonth => date.Year == today.Year && date.Month == today.Month,
+            PeriodThisYear => date.Year == today.Year,
+            PeriodCustom => IsInsideCustomPeriod(date),
+            _ => true
+        };
+    }
+
+    private bool IsInsideCustomPeriod(DateTime date)
+    {
+        var start = FilterStartDate.Date;
+        var end = FilterEndDate.Date;
+
+        if (end < start)
+        {
+            var swap = start;
+            start = end;
+            end = swap;
+        }
+
+        return date >= start && date <= end;
+    }
+
+    private bool IsSearchMatch(BookkeepingEntry entry)
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            return true;
+        }
+
+        var term = SearchTerm.Trim();
+
+        return Contains(entry.ReferenceNumber, term) ||
+            Contains(entry.Category, term) ||
+            Contains(entry.Description, term) ||
+            Contains(entry.PartyName, term) ||
+            Contains(entry.AccountName, term) ||
+            Contains(entry.PaymentMethod, term) ||
+            Contains(entry.Status, term) ||
+            Contains(entry.Note, term);
+    }
+
+    private static bool Contains(string? value, string term)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+            value.Contains(term, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GenerateReferenceNumber(DateTime date, string type)
+    {
+        var prefix = string.Equals(type, IncomeType, StringComparison.OrdinalIgnoreCase)
+            ? "IN"
+            : "OUT";
+
+        return $"{prefix}-{date:yyyyMMdd}-{DateTime.Now:HHmmss}";
+    }
+
+    private static string FormatCurrency(decimal value)
+    {
+        return value.ToString("C0", IndonesianCulture);
+    }
+
+    private sealed record BookkeepingRow(BookkeepingEntry Entry, decimal RunningBalance)
+    {
+        public string DebitLabel => Entry.IsIncome
+            ? FormatCurrency(Entry.Amount)
+            : "-";
+
+        public string CreditLabel => Entry.IsExpense
+            ? FormatCurrency(Entry.Amount)
+            : "-";
+    }
+
+    private sealed class BookkeepingEntry
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+
+        public DateTime TransactionDate { get; set; } = DateTime.Today;
+
+        public string Type { get; set; } = IncomeType;
+
+        public string ReferenceNumber { get; set; } = string.Empty;
+
+        public string Category { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        public string PartyName { get; set; } = string.Empty;
+
+        public string AccountName { get; set; } = "Kas Studio";
+
+        public string PaymentMethod { get; set; } = "Cash";
+
+        public decimal Amount { get; set; }
+
+        public string Status { get; set; } = "Tercatat";
+
+        public string Note { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
+        public bool IsIncome => string.Equals(Type, IncomeType, StringComparison.OrdinalIgnoreCase);
+
+        public bool IsExpense => string.Equals(Type, ExpenseType, StringComparison.OrdinalIgnoreCase);
+
+        public string TypeTone => IsIncome ? "income" : "expense";
+
+        public static BookkeepingEntry CreateDefault()
+        {
+            return new BookkeepingEntry
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                TransactionDate = DateTime.Today,
+                Type = IncomeType,
+                AccountName = "Kas Studio",
+                PaymentMethod = "Cash",
+                Status = "Tercatat",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+        }
+
+        public BookkeepingEntry Clone()
+        {
+            return new BookkeepingEntry
+            {
+                Id = Id,
+                TransactionDate = TransactionDate,
+                Type = Type,
+                ReferenceNumber = ReferenceNumber,
+                Category = Category,
+                Description = Description,
+                PartyName = PartyName,
+                AccountName = AccountName,
+                PaymentMethod = PaymentMethod,
+                Amount = Amount,
+                Status = Status,
+                Note = Note,
+                CreatedAt = CreatedAt,
+                UpdatedAt = UpdatedAt
+            };
+        }
+
+        public BookkeepingEntry Normalize()
+        {
+            Id = string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString("N") : Id.Trim();
+            TransactionDate = TransactionDate == DateTime.MinValue ? DateTime.Today : TransactionDate.Date;
+            Type = string.Equals(Type, ExpenseType, StringComparison.OrdinalIgnoreCase) ? ExpenseType : IncomeType;
+            ReferenceNumber = ReferenceNumber?.Trim() ?? string.Empty;
+            Category = string.IsNullOrWhiteSpace(Category) ? "Umum" : Category.Trim();
+            Description = Description?.Trim() ?? string.Empty;
+            PartyName = PartyName?.Trim() ?? string.Empty;
+            AccountName = string.IsNullOrWhiteSpace(AccountName) ? "Kas Studio" : AccountName.Trim();
+            PaymentMethod = string.IsNullOrWhiteSpace(PaymentMethod) ? "Cash" : PaymentMethod.Trim();
+            Status = string.IsNullOrWhiteSpace(Status) ? "Tercatat" : Status.Trim();
+            Note = Note?.Trim() ?? string.Empty;
+            Amount = Math.Max(0, Amount);
+            CreatedAt = CreatedAt == DateTime.MinValue ? DateTime.Now : CreatedAt;
+            UpdatedAt = UpdatedAt == DateTime.MinValue ? CreatedAt : UpdatedAt;
+
+            return this;
+        }
+    }
+}
