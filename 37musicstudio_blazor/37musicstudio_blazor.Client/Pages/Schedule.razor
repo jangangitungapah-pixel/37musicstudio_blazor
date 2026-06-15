@@ -52,6 +52,11 @@
             <div class="studio-control-group studio-filter-group" aria-label="Quick filter booking">
                 <span class="studio-control-label">Filter</span>
 
+                <button type="button" class="@GetStatusFilterButtonClass(null)" @onclick="() => SetStatusFilter(null)">
+                    <span class="studio-status-dot"></span>
+                    Semua
+                </button>
+
                 <button type="button" class="@GetStatusFilterButtonClass(BookingPaymentStatus.Pending)" @onclick="() => SetStatusFilter(BookingPaymentStatus.Pending)">
                     <span class="studio-status-dot"></span>
                     Pending
@@ -108,7 +113,7 @@
                                 var cellId = BuildCellId(day, slot);
                                 var isToday = day.Date == Today.Date;
                                 var isSelected = SelectedSlotId == cellId;
-                                var isFilteredOut = booking is not null && booking.Status != ActiveStatusFilter;
+                                var isFilteredOut = ActiveStatusFilter is not null && booking is not null && booking.Status != ActiveStatusFilter.Value;
 
                                 if (segment is null)
                                 {
@@ -286,7 +291,7 @@
 
     private ScheduleViewMode ActiveViewMode { get; set; } = ScheduleViewMode.Month;
 
-    private BookingPaymentStatus ActiveStatusFilter { get; set; } = BookingPaymentStatus.Pending;
+    private BookingPaymentStatus? ActiveStatusFilter { get; set; }
 
     private DateTime Today => DateTime.Today;
 
@@ -401,7 +406,7 @@
         CloseBookingCanvas();
     }
 
-    private void SetStatusFilter(BookingPaymentStatus statusFilter)
+    private void SetStatusFilter(BookingPaymentStatus? statusFilter)
     {
         ActiveStatusFilter = statusFilter;
         CloseBookingCanvas();
@@ -569,7 +574,6 @@
             Note.Trim()
         ));
 
-        ActiveStatusFilter = PaymentStatus;
         CurrentAnchorDate = ActiveViewMode == ScheduleViewMode.Month
             ? new DateTime(BookingDate.Year, BookingDate.Month, 1)
             : BookingDate.Date;
@@ -628,9 +632,11 @@
             : "studio-control-button";
     }
 
-    private string GetStatusFilterButtonClass(BookingPaymentStatus statusFilter)
+    private string GetStatusFilterButtonClass(BookingPaymentStatus? statusFilter)
     {
-        var key = statusFilter.ToString().ToLowerInvariant();
+        var key = statusFilter is null
+            ? "all"
+            : statusFilter.Value.ToString().ToLowerInvariant();
 
         return ActiveStatusFilter == statusFilter
             ? $"studio-control-button studio-status-{key} is-active"

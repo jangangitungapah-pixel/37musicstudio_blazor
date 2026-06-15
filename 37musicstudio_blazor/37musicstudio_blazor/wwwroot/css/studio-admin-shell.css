@@ -1544,3 +1544,107 @@ select,
     }
 }
 /* </studio-rowspan-booking-blocks> */
+
+
+/* <studio-booking-status-color-hotfix> */
+:root {
+    --booking-pending-color: #ff2d2d;
+    --booking-dp-color: #1677ff;
+    --booking-paid-color: #00b96b;
+}
+
+.studio-status-all.is-active {
+    color: var(--ui-text-strong, #11100e);
+}
+
+.studio-status-pending,
+.studio-schedule-slot.status-pending {
+    --booking-status-color: var(--booking-pending-color);
+}
+
+.studio-status-dp,
+.studio-schedule-slot.status-dp {
+    --booking-status-color: var(--booking-dp-color);
+}
+
+.studio-status-paid,
+.studio-schedule-slot.status-paid {
+    --booking-status-color: var(--booking-paid-color);
+}
+
+.studio-status-pending.is-active,
+.studio-status-dp.is-active,
+.studio-status-paid.is-active {
+    color: var(--booking-status-color) !important;
+    border-color: color-mix(in srgb, var(--booking-status-color) 58%, var(--ui-border, rgba(32, 28, 23, 0.12))) !important;
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 44%, transparent), transparent 64%),
+        color-mix(in srgb, var(--booking-status-color) 15%, var(--ui-surface, #fffefa)) !important;
+}
+
+.studio-filter-group .studio-status-dot {
+    opacity: 1;
+}
+
+.studio-schedule-slot.status-pending > .studio-booking-block,
+.studio-schedule-slot.status-dp > .studio-booking-block,
+.studio-schedule-slot.status-paid > .studio-booking-block {
+    color: var(--booking-status-color) !important;
+    border-color: color-mix(in srgb, var(--booking-status-color) 72%, var(--ui-border, rgba(32, 28, 23, 0.12))) !important;
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 58%, transparent), transparent 5.5rem),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--booking-status-color) 36%, transparent), transparent 7.2rem),
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 72%, var(--booking-status-color) 28%), color-mix(in srgb, var(--booking-status-color) 24%, var(--ui-surface, #fffefa))) !important;
+    box-shadow:
+        0 0.82rem 1.9rem color-mix(in srgb, var(--booking-status-color) 18%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 68%, transparent) !important;
+}
+
+.studio-schedule-slot.status-pending > .studio-booking-block::after,
+.studio-schedule-slot.status-dp > .studio-booking-block::after,
+.studio-schedule-slot.status-paid > .studio-booking-block::after {
+    background: var(--booking-status-color) !important;
+    opacity: 0.95 !important;
+}
+
+.studio-booking-block strong {
+    color: color-mix(in srgb, var(--ui-text-strong, #11100e) 88%, var(--booking-status-color)) !important;
+}
+
+.studio-booking-block em,
+.studio-booking-block small {
+    color: color-mix(in srgb, var(--ui-text-main, #25231f) 74%, var(--booking-status-color)) !important;
+}
+
+.studio-booking-block b {
+    background: var(--booking-status-color) !important;
+    color: #ffffff !important;
+    box-shadow:
+        0 0.35rem 0.85rem color-mix(in srgb, var(--booking-status-color) 28%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent) !important;
+}
+
+.studio-schedule-slot.is-filtered-out > .studio-booking-block {
+    opacity: 0.72 !important;
+    filter: saturate(0.78) contrast(0.96) !important;
+}
+
+.studio-schedule-cell.is-rowspan-booking.is-filtered-out {
+    opacity: 1 !important;
+}
+
+.studio-schedule-cell.is-filtered-out {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 68%, transparent), color-mix(in srgb, var(--ui-bg-page, #f4efe7) 10%, transparent)) !important;
+}
+
+@media (max-width: 720px) {
+    .studio-schedule-slot.status-pending > .studio-booking-block,
+    .studio-schedule-slot.status-dp > .studio-booking-block,
+    .studio-schedule-slot.status-paid > .studio-booking-block {
+        box-shadow:
+            0 0.55rem 1.35rem color-mix(in srgb, var(--booking-status-color) 18%, transparent),
+            inset 0 1px 0 color-mix(in srgb, #ffffff 68%, transparent) !important;
+    }
+}
+/* </studio-booking-status-color-hotfix> */
