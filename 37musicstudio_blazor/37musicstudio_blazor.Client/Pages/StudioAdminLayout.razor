@@ -13,12 +13,23 @@
         </a>
 
         <nav class="studio-shell-nav" aria-label="Menu admin">
-            @foreach (var item in NavigationItems)
+            @foreach (var group in NavigationGroups)
             {
-                <NavLink class="studio-shell-nav-item" ActiveClass="is-active" href="@item.Href" Match="NavLinkMatch.Prefix">
-                    <StudioIcon Name="@item.Icon" />
-                    <span>@item.Label</span>
-                </NavLink>
+                <section class="studio-shell-nav-group" aria-label="@group.Label">
+                    <p class="studio-shell-nav-group-label">@group.Label</p>
+
+                    @foreach (var item in group.Items)
+                    {
+                        <NavLink class="studio-shell-nav-item" ActiveClass="is-active" href="@item.Href" Match="NavLinkMatch.Prefix" title="@item.Description">
+                            <StudioIcon Name="@item.Icon" />
+
+                            <span class="studio-shell-nav-copy">
+                                <span>@item.Label</span>
+                                <small>@item.Description</small>
+                            </span>
+                        </NavLink>
+                    }
+                </section>
             }
         </nav>
 
@@ -66,21 +77,39 @@
 </div>
 
 @code {
-    private static readonly IReadOnlyList<StudioNavItem> NavigationItems = new[]
+    private static readonly IReadOnlyList<StudioNavGroup> NavigationGroups = new[]
     {
-        new StudioNavItem("Dashboard", "Home", "/dashboard", "layout-dashboard"),
-        new StudioNavItem("Schedule", "Schedule", "/schedule", "calendar-days"),
-        new StudioNavItem("Customer", "Customer", "/customers", "users"),
-        new StudioNavItem("Inventory", "Inventory", "/inventory", "settings"),
-        new StudioNavItem("Gallery", "Gallery", "/gallery", "image"),
-        new StudioNavItem("Billing / POS", "POS", "/billing", "wallet-cards"),
-        new StudioNavItem("Pembukuan", "Buku", "/bookkeeping", "book-open"),
-        new StudioNavItem("Settings", "Settings", "/settings", "settings")
+        new StudioNavGroup("Overview", new[]
+        {
+            new StudioNavItem("Dashboard", "Home", "/dashboard", "layout-dashboard", "Ringkasan aktivitas studio")
+        }),
+        new StudioNavGroup("Operasional", new[]
+        {
+            new StudioNavItem("Schedule", "Schedule", "/schedule", "calendar-days", "Jadwal booking studio"),
+            new StudioNavItem("Customer", "Customer", "/customers", "users", "Data pelanggan dan histori"),
+            new StudioNavItem("Inventory", "Inventory", "/inventory", "settings", "Daftar alat dan kondisi"),
+            new StudioNavItem("Gallery", "Gallery", "/gallery", "image", "Foto studio dan dokumentasi")
+        }),
+        new StudioNavGroup("Keuangan", new[]
+        {
+            new StudioNavItem("Billing / POS", "POS", "/billing", "wallet-cards", "Pembayaran dan tagihan"),
+            new StudioNavItem("Pembukuan", "Buku", "/bookkeeping", "book-open", "Kas masuk dan kas keluar")
+        }),
+        new StudioNavGroup("System", new[]
+        {
+            new StudioNavItem("Settings", "Settings", "/settings", "settings", "Konfigurasi aplikasi")
+        })
     };
 
-    private static readonly IReadOnlyList<StudioNavItem> BottomNavigationItems = NavigationItems
-        .Where(item => item.Href is "/dashboard" or "/schedule" or "/customers" or "/billing" or "/bookkeeping" or "/settings")
+    private static readonly IReadOnlyList<StudioNavItem> NavigationItems = NavigationGroups
+        .SelectMany(group => group.Items)
         .ToArray();
 
-    private sealed record StudioNavItem(string Label, string ShortLabel, string Href, string Icon);
+    private static readonly IReadOnlyList<StudioNavItem> BottomNavigationItems = NavigationItems
+        .Where(item => item.Href is "/dashboard" or "/schedule" or "/customers" or "/billing" or "/bookkeeping")
+        .ToArray();
+
+    private sealed record StudioNavGroup(string Label, IReadOnlyList<StudioNavItem> Items);
+
+    private sealed record StudioNavItem(string Label, string ShortLabel, string Href, string Icon, string Description);
 }

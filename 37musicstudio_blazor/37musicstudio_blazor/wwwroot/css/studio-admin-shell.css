@@ -4767,3 +4767,345 @@ textarea,
     }
 }
 /* </studio-settings-gallery-visible-subpage> */
+
+
+/* <studio-modern-command-shell> */
+:root {
+    --studio-shell-sidebar-width: 18rem;
+    --studio-shell-mobile-nav-height: 4.35rem;
+    --studio-shell-radius-xl: 1.45rem;
+    --studio-shell-radius-lg: 1.12rem;
+    --studio-shell-radius-md: 0.85rem;
+    --studio-shell-bg: #070b13;
+    --studio-shell-surface: rgba(15, 23, 42, 0.76);
+    --studio-shell-surface-strong: rgba(15, 23, 42, 0.92);
+    --studio-shell-surface-soft: rgba(30, 41, 59, 0.58);
+    --studio-shell-border: rgba(148, 163, 184, 0.16);
+    --studio-shell-border-strong: rgba(226, 232, 240, 0.22);
+    --studio-shell-text: #f8fafc;
+    --studio-shell-muted: rgba(226, 232, 240, 0.62);
+    --studio-shell-subtle: rgba(226, 232, 240, 0.42);
+    --studio-shell-accent: #d8a85f;
+    --studio-shell-accent-2: #8d7cff;
+    --studio-shell-success: #22c55e;
+    --studio-shell-danger: #ef4444;
+}
+
+.studio-admin-shell {
+    --ui-bg-page: var(--studio-shell-bg);
+    --ui-surface: rgba(15, 23, 42, 0.88);
+    --ui-surface-glass: rgba(15, 23, 42, 0.64);
+    --ui-elevated: rgba(15, 23, 42, 0.92);
+    --ui-border: var(--studio-shell-border);
+    --ui-border-strong: var(--studio-shell-border-strong);
+    --ui-text-main: var(--studio-shell-text);
+    --ui-text-strong: #ffffff;
+    --ui-text-muted: var(--studio-shell-muted);
+    --ui-accent: var(--studio-shell-accent);
+    --ui-accent-2: var(--studio-shell-accent-2);
+    --ui-accent-contrast: #15100a;
+
+    grid-template-columns: var(--studio-shell-sidebar-width) minmax(0, 1fr);
+    background:
+        radial-gradient(circle at 8% 8%, rgba(216, 168, 95, 0.16), transparent 28rem),
+        radial-gradient(circle at 88% 16%, rgba(141, 124, 255, 0.14), transparent 34rem),
+        linear-gradient(135deg, #050711 0%, #070b13 42%, #101624 100%);
+    color: var(--studio-shell-text);
+}
+
+.studio-admin-shell::before {
+    background-image:
+        linear-gradient(rgba(226, 232, 240, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(226, 232, 240, 0.035) 1px, transparent 1px);
+    background-size: 4rem 4rem;
+    opacity: 0.3;
+    mask-image: radial-gradient(circle at center, black, transparent 78%);
+}
+
+.studio-admin-sidebar {
+    gap: 0.95rem;
+    padding: 0.95rem;
+    border-right: 1px solid var(--studio-shell-border);
+    background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.62)),
+        radial-gradient(circle at 50% 0%, rgba(216, 168, 95, 0.13), transparent 18rem);
+    box-shadow:
+        1.2rem 0 3.2rem rgba(0, 0, 0, 0.22),
+        inset -1px 0 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(26px);
+}
+
+.studio-shell-brand {
+    min-height: 4.6rem;
+    border: 1px solid rgba(226, 232, 240, 0.12);
+    border-radius: var(--studio-shell-radius-lg);
+    padding: 0.72rem;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(216, 168, 95, 0.18), transparent 8rem),
+        linear-gradient(145deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.62));
+    box-shadow:
+        0 1rem 2.2rem rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.studio-shell-brand-mark {
+    width: 2.9rem;
+    height: 2.9rem;
+    border-color: rgba(216, 168, 95, 0.45);
+    border-radius: 0.95rem;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.42), transparent 42%),
+        linear-gradient(145deg, #f4d79f, #d8a85f 58%, #8f682c);
+    color: #110c05;
+    font-size: 0.86rem;
+    font-weight: 950;
+    box-shadow:
+        0 0.85rem 1.8rem rgba(216, 168, 95, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.44);
+}
+
+.studio-shell-brand-copy strong,
+.studio-mobile-brand strong {
+    color: var(--studio-shell-text);
+}
+
+.studio-shell-brand-copy small {
+    color: var(--studio-shell-muted);
+}
+
+.studio-shell-nav {
+    gap: 0.86rem;
+    padding: 0.14rem 0.05rem 0.35rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(216, 168, 95, 0.36) transparent;
+}
+
+.studio-shell-nav-group {
+    display: grid;
+    gap: 0.34rem;
+}
+
+.studio-shell-nav-group-label {
+    margin: 0.2rem 0.42rem 0.1rem;
+    color: var(--studio-shell-subtle);
+    font-size: 0.62rem;
+    font-weight: 950;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.studio-shell-nav-item {
+    position: relative;
+    min-height: 3.15rem;
+    display: grid;
+    grid-template-columns: 2.28rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.72rem;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    padding: 0.35rem 0.76rem 0.35rem 0.48rem;
+    color: var(--studio-shell-muted);
+    background: transparent;
+}
+
+.studio-shell-nav-item::before {
+    content: "";
+    position: absolute;
+    left: 0.22rem;
+    top: 0.62rem;
+    bottom: 0.62rem;
+    width: 0.18rem;
+    border-radius: 999px;
+    background: transparent;
+    transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.studio-shell-nav-item .studio-icon {
+    width: 2.04rem;
+    height: 2.04rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 0.78rem;
+    padding: 0.52rem;
+    background: rgba(15, 23, 42, 0.5);
+    color: currentColor;
+}
+
+.studio-shell-nav-copy {
+    display: grid;
+    gap: 0.08rem;
+    min-width: 0;
+}
+
+.studio-shell-nav-copy > span {
+    overflow: hidden;
+    color: currentColor;
+    font-size: 0.8rem;
+    font-weight: 880;
+    letter-spacing: -0.02em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-shell-nav-copy small {
+    overflow: hidden;
+    color: var(--studio-shell-subtle);
+    font-size: 0.64rem;
+    font-weight: 650;
+    line-height: 1.22;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio-shell-nav-item:hover,
+.studio-shell-nav-item.is-active {
+    border-color: rgba(216, 168, 95, 0.24);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(216, 168, 95, 0.18), transparent 7rem),
+        linear-gradient(145deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.72));
+    color: var(--studio-shell-text);
+    box-shadow:
+        0 0.72rem 1.7rem rgba(0, 0, 0, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.studio-shell-nav-item.is-active::before {
+    background: var(--studio-shell-accent);
+    box-shadow: 0 0 1.1rem rgba(216, 168, 95, 0.72);
+}
+
+.studio-shell-nav-item.is-active .studio-icon {
+    border-color: rgba(216, 168, 95, 0.34);
+    background:
+        radial-gradient(circle at 30% 10%, rgba(255, 255, 255, 0.18), transparent 44%),
+        rgba(216, 168, 95, 0.14);
+    color: #f7dca6;
+}
+
+.studio-shell-side-footer {
+    gap: 0.62rem;
+}
+
+.studio-shell-status {
+    min-height: 2.72rem;
+    border-color: rgba(148, 163, 184, 0.14);
+    background: rgba(15, 23, 42, 0.52);
+    color: var(--studio-shell-muted);
+}
+
+.studio-shell-status span {
+    background: var(--studio-shell-success);
+    box-shadow: 0 0 0 0.28rem rgba(34, 197, 94, 0.13);
+}
+
+.studio-shell-logout,
+.studio-mobile-logout {
+    border-color: rgba(216, 168, 95, 0.28);
+    background:
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.22), transparent 56%),
+        linear-gradient(180deg, rgba(216, 168, 95, 0.96), rgba(180, 129, 54, 0.96));
+    color: #110c05;
+}
+
+.studio-admin-main {
+    padding: clamp(0.78rem, 1.45vw, 1.1rem);
+    background:
+        radial-gradient(circle at 74% 0%, rgba(141, 124, 255, 0.08), transparent 28rem),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 18rem);
+}
+
+.studio-mobile-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 1.12rem;
+    padding: 0.46rem;
+    background:
+        linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.66));
+    box-shadow:
+        0 0.9rem 2.2rem rgba(0, 0, 0, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(22px);
+}
+
+.studio-mobile-brand {
+    min-width: 0;
+}
+
+.studio-bottom-nav {
+    border-color: rgba(148, 163, 184, 0.16);
+    background:
+        linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.72));
+    box-shadow:
+        0 1.2rem 3.2rem rgba(0, 0, 0, 0.26),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.studio-bottom-nav-item {
+    color: var(--studio-shell-muted);
+}
+
+.studio-bottom-nav-item.is-active {
+    background:
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.16), transparent 60%),
+        rgba(216, 168, 95, 0.15);
+    color: var(--studio-shell-text);
+}
+
+.studio-bottom-nav-item.is-active .studio-icon {
+    color: #f7dca6;
+}
+
+.studio-shell-nav-item:focus-visible,
+.studio-shell-logout:focus-visible,
+.studio-mobile-logout:focus-visible,
+.studio-bottom-nav-item:focus-visible {
+    outline: 3px solid rgba(216, 168, 95, 0.32);
+    outline-offset: 3px;
+}
+
+@media (max-width: 980px) {
+    .studio-admin-shell {
+        background:
+            radial-gradient(circle at 12% 2%, rgba(216, 168, 95, 0.13), transparent 18rem),
+            radial-gradient(circle at 92% 8%, rgba(141, 124, 255, 0.12), transparent 22rem),
+            linear-gradient(135deg, #050711 0%, #070b13 100%);
+    }
+
+    .studio-admin-main {
+        padding: 0.66rem;
+        padding-bottom: calc(var(--studio-shell-mobile-nav-height) + 1rem + env(safe-area-inset-bottom));
+    }
+
+    .studio-bottom-nav {
+        min-height: var(--studio-shell-mobile-nav-height);
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        border-radius: 1.18rem;
+    }
+
+    .studio-bottom-nav-item {
+        min-height: 3.3rem;
+        border-radius: 0.92rem;
+        font-size: 0.61rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .studio-shell-nav-item,
+    .studio-shell-nav-item::before,
+    .studio-shell-nav-item .studio-icon,
+    .studio-bottom-nav-item,
+    .studio-shell-logout,
+    .studio-mobile-logout {
+        transition: none !important;
+    }
+
+    .studio-shell-nav-item:hover {
+        transform: none !important;
+    }
+}
+/* </studio-modern-command-shell> */
+
