@@ -1,0 +1,279 @@
+@page "/bookkeeping/table"
+@layout BookkeepingTableLayout
+@implements IAsyncDisposable
+@using System.Globalization
+@using System.Text.Json
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<PageTitle>Tabel Pembukuan | 37 Music Studio</PageTitle>
+
+<section class="studio-ledger-table-page" aria-labelledby="ledgerTableTitle">
+    <header class="studio-ledger-table-header">
+        <button type="button" @onclick="GoBackAsync">Kembali</button>
+
+        <div>
+            <span>Ledger Landscape</span>
+            <h1 id="ledgerTableTitle">Tabel Pembukuan</h1>
+        </div>
+
+        <small>@Rows.Count.ToString(IndonesianCulture) transaksi</small>
+    </header>
+
+    @if (!OrientationLocked)
+    {
+        <div class="studio-ledger-orientation-note">
+            <strong>Mode landscape otomatis mungkin diblokir browser.</strong>
+            <span>Putar HP secara manual jika tabel belum melebar penuh.</span>
+        </div>
+    }
+
+    <main class="studio-ledger-table-shell">
+        @if (IsLoading)
+        {
+            <div class="studio-ledger-empty">
+                <strong>Memuat tabel...</strong>
+                <span>Sedang membaca data pembukuan lokal.</span>
+            </div>
+        }
+        else if (Rows.Count == 0)
+        {
+            <div class="studio-ledger-empty">
+                <strong>Belum ada transaksi.</strong>
+                <span>Tambahkan transaksi dari halaman Pembukuan.</span>
+            </div>
+        }
+        else
+        {
+            <div class="studio-ledger-table-wrap">
+                <table class="studio-ledger-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>No Ref</th>
+                            <th>Tipe</th>
+                            <th>Kategori</th>
+                            <th>Uraian</th>
+                            <th>Pihak</th>
+                            <th>Akun</th>
+                            <th>Status</th>
+                            <th class="amount">Debit</th>
+                            <th class="amount">Kredit</th>
+                            <th class="amount">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Rows)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@row.Entry.TransactionDate.ToString("dd MMM yyyy", IndonesianCulture)</strong>
+                                    <span>@row.Entry.PaymentMethod</span>
+                                </td>
+                                <td><code>@row.Entry.ReferenceNumber</code></td>
+                                <td><span class="studio-ledger-type @row.Entry.TypeTone">@row.Entry.Type</span></td>
+                                <td>@row.Entry.Category</td>
+                                <td class="description">@row.Entry.Description</td>
+                                <td>@row.Entry.PartyName</td>
+                                <td>@row.Entry.AccountName</td>
+                                <td><span class="studio-ledger-status">@row.Entry.Status</span></td>
+                                <td class="amount debit">@row.DebitLabel</td>
+                                <td class="amount credit">@row.CreditLabel</td>
+                                <td class="amount balance">@FormatCurrency(row.RunningBalance)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </main>
+</section>
+
+@code {
+    private const string StorageKey = "37musicstudio.bookkeeping.v1";
+    private const string IncomeType = "Pemasukan";
+    private const string ExpenseType = "Pengeluaran";
+
+    private static readonly CultureInfo IndonesianCulture = CultureInfo.GetCultureInfo("id-ID");
+
+    private static readonly JsonSerializerOptions LocalJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true
+    };
+
+    private bool IsLoading { get; set; } = true;
+
+    private bool OrientationLocked { get; set; } = true;
+
+    private List<BookkeepingEntry> Entries { get; set; } = new();
+
+    private IReadOnlyList<BookkeepingRow> Rows => BuildRows();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await LoadEntriesAsync();
+        await TryLockLandscapeAsync();
+    }
+
+    private async Task LoadEntriesAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var raw = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+
+            Entries = string.IsNullOrWhiteSpace(raw)
+                ? new List<BookkeepingEntry>()
+                : JsonSerializer.Deserialize<List<BookkeepingEntry>>(raw, LocalJsonOptions) ?? new List<BookkeepingEntry>();
+
+            Entries = Entries
+                .Select(entry => entry.Normalize())
+                .OrderByDescending(entry => entry.TransactionDate)
+                .ThenByDescending(entry => entry.CreatedAt)
+                .ToList();
+        }
+        catch
+        {
+            Entries = new List<BookkeepingEntry>();
+        }
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task TryLockLandscapeAsync()
+    {
+        try
+        {
+            var result = await JS.InvokeAsync<OrientationResult>("studioOrientation.lockLandscape");
+            OrientationLocked = result.Locked || result.FullscreenStarted;
+        }
+        catch
+        {
+            OrientationLocked = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task GoBackAsync()
+    {
+        await UnlockOrientationAsync();
+        NavigationManager.NavigateTo("/bookkeeping");
+    }
+
+    private async Task UnlockOrientationAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("studioOrientation.unlock");
+        }
+        catch
+        {
+            // Browser may block orientation APIs. Ignore safely.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await UnlockOrientationAsync();
+    }
+
+    private IReadOnlyList<BookkeepingRow> BuildRows()
+    {
+        var ordered = Entries
+            .OrderBy(entry => entry.TransactionDate)
+            .ThenBy(entry => entry.CreatedAt)
+            .ToList();
+
+        var runningBalance = 0m;
+        var rows = new List<BookkeepingRow>();
+
+        foreach (var entry in ordered)
+        {
+            runningBalance += entry.IsIncome ? entry.Amount : -entry.Amount;
+            rows.Add(new BookkeepingRow(entry, runningBalance));
+        }
+
+        return rows
+            .OrderByDescending(row => row.Entry.TransactionDate)
+            .ThenByDescending(row => row.Entry.CreatedAt)
+            .ToList();
+    }
+
+    private static string FormatCurrency(decimal value)
+    {
+        return value.ToString("C0", IndonesianCulture);
+    }
+
+    private sealed record OrientationResult(bool FullscreenStarted, bool Locked, string? Orientation, string? Message);
+
+    private sealed record BookkeepingRow(BookkeepingEntry Entry, decimal RunningBalance)
+    {
+        public string DebitLabel => Entry.IsIncome ? FormatCurrency(Entry.Amount) : "-";
+
+        public string CreditLabel => Entry.IsExpense ? FormatCurrency(Entry.Amount) : "-";
+    }
+
+    private sealed class BookkeepingEntry
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+
+        public DateTime TransactionDate { get; set; } = DateTime.Today;
+
+        public string Type { get; set; } = IncomeType;
+
+        public string ReferenceNumber { get; set; } = string.Empty;
+
+        public string Category { get; set; } = string.Empty;
+
+        public string Description { get; set; } = string.Empty;
+
+        public string PartyName { get; set; } = string.Empty;
+
+        public string AccountName { get; set; } = "Kas Studio";
+
+        public string PaymentMethod { get; set; } = "Cash";
+
+        public decimal Amount { get; set; }
+
+        public string Status { get; set; } = "Tercatat";
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
+        public bool IsIncome => string.Equals(Type, IncomeType, StringComparison.OrdinalIgnoreCase);
+
+        public bool IsExpense => string.Equals(Type, ExpenseType, StringComparison.OrdinalIgnoreCase);
+
+        public string TypeTone => IsIncome ? "income" : "expense";
+
+        public BookkeepingEntry Normalize()
+        {
+            Id = string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString("N") : Id.Trim();
+            TransactionDate = TransactionDate == DateTime.MinValue ? DateTime.Today : TransactionDate.Date;
+            Type = string.Equals(Type, ExpenseType, StringComparison.OrdinalIgnoreCase) ? ExpenseType : IncomeType;
+            ReferenceNumber = ReferenceNumber?.Trim() ?? string.Empty;
+            Category = string.IsNullOrWhiteSpace(Category) ? "Umum" : Category.Trim();
+            Description = Description?.Trim() ?? string.Empty;
+            PartyName = PartyName?.Trim() ?? string.Empty;
+            AccountName = string.IsNullOrWhiteSpace(AccountName) ? "Kas Studio" : AccountName.Trim();
+            PaymentMethod = string.IsNullOrWhiteSpace(PaymentMethod) ? "Cash" : PaymentMethod.Trim();
+            Status = string.IsNullOrWhiteSpace(Status) ? "Tercatat" : Status.Trim();
+            Amount = Math.Max(0, Amount);
+            CreatedAt = CreatedAt == DateTime.MinValue ? DateTime.Now : CreatedAt;
+            UpdatedAt = UpdatedAt == DateTime.MinValue ? CreatedAt : UpdatedAt;
+
+            return this;
+        }
+    }
+}

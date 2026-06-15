@@ -605,3 +605,56 @@
 }
 /* </studio-bookkeeping-compact-money-table> */
 
+
+/* <studio-mobile-ledger-table-launch> */
+.studio-bookkeeping-mobile-table-launch {
+    display: none;
+}
+
+@media (max-width: 980px) {
+    .studio-bookkeeping-page .studio-bookkeeping-table-card {
+        display: none !important;
+    }
+
+    .studio-bookkeeping-mobile-table-launch {
+        display: block;
+    }
+
+    .studio-bookkeeping-mobile-table-launch button {
+        width: 100%;
+        min-height: 4.4rem;
+        display: grid;
+        gap: 0.22rem;
+        place-items: center;
+        border: 1px solid rgba(216, 168, 95, 0.32);
+        border-radius: 1.12rem;
+        background:
+            radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.16), transparent 60%),
+            linear-gradient(135deg, rgba(216, 168, 95, 0.96), rgba(180, 129, 54, 0.96));
+        color: #110c05;
+        cursor: pointer;
+        font-weight: 950;
+        box-shadow:
+            0 0.9rem 2.1rem rgba(216, 168, 95, 0.14),
+            inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .studio-bookkeeping-mobile-table-launch button span {
+        font-size: 1rem;
+        letter-spacing: -0.02em;
+    }
+
+    .studio-bookkeeping-mobile-table-launch button small {
+        color: rgba(17, 12, 5, 0.72);
+        font-size: 0.72rem;
+        font-weight: 760;
+    }
+}
+
+@media (min-width: 981px) {
+    .studio-bookkeeping-mobile-table-launch {
+        display: none !important;
+    }
+}
+/* </studio-mobile-ledger-table-launch> */
+

@@ -4,6 +4,7 @@
 @using System.Text.Json
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManager
 
 <PageTitle>Pembukuan | 37 Music Studio</PageTitle>
 
@@ -90,6 +91,13 @@
                 <input type="date" @bind="FilterEndDate" />
             </label>
         }
+    </section>
+
+    <section class="studio-bookkeeping-mobile-table-launch" aria-label="Akses tabel pembukuan mobile">
+        <button type="button" @onclick="OpenMobileLedgerTable">
+            <span>Lihat tabel</span>
+            <small>Buka tabel full row dalam mode landscape</small>
+        </button>
     </section>
 
     <section class="studio-bookkeeping-table-card" aria-label="Tabel pembukuan">
@@ -374,6 +382,11 @@
         }
 
         await LoadEntriesAsync();
+    }
+
+    private void OpenMobileLedgerTable()
+    {
+        NavigationManager.NavigateTo("/bookkeeping/table");
     }
 
     private async Task LoadEntriesAsync()
