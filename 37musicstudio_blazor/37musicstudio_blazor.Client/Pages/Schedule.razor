@@ -98,40 +98,54 @@
                             @foreach (var day in VisibleDays)
                             {
                                 var segment = GetBookingSegment(day, slot);
+
+                                if (segment is not null && !segment.IsStart)
+                                {
+                                    continue;
+                                }
+
                                 var booking = segment?.Booking;
                                 var cellId = BuildCellId(day, slot);
                                 var isToday = day.Date == Today.Date;
                                 var isSelected = SelectedSlotId == cellId;
                                 var isFilteredOut = booking is not null && booking.Status != ActiveStatusFilter;
 
-                                <td class="@GetCellClass(isToday, isSelected, segment, isFilteredOut)">
-                                    <button
-                                        type="button"
-                                        class="@GetSlotButtonClass(segment, isFilteredOut)"
-                                        title="@BuildSlotTitle(day, slot)"
-                                        aria-label="@BuildSlotAria(day, slot)"
-                                        @onclick="() => OpenBookingCanvas(day, slot, booking)">
-                                        @if (segment is null)
-                                        {
+                                if (segment is null)
+                                {
+                                    <td class="@GetEmptyCellClass(isToday, isSelected)">
+                                        <button
+                                            type="button"
+                                            class="studio-schedule-slot is-empty"
+                                            title="@BuildSlotTitle(day, slot)"
+                                            aria-label="@BuildSlotAria(day, slot)"
+                                            @onclick="() => OpenBookingCanvas(day, slot, null)">
                                             <span class="studio-empty-slot-indicator">
                                                 <StudioIcon Name="plus" />
                                             </span>
-                                        }
-                                        else if (segment.IsStart)
-                                        {
-                                            <span class="studio-booking-block" style="@BuildBookingBlockStyle(segment.Booking)">
+                                        </button>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td
+                                        class="@GetBookingCellClass(isToday, isSelected, segment, isFilteredOut)"
+                                        rowspan="@GetBookingRowSpan(segment.Booking)"
+                                        style="@BuildBookingBlockStyle(segment.Booking)">
+                                        <button
+                                            type="button"
+                                            class="@GetSlotButtonClass(segment, isFilteredOut)"
+                                            title="@BuildBookingTitle(segment.Booking)"
+                                            aria-label="@BuildBookingAria(segment.Booking)"
+                                            @onclick="() => OpenBookingCanvas(day, slot, segment.Booking)">
+                                            <span class="studio-booking-block">
                                                 <strong>@segment.Booking.DisplayName</strong>
                                                 <em>@BuildBookingChipMeta(segment.Booking)</em>
                                                 <small>@segment.Booking.CustomerName</small>
                                                 <b>@GetPaymentStatusLabel(segment.Booking.Status)</b>
                                             </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="studio-booking-block-ghost" aria-hidden="true"></span>
-                                        }
-                                    </button>
-                                </td>
+                                        </button>
+                                    </td>
+                                }
                             }
                         </tr>
                     }
@@ -592,6 +606,21 @@
         );
     }
 
+    private int GetBookingRowSpan(StudioBooking booking)
+    {
+        var firstSlotIndex = TimeSlots.ToList().FindIndex(slot => BookingDateTimeMatchesSlot(booking.StartAt, slot));
+        var maxSlots = firstSlotIndex >= 0
+            ? TimeSlots.Count - firstSlotIndex
+            : booking.DurationHours;
+
+        return Math.Clamp(booking.DurationHours, 1, Math.Max(1, maxSlots));
+    }
+
+    private static bool BookingDateTimeMatchesSlot(DateTime startAt, ScheduleTimeSlot slot)
+    {
+        return startAt.TimeOfDay == slot.Start;
+    }
+
     private string GetViewModeButtonClass(ScheduleViewMode viewMode)
     {
         return ActiveViewMode == viewMode
@@ -629,30 +658,26 @@
         return $"--booking-hours:{Math.Max(1, booking.DurationHours)};";
     }
 
+    private static string BuildBookingTitle(StudioBooking booking)
+    {
+        return $"{booking.DisplayName} | {FormatTime(booking.StartAt.TimeOfDay)} - {FormatTime(booking.EndAt.TimeOfDay)} | {GetPaymentStatusLabel(booking.Status)}";
+    }
+
+    private static string BuildBookingAria(StudioBooking booking)
+    {
+        return $"Buka booking {BuildBookingTitle(booking)}";
+    }
+
     private static string GetSlotButtonClass(StudioBookingSegment? segment, bool isFilteredOut)
     {
         if (segment is null)
         {
-            return "studio-schedule-slot";
+            return "studio-schedule-slot is-empty";
         }
 
         var statusKey = segment.Booking.Status.ToString().ToLowerInvariant();
         var durationKey = Math.Clamp(segment.Booking.DurationHours, 1, 6);
         var className = $"studio-schedule-slot has-booking status-{statusKey} duration-{durationKey}";
-
-        if (segment.IsStart)
-        {
-            className += " is-range-start";
-        }
-        else
-        {
-            className += " is-range-mid";
-        }
-
-        if (segment.IsEnd)
-        {
-            className += " is-range-end";
-        }
 
         if (isFilteredOut)
         {
@@ -662,7 +687,7 @@
         return className;
     }
 
-    private static string GetCellClass(bool isToday, bool isSelected, StudioBookingSegment? segment, bool isFilteredOut)
+    private static string GetEmptyCellClass(bool isToday, bool isSelected)
     {
         var className = "studio-schedule-cell";
 
@@ -676,23 +701,21 @@
             className += " is-selected";
         }
 
-        if (segment is not null)
+        return className;
+    }
+
+    private static string GetBookingCellClass(bool isToday, bool isSelected, StudioBookingSegment segment, bool isFilteredOut)
+    {
+        var className = "studio-schedule-cell has-booking is-rowspan-booking";
+
+        if (isToday)
         {
-            className += " has-booking";
+            className += " is-today";
+        }
 
-            if (segment.IsStart)
-            {
-                className += " is-range-start";
-            }
-            else
-            {
-                className += " is-range-covered";
-            }
-
-            if (segment.IsEnd)
-            {
-                className += " is-range-end";
-            }
+        if (isSelected)
+        {
+            className += " is-selected";
         }
 
         if (isFilteredOut)

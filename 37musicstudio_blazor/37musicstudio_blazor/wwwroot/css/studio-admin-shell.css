@@ -950,43 +950,335 @@ select,
 }
 
 
-/* <studio-booking-form-modal> */
+/* <studio-rowspan-booking-blocks> */
+.studio-schedule-table {
+    --schedule-row-height: 2.72rem;
+    --schedule-day-width: 5.05rem;
+    --booking-cell-gutter: 0.24rem;
+    width: max(100%, calc(5.9rem + var(--schedule-day-width) * var(--schedule-days, 31))) !important;
+    table-layout: fixed;
+}
+
+.studio-schedule-table tr {
+    height: var(--schedule-row-height);
+}
+
+.studio-schedule-day-head,
+.studio-schedule-cell {
+    min-width: var(--schedule-day-width) !important;
+}
+
+.studio-schedule-cell {
+    position: relative;
+    vertical-align: top;
+    overflow: visible;
+}
+
+.studio-schedule-cell.is-rowspan-booking {
+    padding: 0;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 4%, transparent), transparent),
+        color-mix(in srgb, var(--ui-surface, #fffefa) 42%, transparent);
+}
+
+.studio-schedule-cell.is-filtered-out {
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 34%, transparent);
+}
+
+.studio-schedule-slot {
+    position: relative;
+    width: 100%;
+    min-height: var(--schedule-row-height);
+}
+
+.studio-schedule-slot.is-empty {
+    height: 100%;
+    min-height: var(--schedule-row-height);
+}
+
+.studio-schedule-slot.has-booking {
+    height: 100%;
+    min-height: calc((var(--booking-hours, 1) * var(--schedule-row-height)) - 1px);
+    overflow: visible;
+    z-index: 20;
+    padding: var(--booking-cell-gutter);
+}
+
+.studio-empty-slot-indicator {
+    width: calc(100% - 0.48rem) !important;
+    height: calc(100% - 0.48rem) !important;
+    min-height: 2.12rem;
+    border-radius: 0.58rem;
+    border: 1px solid transparent;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        box-shadow 140ms ease,
+        transform 140ms ease;
+}
+
+.studio-schedule-slot.is-empty:hover .studio-empty-slot-indicator,
+.studio-schedule-slot.is-empty:focus-visible .studio-empty-slot-indicator {
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 60%),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, var(--ui-surface, #fffefa));
+    box-shadow:
+        0 0.42rem 0.9rem color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 48%, transparent);
+    transform: translateY(-1px);
+}
+
+.studio-schedule-slot .studio-empty-slot-indicator .studio-icon {
+    width: 0.78rem;
+    height: 0.78rem;
+    opacity: 0;
+    color: color-mix(in srgb, var(--ui-accent, #d8a85f) 82%, var(--ui-text-main, #25231f));
+    transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.studio-schedule-slot.is-empty:hover .studio-empty-slot-indicator .studio-icon,
+.studio-schedule-slot.is-empty:focus-visible .studio-empty-slot-indicator .studio-icon {
+    opacity: 1;
+    transform: scale(1.02);
+}
+
+.studio-schedule-slot.has-booking > .studio-booking-block {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: calc((var(--booking-hours, 1) * var(--schedule-row-height)) - (var(--booking-cell-gutter) * 2) - 1px);
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-content: start;
+    gap: 0.12rem;
+    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    border-radius: 0.9rem;
+    padding: 0.46rem 0.48rem;
+    overflow: hidden;
+    position: relative;
+    isolation: isolate;
+    text-align: left;
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 56%, transparent), transparent 5.5rem),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--ui-accent, #d8a85f) 22%, transparent), transparent 7rem),
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, var(--ui-surface, #fffefa)));
+    box-shadow:
+        0 0.8rem 1.8rem color-mix(in srgb, #000000 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 64%, transparent);
+    backdrop-filter: blur(18px);
+    transform: none !important;
+    transition:
+        transform 150ms ease,
+        box-shadow 150ms ease,
+        border-color 150ms ease,
+        opacity 150ms ease;
+}
+
+.studio-schedule-slot.has-booking > .studio-booking-block::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, #ffffff 14%, transparent), transparent 38%),
+        linear-gradient(90deg, color-mix(in srgb, #ffffff 7%, transparent), transparent);
+    opacity: 0.82;
+}
+
+.studio-schedule-slot.has-booking > .studio-booking-block::after {
+    content: "";
+    position: absolute;
+    inset: 0.34rem auto 0.34rem 0.34rem;
+    width: 0.18rem;
+    border-radius: 999rem;
+    background: currentColor;
+    opacity: 0.62;
+}
+
+.studio-schedule-slot.has-booking:hover > .studio-booking-block,
+.studio-schedule-slot.has-booking:focus-visible > .studio-booking-block {
+    border-color: color-mix(in srgb, currentColor 40%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    box-shadow:
+        0 1rem 2.2rem color-mix(in srgb, #000000 13%, transparent),
+        0 0 0 3px color-mix(in srgb, currentColor 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 66%, transparent);
+    transform: translateY(-1px) !important;
+}
+
+.studio-booking-block strong,
+.studio-booking-block em,
+.studio-booking-block small,
+.studio-booking-block b {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-style: normal;
+    line-height: 1.08;
+}
+
+.studio-booking-block strong {
+    display: block;
+    padding-left: 0.32rem;
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: -0.045em;
+}
+
+.studio-booking-block em {
+    display: block;
+    padding-left: 0.32rem;
+    color: color-mix(in srgb, var(--ui-text-main, #25231f) 78%, transparent);
+    font-size: 0.52rem;
+    font-weight: 780;
+    letter-spacing: -0.018em;
+}
+
+.studio-booking-block small {
+    display: block;
+    align-self: end;
+    padding-left: 0.32rem;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.5rem;
+    font-weight: 720;
+    letter-spacing: -0.012em;
+}
+
+.studio-booking-block b {
+    position: absolute;
+    top: 0.34rem;
+    right: 0.34rem;
+    min-width: 2.6rem;
+    min-height: 1.12rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999rem;
+    padding: 0 0.36rem;
+    background: color-mix(in srgb, #ffffff 52%, transparent);
+    color: currentColor;
+    font-size: 0.48rem;
+    font-weight: 900;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent);
+}
+
+.studio-schedule-slot.duration-1 > .studio-booking-block {
+    grid-template-rows: auto auto;
+    gap: 0.05rem;
+    padding: 0.34rem 0.42rem;
+}
+
+.studio-schedule-slot.duration-1 > .studio-booking-block small,
+.studio-schedule-slot.duration-1 > .studio-booking-block b {
+    display: none;
+}
+
+.studio-schedule-slot.duration-1 > .studio-booking-block strong {
+    font-size: 0.6rem;
+}
+
+.studio-schedule-slot.duration-1 > .studio-booking-block em {
+    font-size: 0.48rem;
+}
+
+.studio-schedule-slot.duration-2 > .studio-booking-block small {
+    display: none;
+}
+
+.studio-schedule-slot.status-pending > .studio-booking-block {
+    color: #9a6612;
+    border-color: color-mix(in srgb, #9a6612 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 56%, transparent), transparent 5.5rem),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, #d8a85f 28%, transparent), transparent 7rem),
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, #d8a85f 12%, var(--ui-surface, #fffefa)));
+}
+
+.studio-schedule-slot.status-dp > .studio-booking-block {
+    color: #365cc9;
+    border-color: color-mix(in srgb, #365cc9 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 56%, transparent), transparent 5.5rem),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, #365cc9 22%, transparent), transparent 7rem),
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, #365cc9 9%, var(--ui-surface, #fffefa)));
+}
+
+.studio-schedule-slot.status-paid > .studio-booking-block {
+    color: #15794b;
+    border-color: color-mix(in srgb, #15794b 36%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 56%, transparent), transparent 5.5rem),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, #15794b 22%, transparent), transparent 7rem),
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, #15794b 9%, var(--ui-surface, #fffefa)));
+}
+
+.studio-schedule-slot.is-filtered-out > .studio-booking-block {
+    opacity: 0.3;
+    filter: saturate(0.72);
+}
+
+.studio-schedule-cell.is-rowspan-booking.is-filtered-out {
+    opacity: 0.62;
+}
+
 .studio-booking-form-panel {
-    width: min(100%, 46rem);
-    max-height: min(88dvh, 45rem);
+    width: min(100%, 44rem);
+    max-height: min(88dvh, 43rem);
+}
+
+.studio-booking-header {
+    min-height: 3.85rem;
+    padding: 0.72rem 0.82rem;
+}
+
+.studio-booking-header p {
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+}
+
+.studio-booking-header h2 {
+    max-width: 100%;
+    font-size: clamp(0.92rem, 1.8vw, 1.08rem);
+    line-height: 1.2;
 }
 
 .studio-booking-form {
     min-height: 0;
     overflow: auto;
     display: grid;
-    gap: 0.68rem;
-    padding: 0.82rem;
+    gap: 0.54rem;
+    padding: 0.68rem;
 }
 
 .studio-booking-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.56rem;
+    gap: 0.46rem;
 }
 
 .studio-form-field {
     min-width: 0;
     display: grid;
-    gap: 0.28rem;
+    gap: 0.2rem;
 }
 
 .studio-form-field > span,
 .studio-detail-box > span {
     color: var(--ui-text-strong, #11100e);
-    font-size: 0.66rem;
+    font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: -0.01em;
 }
 
 .studio-form-field small {
     color: var(--ui-text-muted, #70685e);
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 650;
 }
 
@@ -997,12 +1289,12 @@ select,
     width: 100%;
     min-width: 0;
     border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 82%, transparent);
-    border-radius: 0.72rem;
+    border-radius: 0.66rem;
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--ui-surface, #fffefa) 93%, #ffffff), color-mix(in srgb, var(--ui-surface, #fffefa) 78%, var(--ui-bg-page, #f4efe7)));
     color: var(--ui-text-main, #25231f);
     font-family: var(--studio-body-font) !important;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 650;
     outline: 0;
     box-shadow:
@@ -1013,14 +1305,14 @@ select,
 .studio-form-field input,
 .studio-form-field select,
 .studio-detail-box input {
-    min-height: 2.42rem;
-    padding: 0 0.72rem;
+    min-height: 2.26rem;
+    padding: 0 0.62rem;
 }
 
 .studio-form-field textarea {
-    min-height: 4.2rem;
+    min-height: 3.35rem;
     resize: vertical;
-    padding: 0.62rem 0.72rem;
+    padding: 0.52rem 0.62rem;
     line-height: 1.45;
 }
 
@@ -1041,7 +1333,7 @@ select,
 .studio-booking-detail {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .studio-detail-box {
@@ -1049,19 +1341,19 @@ select,
     display: grid;
     gap: 0.28rem;
     border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 78%, transparent);
-    border-radius: 0.82rem;
-    padding: 0.5rem;
+    border-radius: 0.7rem;
+    padding: 0.42rem;
     background:
         radial-gradient(circle at 20% 0%, color-mix(in srgb, #ffffff 36%, transparent), transparent 5rem),
         color-mix(in srgb, var(--ui-surface, #fffefa) 58%, transparent);
 }
 
 .studio-detail-box strong {
-    min-height: 2.42rem;
+    min-height: 2.08rem;
     display: flex;
     align-items: center;
     color: var(--ui-text-strong, #11100e);
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     font-weight: 850;
     letter-spacing: -0.035em;
     white-space: nowrap;
@@ -1069,21 +1361,15 @@ select,
     text-overflow: ellipsis;
 }
 
-.studio-detail-box.is-readonly {
-    background:
-        radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, transparent), transparent 6rem),
-        color-mix(in srgb, var(--ui-surface, #fffefa) 62%, transparent);
-}
-
 .studio-booking-form-footer {
     position: sticky;
-    bottom: -0.82rem;
+    bottom: -0.68rem;
     z-index: 2;
     display: flex;
     justify-content: flex-end;
     gap: 0.45rem;
-    margin: 0 -0.82rem -0.82rem;
-    padding: 0.62rem 0.82rem 0.82rem;
+    margin: 0 -0.68rem -0.68rem;
+    padding: 0.5rem 0.68rem 0.68rem;
     border-top: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 72%, transparent);
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 80%, transparent), color-mix(in srgb, var(--ui-surface, #fffefa) 94%, transparent));
@@ -1092,12 +1378,12 @@ select,
 
 .studio-form-primary,
 .studio-form-secondary {
-    min-height: 2.42rem;
-    border-radius: 0.72rem;
-    padding: 0 0.86rem;
+    min-height: 2.3rem;
+    border-radius: 0.66rem;
+    padding: 0 0.78rem;
     border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 82%, transparent);
     font-family: var(--studio-body-font) !important;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     font-weight: 800;
     cursor: pointer;
 }
@@ -1126,323 +1412,37 @@ select,
     line-height: 1.45;
 }
 
-.studio-schedule-cell.has-booking {
-    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 5%, var(--ui-surface, #fffefa));
-}
-
-.studio-schedule-cell.is-filtered-out {
-    background: color-mix(in srgb, var(--ui-surface, #fffefa) 38%, transparent);
-}
-
-.studio-schedule-slot.has-booking span {
-    align-content: center;
-    justify-items: start;
-    gap: 0.08rem;
-    padding: 0.24rem 0.34rem;
-    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 28%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background:
-        radial-gradient(circle at 15% 0%, color-mix(in srgb, #ffffff 30%, transparent), transparent 5rem),
-        color-mix(in srgb, var(--ui-accent, #d8a85f) 9%, var(--ui-surface, #fffefa));
-}
-
-.studio-schedule-slot.has-booking strong,
-.studio-schedule-slot.has-booking em {
-    max-width: 100%;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-style: normal;
-    line-height: 1.08;
-}
-
-.studio-schedule-slot.has-booking strong {
-    color: var(--ui-text-strong, #11100e);
-    font-size: 0.62rem;
-    font-weight: 850;
-    letter-spacing: -0.035em;
-}
-
-.studio-schedule-slot.has-booking em {
-    color: var(--ui-text-muted, #70685e);
-    font-size: 0.52rem;
-    font-weight: 750;
-}
-
-.studio-schedule-slot.status-dp span {
-    border-color: color-mix(in srgb, #365cc9 32%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-}
-
-.studio-schedule-slot.status-paid span {
-    border-color: color-mix(in srgb, #15794b 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-}
-
-.studio-schedule-slot.status-pending span {
-    border-color: color-mix(in srgb, #8a5b10 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-}
-
-.studio-schedule-slot.is-filtered-out {
-    opacity: 0.36;
-}
-
 @media (max-width: 720px) {
-    .studio-booking-modal {
-        align-items: end;
-        padding: 0.55rem;
+    .studio-schedule-table {
+        --schedule-row-height: 2.72rem;
+        --schedule-day-width: 4.85rem;
+        --booking-cell-gutter: 0.2rem;
     }
 
-    .studio-booking-form-panel {
-        width: 100%;
-        max-height: min(91dvh, 44rem);
-        border-radius: 1.05rem;
+    .studio-booking-block strong {
+        font-size: 0.56rem;
     }
 
-    .studio-booking-header {
-        min-height: 3.85rem;
-        padding: 0.68rem;
+    .studio-booking-block em {
+        font-size: 0.44rem;
     }
 
-    .studio-booking-header h2 {
-        font-size: 0.88rem;
-        line-height: 1.25;
+    .studio-booking-block small {
+        font-size: 0.42rem;
     }
 
-    .studio-booking-header button {
-        min-width: 3.55rem;
-        height: 2.18rem;
-        border-radius: 0.66rem;
-        font-size: 0.68rem;
+    .studio-booking-block b {
+        top: 0.26rem;
+        right: 0.26rem;
+        min-width: 2.1rem;
+        min-height: 0.96rem;
+        font-size: 0.4rem;
     }
 
-    .studio-booking-form {
-        gap: 0.5rem;
-        padding: 0.62rem;
+    .studio-schedule-slot.duration-1 > .studio-booking-block em {
+        display: none;
     }
 
-    .studio-booking-form-grid {
-        grid-template-columns: 1fr;
-        gap: 0.46rem;
-    }
-
-    .studio-form-field {
-        gap: 0.22rem;
-    }
-
-    .studio-form-field > span,
-    .studio-detail-box > span {
-        font-size: 0.62rem;
-    }
-
-    .studio-form-field input,
-    .studio-form-field select,
-    .studio-detail-box input {
-        min-height: 2.28rem;
-        border-radius: 0.66rem;
-        padding: 0 0.62rem;
-        font-size: 0.72rem;
-    }
-
-    .studio-form-field textarea {
-        min-height: 3.4rem;
-        border-radius: 0.66rem;
-        padding: 0.52rem 0.62rem;
-        font-size: 0.72rem;
-    }
-
-    .studio-booking-detail {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.38rem;
-    }
-
-    .studio-detail-box {
-        border-radius: 0.68rem;
-        padding: 0.42rem;
-    }
-
-    .studio-detail-box strong {
-        min-height: 2.1rem;
-        font-size: 0.64rem;
-        letter-spacing: -0.03em;
-    }
-
-    .studio-booking-form-footer {
-        bottom: -0.62rem;
-        margin: 0 -0.62rem -0.62rem;
-        padding: 0.5rem 0.62rem 0.62rem;
-    }
-
-    .studio-form-primary,
-    .studio-form-secondary {
-        flex: 1 1 0;
-        min-height: 2.3rem;
-        border-radius: 0.66rem;
-        padding: 0 0.62rem;
-        font-size: 0.7rem;
-    }
-}
-
-@media (max-width: 380px) {
-    .studio-booking-detail {
-        grid-template-columns: 1fr;
-    }
-
-    .studio-detail-box strong {
-        font-size: 0.78rem;
-    }
-}
-/* </studio-booking-form-modal> */
-
-
-/* <studio-booking-duration-range-hotfix> */
-.studio-booking-form-panel {
-    width: min(100%, 44rem);
-    max-height: min(88dvh, 43rem);
-}
-
-.studio-booking-header {
-    min-height: 3.85rem;
-    padding: 0.72rem 0.82rem;
-}
-
-.studio-booking-header p {
-    font-size: 0.58rem;
-    letter-spacing: 0.16em;
-}
-
-.studio-booking-header h2 {
-    max-width: 100%;
-    font-size: clamp(0.92rem, 1.8vw, 1.08rem);
-    line-height: 1.2;
-}
-
-.studio-booking-form {
-    gap: 0.54rem;
-    padding: 0.68rem;
-}
-
-.studio-booking-form-grid {
-    gap: 0.46rem;
-}
-
-.studio-form-field {
-    gap: 0.2rem;
-}
-
-.studio-form-field > span,
-.studio-detail-box > span {
-    font-size: 0.62rem;
-}
-
-.studio-form-field input,
-.studio-form-field select,
-.studio-detail-box input {
-    min-height: 2.26rem;
-    border-radius: 0.66rem;
-    padding: 0 0.62rem;
-    font-size: 0.72rem;
-}
-
-.studio-form-field textarea {
-    min-height: 3.35rem;
-    border-radius: 0.66rem;
-    padding: 0.52rem 0.62rem;
-    font-size: 0.72rem;
-}
-
-.studio-booking-detail {
-    gap: 0.4rem;
-}
-
-.studio-detail-box {
-    border-radius: 0.7rem;
-    padding: 0.42rem;
-}
-
-.studio-detail-box strong {
-    min-height: 2.08rem;
-    font-size: 0.72rem;
-}
-
-.studio-booking-form-footer {
-    bottom: -0.68rem;
-    margin: 0 -0.68rem -0.68rem;
-    padding: 0.5rem 0.68rem 0.68rem;
-}
-
-.studio-schedule-slot.has-booking span {
-    align-content: center;
-    justify-items: start;
-    gap: 0.08rem;
-    padding: 0.22rem 0.32rem;
-    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 28%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background:
-        radial-gradient(circle at 15% 0%, color-mix(in srgb, #ffffff 30%, transparent), transparent 5rem),
-        color-mix(in srgb, var(--ui-accent, #d8a85f) 9%, var(--ui-surface, #fffefa));
-}
-
-.studio-schedule-slot.has-booking.is-range-mid span {
-    border-top-color: transparent;
-    border-bottom-color: transparent;
-    border-radius: 0.24rem;
-    opacity: 0.92;
-}
-
-.studio-schedule-slot.has-booking.is-range-start:not(.is-range-end) span {
-    border-bottom-color: transparent;
-    border-bottom-left-radius: 0.24rem;
-    border-bottom-right-radius: 0.24rem;
-}
-
-.studio-schedule-slot.has-booking.is-range-end:not(.is-range-start) span {
-    border-top-color: transparent;
-    border-top-left-radius: 0.24rem;
-    border-top-right-radius: 0.24rem;
-}
-
-.studio-schedule-slot.has-booking strong,
-.studio-schedule-slot.has-booking em {
-    max-width: 100%;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-style: normal;
-    line-height: 1.08;
-}
-
-.studio-schedule-slot.has-booking strong {
-    color: var(--ui-text-strong, #11100e);
-    font-size: 0.6rem;
-    font-weight: 850;
-    letter-spacing: -0.035em;
-}
-
-.studio-schedule-slot.has-booking em {
-    color: var(--ui-text-muted, #70685e);
-    font-size: 0.5rem;
-    font-weight: 750;
-}
-
-.studio-schedule-slot.status-dp span {
-    border-color: color-mix(in srgb, #365cc9 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background-color: color-mix(in srgb, #365cc9 6%, var(--ui-surface, #fffefa));
-}
-
-.studio-schedule-slot.status-paid span {
-    border-color: color-mix(in srgb, #15794b 36%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background-color: color-mix(in srgb, #15794b 6%, var(--ui-surface, #fffefa));
-}
-
-.studio-schedule-slot.status-pending span {
-    border-color: color-mix(in srgb, #8a5b10 36%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background-color: color-mix(in srgb, #8a5b10 6%, var(--ui-surface, #fffefa));
-}
-
-.studio-schedule-slot.is-filtered-out {
-    opacity: 0.32;
-}
-
-@media (max-width: 720px) {
     .studio-booking-modal {
         align-items: end;
         padding: 0.48rem;
@@ -1543,338 +1543,4 @@ select,
         font-size: 0.76rem;
     }
 }
-/* </studio-booking-duration-range-hotfix> */
-
-
-/* <studio-modern-booking-blocks> */
-.studio-schedule-table {
-    --schedule-row-height: 2.72rem;
-    --booking-cell-gutter: 0.24rem;
-}
-
-.studio-schedule-table tr {
-    height: var(--schedule-row-height);
-}
-
-.studio-schedule-cell {
-    position: relative;
-    overflow: visible;
-}
-
-.studio-schedule-cell.has-booking {
-    background:
-        linear-gradient(180deg, color-mix(in srgb, var(--ui-accent, #d8a85f) 4%, transparent), transparent),
-        color-mix(in srgb, var(--ui-surface, #fffefa) 44%, transparent);
-}
-
-.studio-schedule-cell.is-range-covered {
-    background: color-mix(in srgb, var(--ui-accent, #d8a85f) 3%, var(--ui-surface, #fffefa));
-}
-
-.studio-schedule-cell.is-filtered-out {
-    background: color-mix(in srgb, var(--ui-surface, #fffefa) 34%, transparent);
-}
-
-.studio-schedule-slot {
-    position: relative;
-}
-
-.studio-schedule-slot.has-booking {
-    overflow: visible;
-    z-index: 3;
-}
-
-.studio-schedule-slot.is-range-start {
-    z-index: 16;
-}
-
-.studio-schedule-cell.is-selected .studio-schedule-slot.is-range-start {
-    z-index: 26;
-}
-
-.studio-empty-slot-indicator {
-    width: calc(100% - 0.48rem);
-    height: calc(100% - 0.48rem);
-    border-radius: 0.58rem;
-    border: 1px solid transparent;
-    background: transparent;
-    display: grid;
-    place-items: center;
-    transition:
-        background 140ms ease,
-        border-color 140ms ease,
-        box-shadow 140ms ease,
-        transform 140ms ease;
-}
-
-.studio-schedule-slot:hover .studio-empty-slot-indicator,
-.studio-schedule-slot:focus-visible .studio-empty-slot-indicator {
-    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background:
-        radial-gradient(circle at 50% 0%, color-mix(in srgb, #ffffff 28%, transparent), transparent 60%),
-        color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, var(--ui-surface, #fffefa));
-    box-shadow:
-        0 0.42rem 0.9rem color-mix(in srgb, var(--ui-accent, #d8a85f) 10%, transparent),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 48%, transparent);
-    transform: translateY(-1px);
-}
-
-.studio-schedule-slot .studio-empty-slot-indicator .studio-icon {
-    width: 0.78rem;
-    height: 0.78rem;
-    opacity: 0;
-    color: color-mix(in srgb, var(--ui-accent, #d8a85f) 82%, var(--ui-text-main, #25231f));
-    transition: opacity 140ms ease, transform 140ms ease;
-}
-
-.studio-schedule-slot:hover .studio-empty-slot-indicator .studio-icon,
-.studio-schedule-slot:focus-visible .studio-empty-slot-indicator .studio-icon {
-    opacity: 1;
-    transform: scale(1.02);
-}
-
-.studio-schedule-slot.has-booking > .studio-booking-block {
-    position: absolute;
-    top: var(--booking-cell-gutter);
-    left: var(--booking-cell-gutter);
-    right: var(--booking-cell-gutter);
-    width: auto;
-    height: calc((var(--booking-hours, 1) * var(--schedule-row-height)) - (var(--booking-cell-gutter) * 2));
-    min-height: 2.18rem;
-    z-index: 20;
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
-    align-content: start;
-    gap: 0.08rem;
-    border: 1px solid color-mix(in srgb, var(--ui-accent, #d8a85f) 38%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    border-radius: 0.84rem;
-    padding: 0.42rem 0.46rem;
-    overflow: hidden;
-    isolation: isolate;
-    text-align: left;
-    background:
-        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 54%, transparent), transparent 5.5rem),
-        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--ui-accent, #d8a85f) 22%, transparent), transparent 7rem),
-        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, var(--ui-accent, #d8a85f) 12%, var(--ui-surface, #fffefa)));
-    box-shadow:
-        0 0.8rem 1.8rem color-mix(in srgb, #000000 10%, transparent),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 64%, transparent);
-    backdrop-filter: blur(18px);
-    transform: translateZ(0);
-    transition:
-        transform 150ms ease,
-        box-shadow 150ms ease,
-        border-color 150ms ease,
-        opacity 150ms ease;
-}
-
-.studio-schedule-slot.has-booking > .studio-booking-block::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background:
-        linear-gradient(180deg, color-mix(in srgb, #ffffff 14%, transparent), transparent 38%),
-        linear-gradient(90deg, color-mix(in srgb, #ffffff 7%, transparent), transparent);
-    opacity: 0.82;
-}
-
-.studio-schedule-slot.has-booking > .studio-booking-block::after {
-    content: "";
-    position: absolute;
-    inset: 0.32rem auto 0.32rem 0.32rem;
-    width: 0.18rem;
-    border-radius: 999rem;
-    background: currentColor;
-    opacity: 0.62;
-}
-
-.studio-schedule-slot.has-booking:hover > .studio-booking-block,
-.studio-schedule-slot.has-booking:focus-visible > .studio-booking-block {
-    border-color: color-mix(in srgb, currentColor 40%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    box-shadow:
-        0 1rem 2.2rem color-mix(in srgb, #000000 13%, transparent),
-        0 0 0 3px color-mix(in srgb, currentColor 10%, transparent),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 66%, transparent);
-    transform: translateY(-1px);
-}
-
-.studio-booking-block strong,
-.studio-booking-block em,
-.studio-booking-block small,
-.studio-booking-block b {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-style: normal;
-    line-height: 1.08;
-}
-
-.studio-booking-block strong {
-    display: block;
-    padding-left: 0.28rem;
-    color: var(--ui-text-strong, #11100e);
-    font-size: 0.66rem;
-    font-weight: 900;
-    letter-spacing: -0.045em;
-}
-
-.studio-booking-block em {
-    display: block;
-    padding-left: 0.28rem;
-    color: color-mix(in srgb, var(--ui-text-main, #25231f) 78%, transparent);
-    font-size: 0.52rem;
-    font-weight: 780;
-    letter-spacing: -0.018em;
-}
-
-.studio-booking-block small {
-    display: block;
-    align-self: end;
-    padding-left: 0.28rem;
-    color: var(--ui-text-muted, #70685e);
-    font-size: 0.5rem;
-    font-weight: 720;
-    letter-spacing: -0.012em;
-}
-
-.studio-booking-block b {
-    position: absolute;
-    top: 0.34rem;
-    right: 0.34rem;
-    min-width: 2.6rem;
-    min-height: 1.12rem;
-    display: inline-grid;
-    place-items: center;
-    border-radius: 999rem;
-    padding: 0 0.36rem;
-    background: color-mix(in srgb, #ffffff 50%, transparent);
-    color: currentColor;
-    font-size: 0.48rem;
-    font-weight: 900;
-    letter-spacing: 0.025em;
-    text-transform: uppercase;
-    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent);
-}
-
-.studio-schedule-slot.duration-1 > .studio-booking-block {
-    grid-template-rows: auto auto;
-    gap: 0.05rem;
-    padding: 0.34rem 0.42rem;
-}
-
-.studio-schedule-slot.duration-1 > .studio-booking-block small,
-.studio-schedule-slot.duration-1 > .studio-booking-block b {
-    display: none;
-}
-
-.studio-schedule-slot.duration-1 > .studio-booking-block strong {
-    font-size: 0.6rem;
-}
-
-.studio-schedule-slot.duration-1 > .studio-booking-block em {
-    font-size: 0.48rem;
-}
-
-.studio-schedule-slot.duration-2 > .studio-booking-block small {
-    display: none;
-}
-
-.studio-schedule-slot.status-pending > .studio-booking-block {
-    color: #9a6612;
-    border-color: color-mix(in srgb, #9a6612 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background:
-        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 54%, transparent), transparent 5.5rem),
-        radial-gradient(circle at 100% 0%, color-mix(in srgb, #d8a85f 28%, transparent), transparent 7rem),
-        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, #d8a85f 12%, var(--ui-surface, #fffefa)));
-}
-
-.studio-schedule-slot.status-dp > .studio-booking-block {
-    color: #365cc9;
-    border-color: color-mix(in srgb, #365cc9 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background:
-        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 54%, transparent), transparent 5.5rem),
-        radial-gradient(circle at 100% 0%, color-mix(in srgb, #365cc9 22%, transparent), transparent 7rem),
-        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, #365cc9 9%, var(--ui-surface, #fffefa)));
-}
-
-.studio-schedule-slot.status-paid > .studio-booking-block {
-    color: #15794b;
-    border-color: color-mix(in srgb, #15794b 36%, var(--ui-border, rgba(32, 28, 23, 0.12)));
-    background:
-        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 54%, transparent), transparent 5.5rem),
-        radial-gradient(circle at 100% 0%, color-mix(in srgb, #15794b 22%, transparent), transparent 7rem),
-        linear-gradient(145deg, color-mix(in srgb, var(--ui-surface, #fffefa) 88%, transparent), color-mix(in srgb, #15794b 9%, var(--ui-surface, #fffefa)));
-}
-
-.studio-schedule-slot.is-range-mid,
-.studio-schedule-slot.is-range-end:not(.is-range-start) {
-    z-index: 1;
-}
-
-.studio-booking-block-ghost {
-    width: calc(100% - 0.48rem);
-    height: calc(100% - 0.48rem);
-    display: block;
-    border-radius: 0.42rem;
-    background: color-mix(in srgb, currentColor 5%, transparent);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.studio-schedule-slot.has-booking.is-range-mid:hover .studio-booking-block-ghost,
-.studio-schedule-slot.has-booking.is-range-end:hover .studio-booking-block-ghost {
-    opacity: 0.08;
-}
-
-.studio-schedule-slot.is-filtered-out > .studio-booking-block {
-    opacity: 0.3;
-    filter: saturate(0.72);
-}
-
-.studio-schedule-cell.is-range-covered.is-filtered-out {
-    opacity: 0.52;
-}
-
-@media (max-width: 720px) {
-    .studio-schedule-table {
-        --schedule-row-height: 2.72rem;
-        --booking-cell-gutter: 0.2rem;
-    }
-
-    .studio-schedule-slot.has-booking > .studio-booking-block {
-        border-radius: 0.74rem;
-        padding: 0.34rem 0.38rem;
-    }
-
-    .studio-booking-block strong {
-        font-size: 0.58rem;
-    }
-
-    .studio-booking-block em {
-        font-size: 0.46rem;
-    }
-
-    .studio-booking-block small {
-        font-size: 0.44rem;
-    }
-
-    .studio-booking-block b {
-        top: 0.26rem;
-        right: 0.26rem;
-        min-width: 2.2rem;
-        min-height: 1rem;
-        font-size: 0.42rem;
-    }
-
-    .studio-schedule-slot.duration-1 > .studio-booking-block strong {
-        font-size: 0.54rem;
-    }
-
-    .studio-schedule-slot.duration-1 > .studio-booking-block em {
-        display: none;
-    }
-}
-/* </studio-modern-booking-blocks> */
+/* </studio-rowspan-booking-blocks> */
