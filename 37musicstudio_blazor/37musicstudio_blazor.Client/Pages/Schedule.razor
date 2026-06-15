@@ -78,6 +78,26 @@
                 </button>
             </div>
         </div>
+    
+        <div class="studio-schedule-hero-strip" aria-label="Ringkasan status booking">
+            <article class="studio-status-hero hero-pending">
+                <span>Pending</span>
+                <strong>@PendingBookingCount</strong>
+                <small>Menunggu konfirmasi</small>
+            </article>
+
+            <article class="studio-status-hero hero-dp">
+                <span>DP</span>
+                <strong>@DpBookingCount</strong>
+                <small>Sudah bayar tanda jadi</small>
+            </article>
+
+            <article class="studio-status-hero hero-paid">
+                <span>Lunas</span>
+                <strong>@PaidBookingCount</strong>
+                <small>Pembayaran selesai</small>
+            </article>
+        </div>
     </header>
 
     <section class="studio-schedule-board" style="@ScheduleDayStyle" aria-label="Grid jadwal">
@@ -486,6 +506,38 @@
         }
     }
 
+
+    private IReadOnlyList<StudioBooking> VisibleRangeBookings
+    {
+        get
+        {
+            var days = VisibleDays;
+
+            if (days.Count == 0)
+            {
+                return Array.Empty<StudioBooking>();
+            }
+
+            var start = days.First().Date;
+            var end = days.Last().Date.AddDays(1);
+
+            return Bookings
+                .Where(booking => booking.StartAt < end && booking.EndAt > start)
+                .OrderBy(booking => booking.StartAt)
+                .ToArray();
+        }
+    }
+
+    private int PendingBookingCount => CountVisibleBookingsByStatus(BookingPaymentStatus.Pending);
+
+    private int DpBookingCount => CountVisibleBookingsByStatus(BookingPaymentStatus.Dp);
+
+    private int PaidBookingCount => CountVisibleBookingsByStatus(BookingPaymentStatus.Paid);
+
+    private int CountVisibleBookingsByStatus(BookingPaymentStatus status)
+    {
+        return VisibleRangeBookings.Count(booking => booking.Status == status);
+    }
     private void SetViewMode(ScheduleViewMode viewMode)
     {
         ActiveViewMode = viewMode;

@@ -1769,3 +1769,319 @@ select,
     }
 }
 /* </studio-booking-block-typography-fix> */
+
+
+/* <studio-compact-status-hero-toolbar> */
+.studio-schedule-toolbar,
+.studio-schedule-toolbar *,
+.studio-schedule-hero-strip,
+.studio-schedule-hero-strip * {
+    font-family: var(--studio-body-font, "Montserrat", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif) !important;
+}
+
+.studio-schedule-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(18rem, 0.9fr) minmax(18rem, 0.72fr) minmax(22rem, 1.05fr) !important;
+    grid-template-areas:
+        "title nav heroes"
+        "view filter heroes" !important;
+    align-items: center !important;
+    gap: 0.42rem 0.78rem !important;
+    padding: 0.2rem 0.15rem 0.5rem !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.studio-toolbar-main {
+    display: contents !important;
+}
+
+.studio-toolbar-title {
+    grid-area: title !important;
+    min-width: 0 !important;
+    align-self: end !important;
+}
+
+.studio-toolbar-title p {
+    margin: 0 !important;
+    color: var(--ui-text-muted, #70685e) !important;
+    font-size: 0.56rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+}
+
+.studio-toolbar-title h1 {
+    margin: 0.04rem 0 0 !important;
+    color: var(--ui-text-strong, #11100e) !important;
+    font-size: clamp(1.18rem, 2vw, 1.55rem) !important;
+    line-height: 1 !important;
+    letter-spacing: -0.055em !important;
+    font-weight: 850 !important;
+    text-transform: capitalize !important;
+}
+
+.studio-toolbar-actions {
+    grid-area: nav !important;
+    justify-self: center !important;
+    align-self: end !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.28rem !important;
+    padding: 0.16rem !important;
+    border-radius: 0.95rem !important;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 52%, transparent) !important;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 42%, transparent) !important;
+}
+
+.studio-toolbar-actions button {
+    min-height: 2rem !important;
+    border-radius: 0.68rem !important;
+    padding: 0 0.65rem !important;
+    font-size: 0.68rem !important;
+    box-shadow: none !important;
+}
+
+.studio-toolbar-actions .studio-nav-icon {
+    width: 2rem !important;
+    padding: 0 !important;
+    font-size: 1.18rem !important;
+}
+
+.studio-toolbar-rail {
+    display: contents !important;
+}
+
+.studio-control-group {
+    min-width: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.18rem !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.studio-control-group:first-child {
+    grid-area: view !important;
+    justify-self: start !important;
+}
+
+.studio-filter-group {
+    grid-area: filter !important;
+    justify-self: center !important;
+}
+
+.studio-control-label {
+    margin-right: 0.24rem !important;
+    color: var(--ui-text-muted, #70685e) !important;
+    font-size: 0.54rem !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.13em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+}
+
+.studio-control-button {
+    min-height: 1.92rem !important;
+    border-radius: 0.62rem !important;
+    padding: 0 0.62rem !important;
+    font-size: 0.64rem !important;
+    font-weight: 760 !important;
+    letter-spacing: -0.015em !important;
+}
+
+.studio-control-button.is-active {
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 52%, transparent) !important;
+}
+
+.studio-schedule-hero-strip {
+    grid-area: heroes !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.45rem !important;
+    align-self: stretch !important;
+    min-width: 0 !important;
+}
+
+.studio-status-hero {
+    --hero-color: var(--ui-accent, #d8a85f);
+    position: relative !important;
+    min-width: 0 !important;
+    min-height: 3.36rem !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto !important;
+    align-content: center !important;
+    gap: 0.08rem 0.45rem !important;
+    padding: 0.44rem 0.62rem 0.44rem 0.72rem !important;
+    border: 0 !important;
+    border-radius: 0.94rem !important;
+    overflow: hidden !important;
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, #ffffff 50%, transparent), transparent 5.5rem),
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--hero-color) 22%, transparent), transparent 6rem),
+        color-mix(in srgb, var(--hero-color) 9%, transparent) !important;
+    box-shadow: none !important;
+    isolation: isolate !important;
+}
+
+.studio-status-hero::before {
+    content: "" !important;
+    position: absolute !important;
+    left: 0.36rem !important;
+    top: 0.48rem !important;
+    bottom: 0.48rem !important;
+    width: 0.18rem !important;
+    border-radius: 999rem !important;
+    background: var(--hero-color) !important;
+}
+
+.studio-status-hero span {
+    min-width: 0 !important;
+    color: color-mix(in srgb, var(--ui-text-main, #25231f) 74%, var(--hero-color)) !important;
+    font-size: 0.6rem !important;
+    font-weight: 850 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.studio-status-hero strong {
+    grid-row: 1 / 3 !important;
+    grid-column: 2 !important;
+    align-self: center !important;
+    color: var(--hero-color) !important;
+    font-size: clamp(1.35rem, 2.1vw, 1.85rem) !important;
+    font-weight: 900 !important;
+    line-height: 0.95 !important;
+    letter-spacing: -0.08em !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+.studio-status-hero small {
+    min-width: 0 !important;
+    color: var(--ui-text-muted, #70685e) !important;
+    font-size: 0.56rem !important;
+    font-weight: 650 !important;
+    letter-spacing: -0.018em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.studio-status-hero.hero-pending {
+    --hero-color: var(--booking-pending-color, #ff2d2d);
+}
+
+.studio-status-hero.hero-dp {
+    --hero-color: var(--booking-dp-color, #1677ff);
+}
+
+.studio-status-hero.hero-paid {
+    --hero-color: var(--booking-paid-color, #00b96b);
+}
+
+.studio-schedule-board {
+    margin-top: 0.1rem !important;
+}
+
+@media (max-width: 1180px) {
+    .studio-schedule-toolbar {
+        grid-template-columns: minmax(16rem, 1fr) auto !important;
+        grid-template-areas:
+            "title nav"
+            "view filter"
+            "heroes heroes" !important;
+    }
+
+    .studio-toolbar-actions {
+        justify-self: end !important;
+    }
+
+    .studio-filter-group {
+        justify-self: end !important;
+    }
+}
+
+@media (max-width: 720px) {
+    .studio-schedule-toolbar {
+        grid-template-columns: 1fr !important;
+        grid-template-areas:
+            "title"
+            "nav"
+            "view"
+            "filter"
+            "heroes" !important;
+        gap: 0.38rem !important;
+        padding-bottom: 0.44rem !important;
+    }
+
+    .studio-toolbar-title {
+        align-self: start !important;
+    }
+
+    .studio-toolbar-actions,
+    .studio-control-group:first-child,
+    .studio-filter-group {
+        justify-self: stretch !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+    }
+
+    .studio-toolbar-actions::-webkit-scrollbar,
+    .studio-control-group::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .studio-toolbar-actions button,
+    .studio-control-button {
+        flex: 1 0 auto !important;
+    }
+
+    .studio-toolbar-actions .studio-nav-icon {
+        flex: 0 0 2rem !important;
+    }
+
+    .studio-schedule-hero-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.34rem !important;
+    }
+
+    .studio-status-hero {
+        min-height: 3rem !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto auto !important;
+        justify-items: start !important;
+        gap: 0.02rem !important;
+        padding: 0.42rem 0.46rem 0.42rem 0.62rem !important;
+        border-radius: 0.78rem !important;
+    }
+
+    .studio-status-hero strong {
+        grid-row: auto !important;
+        grid-column: auto !important;
+        font-size: 1.18rem !important;
+        letter-spacing: -0.07em !important;
+    }
+
+    .studio-status-hero span {
+        font-size: 0.48rem !important;
+    }
+
+    .studio-status-hero small {
+        display: none !important;
+    }
+
+    .studio-status-hero::before {
+        left: 0.28rem !important;
+        top: 0.44rem !important;
+        bottom: 0.44rem !important;
+        width: 0.14rem !important;
+    }
+}
+/* </studio-compact-status-hero-toolbar> */
