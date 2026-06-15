@@ -4,6 +4,7 @@
 
 @using System.Globalization
 @using System.Net.Http.Headers
+@using System.Net.Http.Json
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @using Microsoft.AspNetCore.Components.Forms
@@ -175,11 +176,7 @@
         ? "Belum ada file dipilih."
         : $"{SelectedFile.Name} â€¢ {FormatBytes(SelectedFile.Size)}";
 
-    private bool IsUploadDisabled =>
-        IsUploading ||
-        SelectedFile is null ||
-        string.IsNullOrWhiteSpace(CloudinarySettings.CloudName) ||
-        string.IsNullOrWhiteSpace(CloudinarySettings.UploadPreset);
+    private bool IsUploadDisabled => IsUploading || SelectedFile is null;
 
     private IReadOnlyList<string> CategoryOptions => new[]
     {
@@ -335,13 +332,6 @@
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(CloudinarySettings.CloudName) ||
-            string.IsNullOrWhiteSpace(CloudinarySettings.UploadPreset))
-        {
-            FormMessage = "Cloud Name dan Upload Preset wajib diisi.";
-            return;
-        }
-
         if (SelectedFile.Size > MaxUploadBytes)
         {
             FormMessage = $"Ukuran file terlalu besar. Maksimal {FormatBytes(MaxUploadBytes)}.";
@@ -355,6 +345,29 @@
         {
             await SaveCloudinarySettingsAsync();
 
+            var signatureResponse = await Http.PostAsJsonAsync(
+                "cloudinary/sign-upload",
+                new CloudinarySignatureRequest(CloudinarySettings.Folder?.Trim() ?? string.Empty));
+
+            var signatureResponseText = await signatureResponse.Content.ReadAsStringAsync();
+
+            if (!signatureResponse.IsSuccessStatusCode)
+            {
+                FormMessage = $"Gagal membuat signature Cloudinary: {(int)signatureResponse.StatusCode}. {TrimResponse(signatureResponseText)}";
+                return;
+            }
+
+            var signature = await signatureResponse.Content.ReadFromJsonAsync<CloudinarySignatureResponse>(LocalJsonOptions);
+
+            if (signature is null ||
+                string.IsNullOrWhiteSpace(signature.CloudName) ||
+                string.IsNullOrWhiteSpace(signature.ApiKey) ||
+                string.IsNullOrWhiteSpace(signature.Signature))
+            {
+                FormMessage = "Signature Cloudinary tidak lengkap.";
+                return;
+            }
+
             using var formData = new MultipartFormDataContent();
             using var fileStream = SelectedFile.OpenReadStream(MaxUploadBytes);
             using var fileContent = new StreamContent(fileStream);
@@ -364,16 +377,18 @@
                     ? "application/octet-stream"
                     : SelectedFile.ContentType);
 
-            formData.Add(new StringContent(CloudinarySettings.UploadPreset.Trim()), "upload_preset");
+            formData.Add(new StringContent(signature.ApiKey), "api_key");
+            formData.Add(new StringContent(signature.Timestamp.ToString(CultureInfo.InvariantCulture)), "timestamp");
+            formData.Add(new StringContent(signature.Signature), "signature");
 
-            if (!string.IsNullOrWhiteSpace(CloudinarySettings.Folder))
+            if (!string.IsNullOrWhiteSpace(signature.Folder))
             {
-                formData.Add(new StringContent(CloudinarySettings.Folder.Trim()), "folder");
+                formData.Add(new StringContent(signature.Folder.Trim()), "folder");
             }
 
             formData.Add(fileContent, "file", SelectedFile.Name);
 
-            var cloudName = Uri.EscapeDataString(CloudinarySettings.CloudName.Trim());
+            var cloudName = Uri.EscapeDataString(signature.CloudName.Trim());
             var endpoint = $"https://api.cloudinary.com/v1_1/{cloudName}/image/upload";
 
             using var response = await Http.PostAsync(endpoint, formData);
@@ -590,6 +605,20 @@
         }
     }
 
+    private sealed record CloudinarySignatureRequest(string Folder);
+
+    private sealed class CloudinarySignatureResponse
+    {
+        public string CloudName { get; set; } = string.Empty;
+
+        public string ApiKey { get; set; } = string.Empty;
+
+        public long Timestamp { get; set; }
+
+        public string Signature { get; set; } = string.Empty;
+
+        public string Folder { get; set; } = string.Empty;
+    }
     private sealed class CloudinaryUploadResponse
     {
         [JsonPropertyName("public_id")]

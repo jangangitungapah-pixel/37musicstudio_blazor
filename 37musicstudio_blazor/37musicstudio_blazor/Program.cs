@@ -1,3 +1,7 @@
+using System.Text.Json;
+using System.Text;
+using System.Security.Cryptography;
+using System.Globalization;
 using Radzen;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -147,9 +151,122 @@ app.MapPost("/local-auth/sign-out", async (HttpContext httpContext) =>
 }).RequireAuthorization();
 // </studio-local-admin-auth:endpoints>
 
+app.MapPost("/cloudinary/sign-upload", async (CloudinarySignatureRequest request, IWebHostEnvironment environment) =>
+{
+    try
+    {
+        var options = await CloudinaryUploadSupport.LoadOptionsAsync(environment.ContentRootPath);
+        var folder = string.IsNullOrWhiteSpace(request.Folder)
+            ? options.Folder
+            : request.Folder.Trim();
+
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        var parameters = new SortedDictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["timestamp"] = timestamp.ToString(CultureInfo.InvariantCulture)
+        };
+
+        if (!string.IsNullOrWhiteSpace(folder))
+        {
+            parameters["folder"] = folder;
+        }
+
+        var signature = CloudinaryUploadSupport.SignParameters(parameters, options.ApiSecret);
+
+        return Results.Ok(new CloudinarySignatureResponse(
+            options.CloudName,
+            options.ApiKey,
+            timestamp,
+            signature,
+            folder ?? string.Empty
+        ));
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            title: "Cloudinary signature failed",
+            detail: ex.Message,
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
+}).RequireAuthorization();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(_37musicstudio_blazor.Client._Imports).Assembly);
 
 app.Run();
+
+sealed record CloudinarySignatureRequest(string? Folder);
+
+sealed record CloudinarySignatureResponse(
+    string CloudName,
+    string ApiKey,
+    long Timestamp,
+    string Signature,
+    string Folder);
+
+sealed class CloudinaryLocalOptions
+{
+    public string CloudName { get; set; } = string.Empty;
+    public string ApiKey { get; set; } = string.Empty;
+    public string ApiSecret { get; set; } = string.Empty;
+    public string Folder { get; set; } = "37-music-studio/gallery";
+}
+
+static class CloudinaryUploadSupport
+{
+    public static async Task<CloudinaryLocalOptions> LoadOptionsAsync(string contentRootPath)
+    {
+        var candidates = EnumerateConfigPaths(contentRootPath).ToArray();
+        var path = candidates.FirstOrDefault(File.Exists);
+
+        if (path is null)
+        {
+            throw new InvalidOperationException(
+                "File .local/cloudinary.local.json belum ada. Buat di root repo atau host project.");
+        }
+
+        var json = await File.ReadAllTextAsync(path, Encoding.UTF8);
+        var options = JsonSerializer.Deserialize<CloudinaryLocalOptions>(
+            json,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        if (options is null ||
+            string.IsNullOrWhiteSpace(options.CloudName) ||
+            string.IsNullOrWhiteSpace(options.ApiKey) ||
+            string.IsNullOrWhiteSpace(options.ApiSecret))
+        {
+            throw new InvalidOperationException(
+                "Cloudinary local config wajib berisi cloudName, apiKey, dan apiSecret.");
+        }
+
+        options.CloudName = options.CloudName.Trim();
+        options.ApiKey = options.ApiKey.Trim();
+        options.ApiSecret = options.ApiSecret.Trim();
+        options.Folder = string.IsNullOrWhiteSpace(options.Folder)
+            ? "37-music-studio/gallery"
+            : options.Folder.Trim();
+
+        return options;
+    }
+
+    public static string SignParameters(SortedDictionary<string, string> parameters, string apiSecret)
+    {
+        var payload = string.Join("&", parameters.Select(item => $"{item.Key}={item.Value}"));
+        var bytes = SHA1.HashData(Encoding.UTF8.GetBytes(payload + apiSecret));
+
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    private static IEnumerable<string> EnumerateConfigPaths(string contentRootPath)
+    {
+        var current = new DirectoryInfo(contentRootPath);
+
+        for (var index = 0; index < 6 && current is not null; index++)
+        {
+            yield return Path.Combine(current.FullName, ".local", "cloudinary.local.json");
+            current = current.Parent;
+        }
+    }
+}
