@@ -1,0 +1,670 @@
+@page "/dashboard"
+@layout StudioAdminLayout
+@using System.Globalization
+@using System.Linq
+@using System.Text.Json
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<PageTitle>Dashboard | 37 Music Studio</PageTitle>
+
+<section class="studio-dashboard-page" aria-labelledby="dashboardTitle">
+    <header class="studio-dashboard-hero">
+        <div>
+            <span class="studio-dashboard-eyebrow">Ringkasan Studio</span>
+            <h1 id="dashboardTitle">Dashboard</h1>
+            <p>Gambaran cepat aktivitas studio, jadwal, tagihan, dan inventory. Dibuat simpel supaya langsung kebaca.</p>
+        </div>
+
+        <div class="studio-dashboard-hero-actions">
+            <span>@LastUpdatedLabel</span>
+            <button type="button" @onclick="LoadDashboardAsync">Refresh</button>
+        </div>
+    </header>
+
+    @if (IsLoading)
+    {
+        <section class="studio-dashboard-loading" aria-label="Memuat dashboard">
+            <strong>Memuat dashboard...</strong>
+            <span>Sedang membaca data lokal studio.</span>
+        </section>
+    }
+    else
+    {
+        <section class="studio-dashboard-metrics" aria-label="Ringkasan angka utama">
+            @foreach (var metric in Metrics)
+            {
+                <article class="studio-dashboard-metric @metric.Tone">
+                    <span>@metric.Label</span>
+                    <strong>@metric.Value</strong>
+                    <small>@metric.Hint</small>
+                </article>
+            }
+        </section>
+
+        <section class="studio-dashboard-grid">
+            <article class="studio-dashboard-panel">
+                <header class="studio-dashboard-panel-head">
+                    <div>
+                        <span>Hari Ini</span>
+                        <h2>Booking hari ini</h2>
+                    </div>
+                    <button type="button" @onclick="@(() => NavigationManager.NavigateTo("/schedule"))">Lihat Jadwal</button>
+                </header>
+
+                @if (TodayBookings.Count == 0)
+                {
+                    <div class="studio-dashboard-empty">
+                        <strong>Belum ada booking hari ini.</strong>
+                        <span>Kalau ada jadwal baru, ringkasannya akan muncul di sini.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="studio-dashboard-list">
+                        @foreach (var booking in TodayBookings)
+                        {
+                            <div class="studio-dashboard-list-row">
+                                <div class="studio-dashboard-time">
+                                    <strong>@FormatTime(booking.Start)</strong>
+                                    <span>@booking.Room</span>
+                                </div>
+
+                                <div class="studio-dashboard-list-main">
+                                    <strong>@booking.Title</strong>
+                                    <span>@booking.Category</span>
+                                </div>
+
+                                <span class="studio-dashboard-pill @GetPaymentTone(booking.PaymentStatus, booking.RemainingAmount)">
+                                    @booking.PaymentLabel
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+            </article>
+
+            <article class="studio-dashboard-panel">
+                <header class="studio-dashboard-panel-head">
+                    <div>
+                        <span>Berikutnya</span>
+                        <h2>Jadwal terdekat</h2>
+                    </div>
+                    <button type="button" @onclick="@(() => NavigationManager.NavigateTo("/booking"))">Tambah Booking</button>
+                </header>
+
+                @if (UpcomingBookings.Count == 0)
+                {
+                    <div class="studio-dashboard-empty">
+                        <strong>Belum ada jadwal mendatang.</strong>
+                        <span>Booking baru akan langsung tampil di bagian ini.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="studio-dashboard-list">
+                        @foreach (var booking in UpcomingBookings)
+                        {
+                            <div class="studio-dashboard-list-row">
+                                <div class="studio-dashboard-time">
+                                    <strong>@FormatUpcomingDate(booking.Start)</strong>
+                                    <span>@booking.Room</span>
+                                </div>
+
+                                <div class="studio-dashboard-list-main">
+                                    <strong>@booking.Title</strong>
+                                    <span>@booking.Category</span>
+                                </div>
+
+                                <span class="studio-dashboard-pill neutral">@booking.StatusLabel</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </article>
+
+            <article class="studio-dashboard-panel">
+                <header class="studio-dashboard-panel-head">
+                    <div>
+                        <span>Keuangan</span>
+                        <h2>Tagihan belum lunas</h2>
+                    </div>
+                    <button type="button" @onclick="@(() => NavigationManager.NavigateTo("/billing"))">Buka POS</button>
+                </header>
+
+                @if (OpenInvoices.Count == 0)
+                {
+                    <div class="studio-dashboard-empty">
+                        <strong>Semua tagihan terlihat aman.</strong>
+                        <span>Tidak ada sisa pembayaran yang terbaca dari data booking.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="studio-dashboard-list">
+                        @foreach (var invoice in OpenInvoices)
+                        {
+                            <div class="studio-dashboard-list-row">
+                                <div class="studio-dashboard-time">
+                                    <strong>@FormatShortDate(invoice.Date)</strong>
+                                    <span>@invoice.PaymentStatus</span>
+                                </div>
+
+                                <div class="studio-dashboard-list-main">
+                                    <strong>@invoice.CustomerName</strong>
+                                    <span>Total @FormatCurrency(invoice.TotalAmount)</span>
+                                </div>
+
+                                <span class="studio-dashboard-pill danger">@FormatCurrency(invoice.RemainingAmount)</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </article>
+
+            <article class="studio-dashboard-panel">
+                <header class="studio-dashboard-panel-head">
+                    <div>
+                        <span>Akses Cepat</span>
+                        <h2>Menu yang sering dipakai</h2>
+                    </div>
+                </header>
+
+                <div class="studio-dashboard-actions">
+                    @foreach (var action in QuickActions)
+                    {
+                        <button type="button" @onclick="@(() => NavigationManager.NavigateTo(action.Href))">
+                            <strong>@action.Label</strong>
+                            <span>@action.Description</span>
+                        </button>
+                    }
+                </div>
+            </article>
+        </section>
+    }
+</section>
+
+@code {
+    private const string BookingsStorageKey = "37musicstudio.bookings.v1";
+    private const string CustomersStorageKey = "37musicstudio.customers.v1";
+    private const string InventoryStorageKey = "37musicstudio.inventory.v1";
+    private const string GalleryStorageKey = "37musicstudio.gallery.v1";
+
+    private static readonly CultureInfo IndonesianCulture = CultureInfo.GetCultureInfo("id-ID");
+
+    private bool IsLoading { get; set; } = true;
+
+    private DateTime? LastUpdated { get; set; }
+
+    private string LastUpdatedLabel => LastUpdated is null
+        ? "Belum dimuat"
+        : $"Update {LastUpdated.Value.ToString("HH:mm", IndonesianCulture)}";
+
+    private List<DashboardMetric> Metrics { get; set; } = new();
+
+    private List<DashboardBooking> TodayBookings { get; set; } = new();
+
+    private List<DashboardBooking> UpcomingBookings { get; set; } = new();
+
+    private List<DashboardInvoice> OpenInvoices { get; set; } = new();
+
+    private static readonly IReadOnlyList<QuickAction> QuickActions = new[]
+    {
+        new QuickAction("Jadwal", "Lihat calendar studio", "/schedule"),
+        new QuickAction("Booking", "Tambah booking baru", "/booking"),
+        new QuickAction("Customer", "Kelola pelanggan", "/customers"),
+        new QuickAction("Billing / POS", "Cek pembayaran", "/billing"),
+        new QuickAction("Inventory", "Cek alat studio", "/inventory"),
+        new QuickAction("Gallery", "Foto studio", "/gallery")
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await LoadDashboardAsync();
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        var bookingElements = await ReadLocalCollectionAsync(BookingsStorageKey);
+        var customerElements = await ReadLocalCollectionAsync(CustomersStorageKey);
+        var inventoryElements = await ReadLocalCollectionAsync(InventoryStorageKey);
+        var galleryElements = await ReadLocalCollectionAsync(GalleryStorageKey);
+
+        var bookings = bookingElements
+            .Select(ParseBooking)
+            .Where(booking => booking.IsMeaningful)
+            .OrderBy(booking => booking.Start == DateTime.MinValue ? DateTime.MaxValue : booking.Start)
+            .ToList();
+
+        var now = DateTime.Now;
+
+        TodayBookings = bookings
+            .Where(booking => booking.HasDate && booking.Start.Date == now.Date)
+            .OrderBy(booking => booking.Start)
+            .Take(5)
+            .ToList();
+
+        UpcomingBookings = bookings
+            .Where(booking => booking.HasDate && booking.Start >= now)
+            .OrderBy(booking => booking.Start)
+            .Take(5)
+            .ToList();
+
+        OpenInvoices = bookings
+            .Where(booking => booking.RemainingAmount > 0 || IsOpenPaymentStatus(booking.PaymentStatus))
+            .OrderByDescending(booking => booking.HasDate ? booking.Start : DateTime.MinValue)
+            .Take(5)
+            .Select(booking => new DashboardInvoice
+            {
+                CustomerName = booking.Title,
+                Date = booking.Start,
+                PaymentStatus = booking.PaymentLabel,
+                TotalAmount = booking.TotalAmount,
+                RemainingAmount = booking.RemainingAmount > 0 ? booking.RemainingAmount : booking.TotalAmount
+            })
+            .ToList();
+
+        var inventoryNeedsCheck = inventoryElements.Count(InventoryNeedsCheck);
+        var galleryCount = galleryElements.Count(HasGalleryUrl);
+        var openInvoiceTotal = OpenInvoices.Sum(invoice => invoice.RemainingAmount);
+
+        Metrics = new List<DashboardMetric>
+        {
+            new DashboardMetric("Booking Hari Ini", TodayBookings.Count.ToString(IndonesianCulture), "Jadwal yang berlangsung hari ini", "primary"),
+            new DashboardMetric("Jadwal Mendatang", UpcomingBookings.Count.ToString(IndonesianCulture), "Booking paling dekat dari sekarang", "neutral"),
+            new DashboardMetric("Belum Lunas", FormatCurrency(openInvoiceTotal), $"{OpenInvoices.Count} tagihan perlu dicek", "danger"),
+            new DashboardMetric("Inventory Cek", inventoryNeedsCheck.ToString(IndonesianCulture), $"Customer {customerElements.Count}, foto {galleryCount}", "warning")
+        };
+
+        LastUpdated = DateTime.Now;
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task<List<JsonElement>> ReadLocalCollectionAsync(string key)
+    {
+        try
+        {
+            var raw = await JS.InvokeAsync<string?>("localStorage.getItem", key);
+
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return new List<JsonElement>();
+            }
+
+            using var document = JsonDocument.Parse(raw);
+
+            return ExtractCollection(document.RootElement);
+        }
+        catch
+        {
+            return new List<JsonElement>();
+        }
+    }
+
+    private static List<JsonElement> ExtractCollection(JsonElement root)
+    {
+        if (root.ValueKind == JsonValueKind.Array)
+        {
+            return root.EnumerateArray().Select(item => item.Clone()).ToList();
+        }
+
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            return new List<JsonElement>();
+        }
+
+        foreach (var name in new[] { "items", "data", "records", "bookings", "customers", "inventory", "gallery", "photos" })
+        {
+            if (TryGetProperty(root, name, out var property) && property.ValueKind == JsonValueKind.Array)
+            {
+                return property.EnumerateArray().Select(item => item.Clone()).ToList();
+            }
+        }
+
+        foreach (var property in root.EnumerateObject())
+        {
+            if (property.Value.ValueKind == JsonValueKind.Array)
+            {
+                return property.Value.EnumerateArray().Select(item => item.Clone()).ToList();
+            }
+        }
+
+        return new List<JsonElement>();
+    }
+
+    private static DashboardBooking ParseBooking(JsonElement item)
+    {
+        var start = ResolveStartDate(item);
+        var title = FirstNonEmpty(
+            GetString(item, "CustomerName", "Customer", "Name", "BandName", "BookingName", "Title"),
+            "Booking tanpa nama");
+
+        var totalAmount = GetDecimal(item, "TotalAmount", "Total", "Amount", "Price", "BillAmount", "GrandTotal");
+        var paidAmount = GetDecimal(item, "PaidAmount", "DownPayment", "DpAmount", "DP", "Deposit", "Paid");
+        var remainingAmount = GetDecimal(item, "RemainingAmount", "Remaining", "Balance", "Unpaid", "Outstanding");
+
+        if (remainingAmount <= 0 && totalAmount > paidAmount)
+        {
+            remainingAmount = Math.Max(0, totalAmount - paidAmount);
+        }
+
+        var status = FirstNonEmpty(
+            GetString(item, "PaymentStatus", "Payment", "Status", "BookingStatus"),
+            remainingAmount > 0 ? "Belum lunas" : "Tercatat");
+
+        return new DashboardBooking
+        {
+            Title = title,
+            Room = FirstNonEmpty(GetString(item, "RoomName", "StudioRoom", "Room", "Studio"), "Studio"),
+            Category = FirstNonEmpty(GetString(item, "Category", "BookingCategory", "Type", "Service"), "Booking"),
+            PaymentStatus = status,
+            Start = start,
+            TotalAmount = totalAmount,
+            PaidAmount = paidAmount,
+            RemainingAmount = remainingAmount
+        };
+    }
+
+    private static DateTime ResolveStartDate(JsonElement item)
+    {
+        var direct = GetString(item, "Start", "StartAt", "StartTime", "BookingStart", "StartedAt", "DateTime");
+
+        if (TryParseDate(direct, out var directDate))
+        {
+            return directDate;
+        }
+
+        var date = GetString(item, "Date", "BookingDate", "ScheduleDate", "Day");
+        var time = GetString(item, "Time", "Hour", "StartHour", "StartClock");
+
+        if (!string.IsNullOrWhiteSpace(date) && !string.IsNullOrWhiteSpace(time))
+        {
+            if (TryParseDate($"{date} {time}", out var combined))
+            {
+                return combined;
+            }
+        }
+
+        if (TryParseDate(date, out var dateOnly))
+        {
+            return dateOnly;
+        }
+
+        return DateTime.MinValue;
+    }
+
+    private static bool TryParseDate(string? value, out DateTime date)
+    {
+        date = DateTime.MinValue;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return DateTime.TryParse(
+            value,
+            IndonesianCulture,
+            DateTimeStyles.AssumeLocal,
+            out date) ||
+            DateTime.TryParse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeLocal,
+                out date);
+    }
+
+    private static bool InventoryNeedsCheck(JsonElement item)
+    {
+        var condition = GetString(item, "Condition", "Kondisi", "Status");
+
+        if (!string.IsNullOrWhiteSpace(condition))
+        {
+            var normalized = condition.Trim().ToLowerInvariant();
+
+            if (normalized.Contains("bad") || normalized.Contains("rusak") || normalized.Contains("service"))
+            {
+                return true;
+            }
+        }
+
+        var nextMaintenance = GetString(item, "NextMaintenanceDate", "MaintenanceDueDate", "DueDate");
+
+        return TryParseDate(nextMaintenance, out var dueDate) && dueDate.Date <= DateTime.Today;
+    }
+
+    private static bool HasGalleryUrl(JsonElement item)
+    {
+        return !string.IsNullOrWhiteSpace(GetString(item, "SecureUrl", "Url", "ImageUrl", "ThumbnailUrl", "PublicUrl"));
+    }
+
+    private static bool IsOpenPaymentStatus(string? status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return false;
+        }
+
+        var value = status.Trim().ToLowerInvariant();
+
+        return value.Contains("pending") ||
+            value.Contains("dp") ||
+            value.Contains("belum") ||
+            value.Contains("partial") ||
+            value.Contains("unpaid");
+    }
+
+    private static string GetPaymentTone(string status, decimal remainingAmount)
+    {
+        if (remainingAmount > 0 || IsOpenPaymentStatus(status))
+        {
+            return "danger";
+        }
+
+        var value = status.Trim().ToLowerInvariant();
+
+        if (value.Contains("paid") || value.Contains("lunas"))
+        {
+            return "success";
+        }
+
+        return "neutral";
+    }
+
+    private static string GetString(JsonElement item, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            if (!TryGetProperty(item, name, out var property))
+            {
+                continue;
+            }
+
+            if (property.ValueKind == JsonValueKind.String)
+            {
+                return property.GetString()?.Trim() ?? string.Empty;
+            }
+
+            if (property.ValueKind == JsonValueKind.Number ||
+                property.ValueKind == JsonValueKind.True ||
+                property.ValueKind == JsonValueKind.False)
+            {
+                return property.ToString().Trim();
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static decimal GetDecimal(JsonElement item, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            if (!TryGetProperty(item, name, out var property))
+            {
+                continue;
+            }
+
+            if (property.ValueKind == JsonValueKind.Number && property.TryGetDecimal(out var number))
+            {
+                return number;
+            }
+
+            if (property.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var text = property.GetString();
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                continue;
+            }
+
+            var normalized = text
+                .Replace("Rp", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace(" ", string.Empty)
+                .Trim();
+
+            if (normalized.Contains(',', StringComparison.Ordinal))
+            {
+                normalized = normalized.Replace(".", string.Empty).Replace(",", ".");
+            }
+            else
+            {
+                normalized = normalized.Replace(".", string.Empty);
+            }
+
+            if (decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return 0;
+    }
+
+    private static bool TryGetProperty(JsonElement item, string name, out JsonElement value)
+    {
+        value = default;
+
+        if (item.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var property in item.EnumerateObject())
+        {
+            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string FirstNonEmpty(params string[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static string FormatCurrency(decimal value)
+    {
+        return value <= 0
+            ? "Rp0"
+            : value.ToString("C0", IndonesianCulture);
+    }
+
+    private static string FormatTime(DateTime value)
+    {
+        return value == DateTime.MinValue
+            ? "-"
+            : value.ToString("HH:mm", IndonesianCulture);
+    }
+
+    private static string FormatUpcomingDate(DateTime value)
+    {
+        if (value == DateTime.MinValue)
+        {
+            return "-";
+        }
+
+        return value.Date == DateTime.Today
+            ? value.ToString("HH:mm", IndonesianCulture)
+            : value.ToString("dd MMM, HH:mm", IndonesianCulture);
+    }
+
+    private static string FormatShortDate(DateTime value)
+    {
+        return value == DateTime.MinValue
+            ? "-"
+            : value.ToString("dd MMM", IndonesianCulture);
+    }
+
+    private sealed record DashboardMetric(string Label, string Value, string Hint, string Tone);
+
+    private sealed record QuickAction(string Label, string Description, string Href);
+
+    private sealed class DashboardBooking
+    {
+        public string Title { get; set; } = "Booking";
+
+        public string Room { get; set; } = "Studio";
+
+        public string Category { get; set; } = "Booking";
+
+        public string PaymentStatus { get; set; } = "Tercatat";
+
+        public DateTime Start { get; set; } = DateTime.MinValue;
+
+        public decimal TotalAmount { get; set; }
+
+        public decimal PaidAmount { get; set; }
+
+        public decimal RemainingAmount { get; set; }
+
+        public bool HasDate => Start != DateTime.MinValue;
+
+        public bool IsMeaningful => HasDate || !string.IsNullOrWhiteSpace(Title);
+
+        public string PaymentLabel => RemainingAmount > 0
+            ? "Belum lunas"
+            : FirstNonEmpty(PaymentStatus, "Tercatat");
+
+        public string StatusLabel => FirstNonEmpty(PaymentStatus, "Terjadwal");
+    }
+
+    private sealed class DashboardInvoice
+    {
+        public string CustomerName { get; set; } = "Customer";
+
+        public DateTime Date { get; set; } = DateTime.MinValue;
+
+        public string PaymentStatus { get; set; } = "Belum lunas";
+
+        public decimal TotalAmount { get; set; }
+
+        public decimal RemainingAmount { get; set; }
+    }
+}

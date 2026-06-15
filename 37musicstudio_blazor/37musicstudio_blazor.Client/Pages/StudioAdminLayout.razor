@@ -3,7 +3,7 @@
 
 <div class="studio-admin-shell">
     <aside class="studio-admin-sidebar" aria-label="Navigasi admin desktop">
-        <a class="studio-shell-brand" href="/schedule" aria-label="37 Music Studio Admin">
+        <a class="studio-shell-brand" href="/dashboard" aria-label="37 Music Studio Admin">
             <span class="studio-shell-brand-mark">37</span>
 
             <span class="studio-shell-brand-copy">
@@ -39,7 +39,7 @@
 
     <main class="studio-admin-main">
         <div class="studio-mobile-topbar">
-            <a class="studio-mobile-brand" href="/schedule" aria-label="37 Music Studio Admin">
+            <a class="studio-mobile-brand" href="/dashboard" aria-label="37 Music Studio Admin">
                 <span class="studio-shell-brand-mark">37</span>
                 <strong>37 Music Studio</strong>
             </a>
@@ -68,6 +68,7 @@
 @code {
     private static readonly IReadOnlyList<StudioNavItem> NavigationItems = new[]
     {
+        new StudioNavItem("Dashboard", "Home", "/dashboard", "layout-dashboard"),
         new StudioNavItem("Schedule", "Schedule", "/schedule", "calendar-days"),
         new StudioNavItem("Booking", "Booking", "/booking", "calendar-plus"),
         new StudioNavItem("Customer", "Customer", "/customers", "users"),
@@ -80,7 +81,7 @@
     };
 
     private static readonly IReadOnlyList<StudioNavItem> BottomNavigationItems = NavigationItems
-        .Where(item => item.Href is "/schedule" or "/booking" or "/billing" or "/inventory" or "/settings" or "/gallery")
+        .Where(item => item.Href is "/dashboard" or "/schedule" or "/booking" or "/billing" or "/inventory" or "/settings" or "/gallery")
         .ToArray();
 
     private sealed record StudioNavItem(string Label, string ShortLabel, string Href, string Icon);
