@@ -1648,3 +1648,124 @@ select,
     }
 }
 /* </studio-booking-status-color-hotfix> */
+
+
+/* <studio-booking-block-typography-fix> */
+.studio-schedule-slot.has-booking > .studio-booking-block,
+.studio-schedule-slot.has-booking > .studio-booking-block * {
+    font-family: var(--studio-body-font, "Montserrat", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif) !important;
+}
+
+.studio-schedule-slot.has-booking > .studio-booking-block {
+    display: grid !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    place-items: center !important;
+    align-content: center !important;
+    justify-content: stretch !important;
+    gap: 0.22rem !important;
+    text-align: center !important;
+    padding: 0.44rem 0.34rem !important;
+}
+
+.studio-booking-block em,
+.studio-booking-block small {
+    display: none !important;
+}
+
+.studio-booking-block strong {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: -webkit-box !important;
+    padding: 0 !important;
+    color: var(--ui-text-strong, #11100e) !important;
+    font-size: clamp(0.48rem, 0.72vw, 0.68rem) !important;
+    font-weight: 900 !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.045em !important;
+    text-align: center !important;
+    text-transform: uppercase !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+}
+
+.studio-booking-block b {
+    position: static !important;
+    width: fit-content !important;
+    min-width: 2.45rem !important;
+    max-width: 100% !important;
+    min-height: 1.02rem !important;
+    display: inline-grid !important;
+    place-items: center !important;
+    border-radius: 999rem !important;
+    padding: 0 0.38rem !important;
+    background: var(--booking-status-color, var(--ui-accent, #d8a85f)) !important;
+    color: #ffffff !important;
+    font-size: clamp(0.38rem, 0.55vw, 0.48rem) !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    letter-spacing: 0.035em !important;
+    text-transform: uppercase !important;
+    box-shadow:
+        0 0.28rem 0.7rem color-mix(in srgb, var(--booking-status-color, #d8a85f) 28%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 36%, transparent) !important;
+}
+
+.studio-schedule-slot.duration-1 > .studio-booking-block {
+    gap: 0.12rem !important;
+    padding: 0.28rem 0.26rem !important;
+}
+
+.studio-schedule-slot.duration-1 > .studio-booking-block strong {
+    font-size: clamp(0.42rem, 0.62vw, 0.56rem) !important;
+    -webkit-line-clamp: 1 !important;
+    line-height: 1 !important;
+}
+
+.studio-schedule-slot.duration-1 > .studio-booking-block b {
+    display: inline-grid !important;
+    min-width: 2.18rem !important;
+    min-height: 0.9rem !important;
+    padding: 0 0.28rem !important;
+    font-size: 0.36rem !important;
+}
+
+.studio-schedule-slot.duration-2 > .studio-booking-block strong {
+    -webkit-line-clamp: 2 !important;
+}
+
+@media (max-width: 720px) {
+    .studio-schedule-slot.has-booking > .studio-booking-block {
+        gap: 0.14rem !important;
+        padding: 0.3rem 0.24rem !important;
+    }
+
+    .studio-booking-block strong {
+        font-size: 0.46rem !important;
+        line-height: 1.02 !important;
+        letter-spacing: -0.035em !important;
+    }
+
+    .studio-booking-block b {
+        min-width: 2.05rem !important;
+        min-height: 0.86rem !important;
+        padding: 0 0.26rem !important;
+        font-size: 0.34rem !important;
+        letter-spacing: 0.025em !important;
+    }
+
+    .studio-schedule-slot.duration-1 > .studio-booking-block strong {
+        font-size: 0.42rem !important;
+    }
+
+    .studio-schedule-slot.duration-1 > .studio-booking-block b {
+        min-width: 1.9rem !important;
+        min-height: 0.78rem !important;
+        font-size: 0.31rem !important;
+    }
+}
+/* </studio-booking-block-typography-fix> */

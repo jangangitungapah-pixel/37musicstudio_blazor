@@ -143,9 +143,7 @@
                                             aria-label="@BuildBookingAria(segment.Booking)"
                                             @onclick="() => OpenBookingCanvas(day, slot, segment.Booking)">
                                             <span class="studio-booking-block">
-                                                <strong>@segment.Booking.DisplayName</strong>
-                                                <em>@BuildBookingChipMeta(segment.Booking)</em>
-                                                <small>@segment.Booking.CustomerName</small>
+                                                <strong>@segment.Booking.BandName</strong>
                                                 <b>@GetPaymentStatusLabel(segment.Booking.Status)</b>
                                             </span>
                                         </button>
