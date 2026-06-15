@@ -9,23 +9,20 @@
     <link href="_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css" rel="stylesheet" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["37musicstudio_blazor.styles.css"]" />
-    <ImportMap />    <RadzenTheme Theme="material" />
+    <ImportMap />
+    <RadzenTheme Theme="material" />
     <link rel="stylesheet" href="css/studio.css" />
     <link rel="stylesheet" href="css/studio-admin-shell.css" />
-
-<HeadOutlet @rendermode="InteractiveAuto" />
     <link rel="stylesheet" href="css/studio-ambient-ui.css" />
+    <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
 <body>
     <Routes @rendermode="InteractiveAuto" />
-        <StudioFluentProviders @rendermode="InteractiveAuto" />
-    <RadzenComponents @rendermode="InteractiveAuto" />
-<ReconnectModal />
-        <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module" async></script>
-<script src="@Assets["_framework/blazor.web.js"]"></script>
-    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <ReconnectModal />
 
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
 </body>
 
 </html>
