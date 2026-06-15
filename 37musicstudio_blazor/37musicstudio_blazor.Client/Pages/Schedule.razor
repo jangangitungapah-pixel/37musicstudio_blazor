@@ -226,8 +226,31 @@
                         </label>
 
                         <label class="studio-form-field">
+                            <span>Jenis Booking</span>
+                            <select required value="@BookingCategory" @onchange="OnBookingCategoryChanged">
+                                <option value="Latihan">Latihan</option>
+                                <option value="Recording">Recording</option>
+                            </select>
+                        </label>
+
+                        @if (BookingCategory == BookingCategoryRecording)
+                        {
+                            <label class="studio-form-field">
+                                <span>Paket Recording</span>
+                                <select value="@SelectedRecordingPackageId" @onchange="OnRecordingPackageChanged">
+                                    <option value="">Pilih paket recording</option>
+
+                                    @foreach (var recordingPackage in PricingSettings.RecordingPackages)
+                                    {
+                                        <option value="@recordingPackage.Id">@recordingPackage.Name - @recordingPackage.DurationHours Jam - @FormatCurrency(recordingPackage.Price)</option>
+                                    }
+                                </select>
+                            </label>
+                        }
+
+                        <label class="studio-form-field">
                             <span>Durasi Booking</span>
-                            <select required @bind="BookingDuration">
+                            <select required value="@BookingDuration" @onchange="OnBookingDurationChanged">
                                 <option value="1 Jam">1 Jam</option>
                                 <option value="2 Jam">2 Jam</option>
                                 <option value="3 Jam">3 Jam</option>
@@ -242,13 +265,13 @@
                         {
                             <label class="studio-form-field">
                                 <span>Custom Jam</span>
-                                <input type="number" min="1" max="12" step="1" required @bind="CustomDurationHours" @bind:event="oninput" />
+                                <input type="number" min="1" max="12" step="1" required value="@CustomDurationHours" @oninput="OnCustomDurationChanged" />
                             </label>
                         }
 
                         <label class="studio-form-field">
                             <span>Status Pembayaran</span>
-                            <select required @bind="PaymentStatus">
+                            <select required value="@PaymentStatus" @onchange="OnPaymentStatusChanged">
                                 <option value="Pending">Pending</option>
                                 <option value="Dp">DP</option>
                                 <option value="Paid">Lunas</option>
@@ -260,6 +283,10 @@
                         <label class="studio-detail-box">
                             <span>Jumlah</span>
                             <input type="number" min="0" step="1000" placeholder="0" @bind="TotalAmount" @bind:event="oninput" />
+                            <small class="studio-price-hint">@PricingHint</small>
+                            <button type="button" class="studio-price-apply" @onclick="ApplySuggestedPrice">
+                                Terapkan Harga
+                            </button>
                         </label>
 
                         <div class="studio-detail-box">
@@ -305,11 +332,16 @@
     private const int StudioOpenHour = 10;
     private const int StudioCloseHour = 23;
     private const string LocalBookingStorageKey = "37musicstudio.bookings.v1";
+    private const string LocalPricingStorageKey = "37musicstudio.pricing-settings.v1";
+    private const string BookingCategoryTraining = "Latihan";
+    private const string BookingCategoryRecording = "Recording";
 
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
     private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
 
     private readonly List<StudioBooking> Bookings = new();
+
+    private StudioPricingSettings PricingSettings { get; set; } = StudioPricingSettings.CreateDefault();
 
     private DateTime CurrentAnchorDate { get; set; } = DateTime.Today;
 
@@ -355,6 +387,10 @@
     private DateTime BookingDate { get; set; } = DateTime.Today;
 
     private string BookingDuration { get; set; } = "1 Jam";
+
+    private string BookingCategory { get; set; } = BookingCategoryTraining;
+
+    private string SelectedRecordingPackageId { get; set; } = string.Empty;
 
     private int CustomDurationHours { get; set; } = 1;
 
@@ -409,6 +445,17 @@
 
     private decimal RemainingAmount => Math.Max(TotalAmount - EffectiveDpAmount, 0);
 
+    private StudioRecordingPackage? SelectedRecordingPackage => PricingSettings.RecordingPackages
+        .FirstOrDefault(item => item.Id == SelectedRecordingPackageId);
+
+    private decimal SuggestedTotalAmount => CalculateSuggestedTotalAmount();
+
+    private string PricingHint => BookingCategory == BookingCategoryRecording
+        ? SelectedRecordingPackage is null
+            ? "Pilih paket recording dari Settings."
+            : $"Paket {SelectedRecordingPackage.Name}: {SelectedRecordingPackage.DurationHours} jam, {FormatCurrency(SelectedRecordingPackage.Price)}"
+        : $"Latihan: {EffectiveDurationHours} jam x {FormatCurrency(PricingSettings.HourlyRate)} - diskon {FormatCurrency(CalculateTrainingDiscount(EffectiveDurationHours))}";
+
     private string SelectedSlotTitle
     {
         get
@@ -430,6 +477,7 @@
         }
 
         HasLoadedLocalBookings = true;
+        await LoadPricingSettingsFromLocalStorageAsync();
         await LoadBookingsFromLocalStorageAsync();
         StateHasChanged();
     }
@@ -444,6 +492,22 @@
         options.Converters.Add(new JsonStringEnumConverter());
 
         return options;
+    }
+
+    private async Task LoadPricingSettingsFromLocalStorageAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalPricingStorageKey);
+
+            PricingSettings = string.IsNullOrWhiteSpace(json)
+                ? StudioPricingSettings.CreateDefault()
+                : JsonSerializer.Deserialize<StudioPricingSettings>(json, LocalJsonOptions)?.Normalize() ?? StudioPricingSettings.CreateDefault();
+        }
+        catch
+        {
+            PricingSettings = StudioPricingSettings.CreateDefault();
+        }
     }
 
     private async Task LoadBookingsFromLocalStorageAsync()
@@ -536,6 +600,155 @@
     {
         return VisibleRangeBookings.Count(booking => booking.Status == status);
     }
+    private void OnBookingCategoryChanged(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        BookingCategory = args.Value?.ToString() == BookingCategoryRecording
+            ? BookingCategoryRecording
+            : BookingCategoryTraining;
+
+        if (BookingCategory == BookingCategoryRecording)
+        {
+            EnsureRecordingPackageSelected();
+            ApplyRecordingPackageToDraft();
+        }
+        else
+        {
+            SelectedRecordingPackageId = string.Empty;
+        }
+
+        ApplySuggestedPrice();
+    }
+
+    private void OnRecordingPackageChanged(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        SelectedRecordingPackageId = args.Value?.ToString() ?? string.Empty;
+        ApplyRecordingPackageToDraft();
+        ApplySuggestedPrice();
+    }
+
+    private void OnBookingDurationChanged(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        BookingDuration = args.Value?.ToString() ?? "1 Jam";
+
+        if (BookingDuration != "Custom")
+        {
+            CustomDurationHours = EffectiveDurationHours;
+        }
+
+        ApplySuggestedPrice();
+    }
+
+    private void OnCustomDurationChanged(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var hours))
+        {
+            CustomDurationHours = Math.Clamp(hours, 1, 12);
+        }
+
+        ApplySuggestedPrice();
+    }
+
+    private void OnPaymentStatusChanged(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BookingPaymentStatus>(args.Value?.ToString(), out var status))
+        {
+            PaymentStatus = status;
+        }
+
+        ApplySuggestedPrice();
+    }
+
+    private void EnsureRecordingPackageSelected()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedRecordingPackageId) &&
+            PricingSettings.RecordingPackages.Any(item => item.Id == SelectedRecordingPackageId))
+        {
+            return;
+        }
+
+        SelectedRecordingPackageId = PricingSettings.RecordingPackages.FirstOrDefault()?.Id ?? string.Empty;
+    }
+
+    private void ApplyRecordingPackageToDraft()
+    {
+        if (SelectedRecordingPackage is null)
+        {
+            return;
+        }
+
+        var packageHours = Math.Max(1, SelectedRecordingPackage.DurationHours);
+
+        if (packageHours <= 6)
+        {
+            BookingDuration = $"{packageHours} Jam";
+        }
+        else
+        {
+            BookingDuration = "Custom";
+        }
+
+        CustomDurationHours = packageHours;
+        TotalAmount = SelectedRecordingPackage.Price;
+    }
+
+    private void ApplySuggestedPrice()
+    {
+        var suggested = CalculateSuggestedTotalAmount();
+
+        if (suggested > 0)
+        {
+            TotalAmount = suggested;
+        }
+
+        if (PaymentStatus == BookingPaymentStatus.Pending)
+        {
+            DpAmount = 0;
+        }
+        else if (PaymentStatus == BookingPaymentStatus.Paid)
+        {
+            DpAmount = TotalAmount;
+        }
+        else
+        {
+            DpAmount = Math.Min(Math.Max(DpAmount, 0), TotalAmount);
+        }
+    }
+
+    private decimal CalculateSuggestedTotalAmount()
+    {
+        if (BookingCategory == BookingCategoryRecording)
+        {
+            return SelectedRecordingPackage?.Price ?? 0;
+        }
+
+        var durationHours = Math.Max(1, EffectiveDurationHours);
+        var grossAmount = Math.Max(0, PricingSettings.HourlyRate) * durationHours;
+        var discountAmount = CalculateTrainingDiscount(durationHours);
+
+        return Math.Max(grossAmount - discountAmount, 0);
+    }
+
+    private decimal CalculateTrainingDiscount(int durationHours)
+    {
+        var totalDiscount = 0m;
+
+        foreach (var discount in PricingSettings.TrainingDiscounts.Where(item => item.DurationHours > 0 && item.Amount > 0))
+        {
+            if (durationHours < discount.DurationHours)
+            {
+                continue;
+            }
+
+            var multiplier = discount.AppliesMultiple
+                ? Math.Max(1, durationHours / discount.DurationHours)
+                : 1;
+
+            totalDiscount += discount.Amount * multiplier;
+        }
+
+        return Math.Max(0, totalDiscount);
+    }
+
     private void SetViewMode(ScheduleViewMode viewMode)
     {
         ActiveViewMode = viewMode;
@@ -621,6 +834,8 @@
         TotalAmount = booking.TotalAmount;
         DpAmount = booking.DpAmount;
         Note = booking.Note;
+        BookingCategory = BookingCategoryTraining;
+        SelectedRecordingPackageId = string.Empty;
 
         IsBookingCanvasOpen = true;
     }
@@ -630,10 +845,12 @@
         CustomerName = string.Empty;
         BandName = string.Empty;
         PhoneNumber = string.Empty;
+        BookingCategory = BookingCategoryTraining;
+        SelectedRecordingPackageId = string.Empty;
         BookingDuration = "1 Jam";
         CustomDurationHours = 1;
         PaymentStatus = BookingPaymentStatus.Pending;
-        TotalAmount = 0;
+        TotalAmount = CalculateSuggestedTotalAmount();
         DpAmount = 0;
         Note = string.Empty;
     }
@@ -664,6 +881,12 @@
             return;
         }
 
+        if (BookingCategory == BookingCategoryRecording && SelectedRecordingPackage is null)
+        {
+            FormMessage = "Paket recording belum dipilih. Tambahkan paket di Settings atau pilih paket yang tersedia.";
+            return;
+        }
+
         if (BookingDuration == "Custom" && CustomDurationHours < 1)
         {
             FormMessage = "Durasi custom minimal 1 jam.";
@@ -685,6 +908,11 @@
         {
             FormMessage = "Slot ini bentrok dengan booking lain. Pilih jam atau durasi berbeda.";
             return;
+        }
+
+        if (TotalAmount <= 0)
+        {
+            ApplySuggestedPrice();
         }
 
         var snapshot = Bookings.ToList();
@@ -960,6 +1188,110 @@
             : value.ToString("C0", IndonesianCulture);
     }
 
+    private sealed class StudioPricingSettings
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public decimal HourlyRate { get; set; } = 120000;
+
+        public List<StudioRecordingPackage> RecordingPackages { get; set; } = new();
+
+        public List<StudioTrainingDiscount> TrainingDiscounts { get; set; } = new();
+
+        public static StudioPricingSettings CreateDefault()
+        {
+            return new StudioPricingSettings
+            {
+                SchemaVersion = 1,
+                HourlyRate = 120000,
+                RecordingPackages = new List<StudioRecordingPackage>(),
+                TrainingDiscounts = new List<StudioTrainingDiscount>
+                {
+                    new StudioTrainingDiscount
+                    {
+                        Id = Guid.NewGuid().ToString("N"),
+                        DurationHours = 3,
+                        Amount = 60000,
+                        AppliesMultiple = true
+                    }
+                }
+            };
+        }
+
+        public StudioPricingSettings Normalize()
+        {
+            SchemaVersion = 1;
+
+            if (HourlyRate <= 0)
+            {
+                HourlyRate = 120000;
+            }
+
+            RecordingPackages ??= new List<StudioRecordingPackage>();
+            TrainingDiscounts ??= new List<StudioTrainingDiscount>();
+
+            foreach (var item in RecordingPackages)
+            {
+                if (string.IsNullOrWhiteSpace(item.Id))
+                {
+                    item.Id = Guid.NewGuid().ToString("N");
+                }
+
+                item.Name = string.IsNullOrWhiteSpace(item.Name)
+                    ? "Paket Recording"
+                    : item.Name.Trim();
+
+                item.DurationHours = Math.Max(1, item.DurationHours);
+                item.Price = Math.Max(0, item.Price);
+            }
+
+            foreach (var item in TrainingDiscounts)
+            {
+                if (string.IsNullOrWhiteSpace(item.Id))
+                {
+                    item.Id = Guid.NewGuid().ToString("N");
+                }
+
+                item.DurationHours = Math.Max(1, item.DurationHours);
+                item.Amount = Math.Max(0, item.Amount);
+            }
+
+            if (!TrainingDiscounts.Any())
+            {
+                TrainingDiscounts.Add(new StudioTrainingDiscount
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    DurationHours = 3,
+                    Amount = 60000,
+                    AppliesMultiple = true
+                });
+            }
+
+            return this;
+        }
+    }
+
+    private sealed class StudioRecordingPackage
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+
+        public int DurationHours { get; set; } = 1;
+
+        public decimal Price { get; set; }
+    }
+
+    private sealed class StudioTrainingDiscount
+    {
+        public string Id { get; set; } = string.Empty;
+
+        public int DurationHours { get; set; } = 3;
+
+        public decimal Amount { get; set; } = 60000;
+
+        public bool AppliesMultiple { get; set; } = true;
+    }
     private enum ScheduleViewMode
     {
         Day,
