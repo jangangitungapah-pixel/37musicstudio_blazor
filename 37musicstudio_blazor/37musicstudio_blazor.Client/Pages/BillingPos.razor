@@ -112,7 +112,7 @@
                     <div>
                         <p>Invoice Lokal</p>
                         <h2>@SelectedBooking.BandName</h2>
-                        <span>@SelectedBooking.CustomerName â€¢ @SelectedBooking.PhoneNumber</span>
+                        <span>@SelectedBooking.CustomerName · @SelectedBooking.PhoneNumber</span>
                     </div>
 
                     <b class="@GetReceiptBadgeClass(SelectedStatus)">
@@ -495,7 +495,7 @@
 
     private static string BuildBookingTimeLabel(StudioBooking booking)
     {
-        return $"{booking.BookingDate:dd MMM yyyy} â€¢ {FormatTimeRange(booking.StartAt, booking.EndAt)}";
+        return $"{booking.BookingDate:dd MMM yyyy} · {FormatTimeRange(booking.StartAt, booking.EndAt)}";
     }
 
     private static string FormatTimeRange(DateTime startAt, DateTime endAt)

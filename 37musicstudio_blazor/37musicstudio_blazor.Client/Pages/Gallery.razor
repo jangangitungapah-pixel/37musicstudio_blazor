@@ -175,7 +175,7 @@
 
     private string SelectedFileLabel => SelectedFile is null
         ? "Belum ada file dipilih."
-        : $"{SelectedFile.Name} â€¢ {FormatBytes(SelectedFile.Size)}";
+        : $"{SelectedFile.Name} · {FormatBytes(SelectedFile.Size)}";
 
     private bool IsUploadDisabled => IsUploading || SelectedFile is null;
 

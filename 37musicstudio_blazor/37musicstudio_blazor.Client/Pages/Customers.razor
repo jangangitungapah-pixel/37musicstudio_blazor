@@ -88,7 +88,7 @@
 
                             <strong>@customer.Name</strong>
                             <em>@customer.PhoneNumber</em>
-                            <small>@stats.TotalBooking booking â€¢ @stats.TotalTrainingHours jam</small>
+                            <small>@stats.TotalBooking booking · @stats.TotalTrainingHours jam</small>
 
                             @if (stats.UnpaidAmount > 0)
                             {
@@ -179,7 +179,7 @@
                             {
                                 <article>
                                     <strong>@booking.BandName</strong>
-                                    <span>@booking.StartAt.ToString("dd MMM yyyy", IndonesianCulture) â€¢ @FormatTimeRange(booking.StartAt, booking.EndAt)</span>
+                                    <span>@booking.StartAt.ToString("dd MMM yyyy", IndonesianCulture) · @FormatTimeRange(booking.StartAt, booking.EndAt)</span>
                                     <b>@GetPaymentStatusLabel(booking.Status)</b>
                                 </article>
                             }
@@ -203,7 +203,7 @@
                             {
                                 <article class="is-unpaid">
                                     <strong>@booking.BandName</strong>
-                                    <span>@booking.StartAt.ToString("dd MMM yyyy", IndonesianCulture) â€¢ Sisa @FormatCurrency(booking.RemainingAmount)</span>
+                                    <span>@booking.StartAt.ToString("dd MMM yyyy", IndonesianCulture) · Sisa @FormatCurrency(booking.RemainingAmount)</span>
                                     <b>@GetPaymentStatusLabel(booking.Status)</b>
                                 </article>
                             }
