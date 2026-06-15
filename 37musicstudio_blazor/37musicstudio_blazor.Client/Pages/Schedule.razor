@@ -207,7 +207,13 @@
                     <div class="studio-booking-form-grid">
                         <label class="studio-form-field">
                             <span>Nama</span>
-                            <input type="text" autocomplete="name" placeholder="Nama customer" required @bind="CustomerName" @bind:event="oninput" />
+                            <input type="text" list="studioCustomerSuggestions" autocomplete="off" placeholder="Nama customer" required @bind="CustomerName" @bind:event="oninput" />
+                            <datalist id="studioCustomerSuggestions">
+                                @foreach (var customerSuggestion in CustomerSuggestions)
+                                {
+                                    <option value="@customerSuggestion.Name">@customerSuggestion.PhoneNumber</option>
+                                }
+                            </datalist>
                         </label>
 
                         <label class="studio-form-field">
@@ -332,6 +338,8 @@
     private const int StudioOpenHour = 10;
     private const int StudioCloseHour = 23;
     private const string LocalBookingStorageKey = "37musicstudio.bookings.v1";
+
+    private const string LocalCustomerStorageKey = "37musicstudio.customers.v1";
     private const string LocalPricingStorageKey = "37musicstudio.pricing-settings.v1";
     private const string BookingCategoryTraining = "Latihan";
     private const string BookingCategoryRecording = "Recording";
@@ -340,6 +348,8 @@
     private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
 
     private readonly List<StudioBooking> Bookings = new();
+
+    private readonly List<StudioCustomer> Customers = new();
 
     private StudioPricingSettings PricingSettings { get; set; } = StudioPricingSettings.CreateDefault();
 
@@ -445,6 +455,27 @@
 
     private decimal RemainingAmount => Math.Max(TotalAmount - EffectiveDpAmount, 0);
 
+    private IReadOnlyList<StudioCustomer> CustomerSuggestions
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(CustomerName) || CustomerName.Trim().Length < 2)
+            {
+                return Array.Empty<StudioCustomer>();
+            }
+
+            var keyword = CustomerName.Trim();
+
+            return Customers
+                .Where(customer =>
+                    customer.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    customer.PhoneNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(customer => customer.Name)
+                .Take(8)
+                .ToArray();
+        }
+    }
+
     private StudioRecordingPackage? SelectedRecordingPackage => PricingSettings.RecordingPackages
         .FirstOrDefault(item => item.Id == SelectedRecordingPackageId);
 
@@ -478,6 +509,7 @@
 
         HasLoadedLocalBookings = true;
         await LoadPricingSettingsFromLocalStorageAsync();
+        await LoadCustomersFromLocalStorageAsync();
         await LoadBookingsFromLocalStorageAsync();
         StateHasChanged();
     }
@@ -508,6 +540,83 @@
         {
             PricingSettings = StudioPricingSettings.CreateDefault();
         }
+    }
+
+    private async Task LoadCustomersFromLocalStorageAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalCustomerStorageKey);
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return;
+            }
+
+            var localRecords = JsonSerializer.Deserialize<List<StudioCustomerLocalRecord>>(json, LocalJsonOptions) ?? new();
+
+            Customers.Clear();
+            Customers.AddRange(localRecords.Select(record => record.ToCustomer()).OrderBy(customer => customer.Name));
+        }
+        catch
+        {
+            Customers.Clear();
+        }
+    }
+
+    private async Task PersistCustomersToLocalStorageAsync()
+    {
+        var localRecords = Customers
+            .OrderBy(customer => customer.Name)
+            .Select(StudioCustomerLocalRecord.FromCustomer)
+            .ToList();
+
+        var json = JsonSerializer.Serialize(localRecords, LocalJsonOptions);
+        await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalCustomerStorageKey, json);
+    }
+
+    private async Task SyncCustomerFromBookingFormAsync()
+    {
+        if (string.IsNullOrWhiteSpace(CustomerName) || string.IsNullOrWhiteSpace(PhoneNumber))
+        {
+            return;
+        }
+
+        var normalizedPhone = NormalizePhone(PhoneNumber);
+        var existingIndex = Customers.FindIndex(customer =>
+            (!string.IsNullOrWhiteSpace(normalizedPhone) && NormalizePhone(customer.PhoneNumber) == normalizedPhone) ||
+            string.Equals(customer.Name.Trim(), CustomerName.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (existingIndex >= 0)
+        {
+            var existing = Customers[existingIndex];
+
+            Customers[existingIndex] = existing with
+            {
+                Name = string.IsNullOrWhiteSpace(existing.Name) ? CustomerName.Trim() : existing.Name.Trim(),
+                PhoneNumber = string.IsNullOrWhiteSpace(existing.PhoneNumber) ? PhoneNumber.Trim() : existing.PhoneNumber.Trim(),
+                UpdatedAt = DateTime.Now
+            };
+        }
+        else
+        {
+            Customers.Add(new StudioCustomer(
+                Guid.NewGuid().ToString("N"),
+                CustomerName.Trim(),
+                PhoneNumber.Trim(),
+                string.Empty,
+                string.Empty,
+                DateTime.Now,
+                DateTime.Now
+            ));
+        }
+
+        await PersistCustomersToLocalStorageAsync();
+    }
+
+    private static string NormalizePhone(string value)
+    {
+        return new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
     }
 
     private async Task LoadBookingsFromLocalStorageAsync()
@@ -791,6 +900,7 @@
 
     private void GoToCurrentRange()
     {
+
         CurrentAnchorDate = ActiveViewMode == ScheduleViewMode.Month
             ? new DateTime(Today.Year, Today.Month, 1)
             : Today.Date;
@@ -951,6 +1061,8 @@
             Bookings.AddRange(snapshot);
             return;
         }
+
+        await SyncCustomerFromBookingFormAsync();
 
         CurrentAnchorDate = ActiveViewMode == ScheduleViewMode.Month
             ? new DateTime(BookingDate.Year, BookingDate.Month, 1)
@@ -1334,6 +1446,64 @@
         public string DisplayName => string.IsNullOrWhiteSpace(BandName)
             ? CustomerName
             : BandName;
+    }
+
+    private sealed record StudioCustomer(
+        string Id,
+        string Name,
+        string PhoneNumber,
+        string Email,
+        string Instagram,
+        DateTime CreatedAt,
+        DateTime UpdatedAt);
+
+    private sealed class StudioCustomerLocalRecord
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public string Email { get; set; } = string.Empty;
+
+        public string Instagram { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+
+        public static StudioCustomerLocalRecord FromCustomer(StudioCustomer customer)
+        {
+            return new StudioCustomerLocalRecord
+            {
+                SchemaVersion = 1,
+                Id = customer.Id,
+                Name = customer.Name,
+                PhoneNumber = customer.PhoneNumber,
+                Email = customer.Email,
+                Instagram = customer.Instagram,
+                CreatedAt = customer.CreatedAt,
+                UpdatedAt = customer.UpdatedAt
+            };
+        }
+
+        public StudioCustomer ToCustomer()
+        {
+            var now = DateTime.Now;
+
+            return new StudioCustomer(
+                string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString("N") : Id,
+                Name.Trim(),
+                PhoneNumber.Trim(),
+                Email.Trim(),
+                Instagram.Trim(),
+                CreatedAt == default ? now : CreatedAt,
+                UpdatedAt == default ? now : UpdatedAt
+            );
+        }
     }
 
     private sealed class StudioBookingLocalRecord

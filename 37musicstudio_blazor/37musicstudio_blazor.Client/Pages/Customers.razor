@@ -2,13 +2,944 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
 @layout StudioAdminLayout
 
+@using System.Globalization
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JsRuntime
+
 <PageTitle>Customer | 37 Music Studio</PageTitle>
 
-<section class="studio-admin-canvas-page" aria-labelledby="adminCanvasTitle">
-    <header>
-        <p>Customer</p>
-        <h1 id="adminCanvasTitle">Customer</h1>
+<section class="studio-customer-page" aria-labelledby="customerTitle">
+    <header class="studio-customer-header">
+        <div>
+            <p>Customer</p>
+            <h1 id="customerTitle">Customer List</h1>
+            <span>Customer bisa masuk otomatis dari Schedule atau ditambahkan manual.</span>
+        </div>
+
+        <div class="studio-customer-actions">
+            <button type="button" class="studio-customer-soft-action" @onclick="SyncCustomersFromBookingsAsync">
+                Sync dari Booking
+            </button>
+
+            <button type="button" class="studio-customer-primary-action" @onclick="OpenCustomerModal">
+                Tambah Customer
+            </button>
+        </div>
     </header>
 
-    <div class="studio-admin-empty-canvas" aria-label="Customer canvas"></div>
+    @if (!string.IsNullOrWhiteSpace(FormMessage))
+    {
+        <div class="studio-customer-alert" role="alert">@FormMessage</div>
+    }
+
+    <section class="studio-customer-heroes" aria-label="Ringkasan customer">
+        <article class="studio-customer-hero">
+            <span>Total Customer</span>
+            <strong>@CustomerList.Count</strong>
+            <small>Data lokal</small>
+        </article>
+
+        <article class="studio-customer-hero">
+            <span>Total Booking</span>
+            <strong>@Bookings.Count</strong>
+            <small>Dari schedule</small>
+        </article>
+
+        <article class="studio-customer-hero">
+            <span>Tagihan Belum Lunas</span>
+            <strong>@UnpaidBookings.Count</strong>
+            <small>@FormatCurrency(UnpaidBookings.Sum(booking => booking.RemainingAmount))</small>
+        </article>
+    </section>
+
+    <section class="studio-customer-shell">
+        <aside class="studio-customer-list-panel" aria-label="Daftar customer">
+            <label class="studio-customer-search">
+                <span>Cari Customer</span>
+                <input type="search" placeholder="Nama, no HP, email, Instagram..." @bind="SearchText" @bind:event="oninput" />
+            </label>
+
+            <div class="studio-customer-list">
+                @if (!HasLoadedLocalData)
+                {
+                    <div class="studio-customer-empty">
+                        <strong>Memuat data...</strong>
+                        <span>Sedang membaca localStorage.</span>
+                    </div>
+                }
+                else if (!VisibleCustomers.Any())
+                {
+                    <div class="studio-customer-empty">
+                        <strong>Belum ada customer</strong>
+                        <span>Tambahkan manual atau buat booking di Schedule.</span>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var customer in VisibleCustomers)
+                    {
+                        var stats = BuildCustomerStats(customer);
+
+                        <button type="button" class="@GetCustomerItemClassInstance(customer)" @onclick="() => SelectCustomer(customer.Id)">
+                            <span class="studio-customer-avatar">@GetInitial(customer.Name)</span>
+
+                            <strong>@customer.Name</strong>
+                            <em>@customer.PhoneNumber</em>
+                            <small>@stats.TotalBooking booking â€¢ @stats.TotalTrainingHours jam</small>
+
+                            @if (stats.UnpaidAmount > 0)
+                            {
+                                <b>@FormatCurrency(stats.UnpaidAmount)</b>
+                            }
+                        </button>
+                    }
+                }
+            </div>
+        </aside>
+
+        <section class="studio-customer-detail-panel" aria-label="Detail customer">
+            @if (SelectedCustomer is null)
+            {
+                <div class="studio-customer-empty-detail">
+                    <StudioIcon Name="users" />
+                    <strong>Pilih customer</strong>
+                    <span>Detail booking, jam favorit, jadwal mendatang, dan tagihan akan tampil di sini.</span>
+                </div>
+            }
+            else
+            {
+                var detailStats = BuildCustomerStats(SelectedCustomer);
+
+                <header class="studio-customer-detail-head">
+                    <div class="studio-customer-detail-identity">
+                        <span class="studio-customer-avatar is-large">@GetInitial(SelectedCustomer.Name)</span>
+
+                        <div>
+                            <p>Customer Detail</p>
+                            <h2>@SelectedCustomer.Name</h2>
+                            <span>@SelectedCustomer.PhoneNumber</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="studio-customer-soft-action" @onclick="() => EditCustomer(SelectedCustomer.Id)">
+                        Edit
+                    </button>
+                </header>
+
+                <div class="studio-customer-contact-grid">
+                    <div>
+                        <span>Email</span>
+                        <strong>@DisplayOptional(SelectedCustomer.Email, "Belum diisi")</strong>
+                    </div>
+
+                    <div>
+                        <span>Instagram</span>
+                        <strong>@DisplayOptional(SelectedCustomer.Instagram, "Belum diisi")</strong>
+                    </div>
+                </div>
+
+                <div class="studio-customer-stat-grid">
+                    <article>
+                        <span>Total Booking</span>
+                        <strong>@detailStats.TotalBooking</strong>
+                    </article>
+
+                    <article>
+                        <span>Total Jam Latihan</span>
+                        <strong>@detailStats.TotalTrainingHours</strong>
+                    </article>
+
+                    <article>
+                        <span>Jam Waktu Favorit</span>
+                        <strong>@detailStats.FavoriteHourLabel</strong>
+                    </article>
+
+                    <article class="@GetUnpaidStatClass(detailStats.UnpaidAmount)">
+                        <span>Tagihan Belum Lunas</span>
+                        <strong>@FormatCurrency(detailStats.UnpaidAmount)</strong>
+                    </article>
+                </div>
+
+                <section class="studio-customer-detail-section">
+                    <header>
+                        <p>Jadwal latihan mendatang</p>
+                    </header>
+
+                    @if (!GetUpcomingBookings(SelectedCustomer).Any())
+                    {
+                        <div class="studio-customer-mini-empty">Belum ada jadwal mendatang.</div>
+                    }
+                    else
+                    {
+                        <div class="studio-customer-mini-list">
+                            @foreach (var booking in GetUpcomingBookings(SelectedCustomer).Take(5))
+                            {
+                                <article>
+                                    <strong>@booking.BandName</strong>
+                                    <span>@booking.StartAt.ToString("dd MMM yyyy", IndonesianCulture) â€¢ @FormatTimeRange(booking.StartAt, booking.EndAt)</span>
+                                    <b>@GetPaymentStatusLabel(booking.Status)</b>
+                                </article>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <section class="studio-customer-detail-section">
+                    <header>
+                        <p>Tagihan belum lunas</p>
+                    </header>
+
+                    @if (!GetUnpaidBookings(SelectedCustomer).Any())
+                    {
+                        <div class="studio-customer-mini-empty">Tidak ada tagihan belum lunas.</div>
+                    }
+                    else
+                    {
+                        <div class="studio-customer-mini-list">
+                            @foreach (var booking in GetUnpaidBookings(SelectedCustomer).Take(6))
+                            {
+                                <article class="is-unpaid">
+                                    <strong>@booking.BandName</strong>
+                                    <span>@booking.StartAt.ToString("dd MMM yyyy", IndonesianCulture) â€¢ Sisa @FormatCurrency(booking.RemainingAmount)</span>
+                                    <b>@GetPaymentStatusLabel(booking.Status)</b>
+                                </article>
+                            }
+                        </div>
+                    }
+                </section>
+            }
+        </section>
+    </section>
+
+    @if (IsCustomerModalOpen)
+    {
+        <div class="studio-customer-modal-backdrop" role="presentation" @onclick="CloseCustomerModal">
+            <section class="studio-customer-modal" role="dialog" aria-modal="true" aria-labelledby="customerModalTitle" @onclick:stopPropagation>
+                <header>
+                    <div>
+                        <p>Manual Customer</p>
+                        <h2 id="customerModalTitle">@CustomerModalTitle</h2>
+                    </div>
+
+                    <button type="button" class="studio-customer-icon-action" @onclick="CloseCustomerModal" aria-label="Tutup">
+                        <StudioIcon Name="x" />
+                    </button>
+                </header>
+
+                <form class="studio-customer-form" @onsubmit="SaveCustomerAsync" @onsubmit:preventDefault>
+                    <label class="studio-customer-field">
+                        <span>Nama</span>
+                        <input type="text" required placeholder="Nama customer" @bind="DraftName" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-customer-field">
+                        <span>No HP</span>
+                        <input type="tel" required inputmode="tel" placeholder="08xxxxxxxxxx" @bind="DraftPhoneNumber" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-customer-field">
+                        <span>Email <small>Opsional</small></span>
+                        <input type="email" placeholder="customer@email.com" @bind="DraftEmail" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-customer-field">
+                        <span>Instagram <small>Opsional</small></span>
+                        <input type="text" placeholder="@@username" @bind="DraftInstagram" @bind:event="oninput" />
+                    </label>
+
+                    <footer>
+                        <button type="button" class="studio-customer-soft-action" @onclick="CloseCustomerModal">
+                            Batal
+                        </button>
+
+                        <button type="submit" class="studio-customer-primary-action">
+                            Simpan Customer
+                        </button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+    }
 </section>
+
+@code {
+    private const string LocalCustomerStorageKey = "37musicstudio.customers.v1";
+    private const string LocalBookingStorageKey = "37musicstudio.bookings.v1";
+
+    private static readonly CultureInfo IndonesianCulture = new("id-ID");
+    private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
+
+    private readonly List<StudioCustomer> CustomerList = new();
+    private readonly List<StudioBooking> Bookings = new();
+
+    private bool HasLoadedLocalData { get; set; }
+
+    private string SearchText { get; set; } = string.Empty;
+
+    private string? SelectedCustomerId { get; set; }
+
+    private bool IsCustomerModalOpen { get; set; }
+
+    private string? EditingCustomerId { get; set; }
+
+    private string DraftName { get; set; } = string.Empty;
+
+    private string DraftPhoneNumber { get; set; } = string.Empty;
+
+    private string DraftEmail { get; set; } = string.Empty;
+
+    private string DraftInstagram { get; set; } = string.Empty;
+
+    private string? FormMessage { get; set; }
+
+    private string CustomerModalTitle => EditingCustomerId is null ? "Tambah Customer" : "Edit Customer";
+
+    private StudioCustomer? SelectedCustomer => CustomerList.FirstOrDefault(customer => customer.Id == SelectedCustomerId);
+
+    private IReadOnlyList<StudioBooking> UnpaidBookings => Bookings
+        .Where(IsUnpaidBooking)
+        .OrderBy(booking => booking.StartAt)
+        .ToArray();
+
+    private IEnumerable<StudioCustomer> VisibleCustomers
+    {
+        get
+        {
+            var query = CustomerList
+                .OrderBy(customer => customer.Name)
+                .AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var keyword = SearchText.Trim();
+
+                query = query.Where(customer =>
+                    customer.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    customer.PhoneNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    customer.Email.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    customer.Instagram.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return query.ToArray();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || HasLoadedLocalData)
+        {
+            return;
+        }
+
+        HasLoadedLocalData = true;
+
+        await LoadCustomersAsync();
+        await LoadBookingsAsync();
+        await SyncCustomersFromBookingsAsync(false);
+
+        if (SelectedCustomerId is null)
+        {
+            SelectCustomer(CustomerList.FirstOrDefault()?.Id);
+        }
+
+        StateHasChanged();
+    }
+
+    private static JsonSerializerOptions CreateLocalJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            WriteIndented = false
+        };
+
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        return options;
+    }
+
+    private async Task LoadCustomersAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalCustomerStorageKey);
+            var records = string.IsNullOrWhiteSpace(json)
+                ? new List<StudioCustomerLocalRecord>()
+                : JsonSerializer.Deserialize<List<StudioCustomerLocalRecord>>(json, LocalJsonOptions) ?? new();
+
+            CustomerList.Clear();
+            CustomerList.AddRange(records.Select(record => record.ToCustomer()).OrderBy(customer => customer.Name));
+        }
+        catch
+        {
+            CustomerList.Clear();
+        }
+    }
+
+    private async Task LoadBookingsAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalBookingStorageKey);
+            var records = string.IsNullOrWhiteSpace(json)
+                ? new List<StudioBookingLocalRecord>()
+                : JsonSerializer.Deserialize<List<StudioBookingLocalRecord>>(json, LocalJsonOptions) ?? new();
+
+            Bookings.Clear();
+            Bookings.AddRange(records.Select(record => record.ToBooking()).OrderBy(booking => booking.StartAt));
+        }
+        catch
+        {
+            Bookings.Clear();
+        }
+    }
+
+    private async Task PersistCustomersAsync()
+    {
+        var records = CustomerList
+            .OrderBy(customer => customer.Name)
+            .Select(StudioCustomerLocalRecord.FromCustomer)
+            .ToList();
+
+        var json = JsonSerializer.Serialize(records, LocalJsonOptions);
+        await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalCustomerStorageKey, json);
+    }
+
+    private async Task SyncCustomersFromBookingsAsync()
+    {
+        await LoadBookingsAsync();
+        await SyncCustomersFromBookingsAsync(true);
+    }
+
+    private async Task SyncCustomersFromBookingsAsync(bool showMessage)
+    {
+        var createdOrUpdated = 0;
+
+        foreach (var booking in Bookings)
+        {
+            if (string.IsNullOrWhiteSpace(booking.CustomerName) || string.IsNullOrWhiteSpace(booking.PhoneNumber))
+            {
+                continue;
+            }
+
+            if (MergeCustomerFromBooking(booking))
+            {
+                createdOrUpdated++;
+            }
+        }
+
+        if (createdOrUpdated > 0)
+        {
+            await PersistCustomersAsync();
+        }
+
+        if (showMessage)
+        {
+            FormMessage = createdOrUpdated == 0
+                ? "Tidak ada customer baru dari booking."
+                : $"{createdOrUpdated} customer berhasil disinkronkan dari booking.";
+        }
+
+        CustomerList.Sort((left, right) => string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase));
+
+        if (SelectedCustomerId is null)
+        {
+            SelectCustomer(CustomerList.FirstOrDefault()?.Id);
+        }
+    }
+
+    private bool MergeCustomerFromBooking(StudioBooking booking)
+    {
+        var normalizedPhone = NormalizePhone(booking.PhoneNumber);
+        var existingIndex = CustomerList.FindIndex(customer =>
+            (!string.IsNullOrWhiteSpace(normalizedPhone) && NormalizePhone(customer.PhoneNumber) == normalizedPhone) ||
+            string.Equals(customer.Name.Trim(), booking.CustomerName.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (existingIndex >= 0)
+        {
+            var existing = CustomerList[existingIndex];
+            var updated = existing with
+            {
+                Name = string.IsNullOrWhiteSpace(existing.Name) ? booking.CustomerName.Trim() : existing.Name.Trim(),
+                PhoneNumber = string.IsNullOrWhiteSpace(existing.PhoneNumber) ? booking.PhoneNumber.Trim() : existing.PhoneNumber.Trim(),
+                UpdatedAt = DateTime.Now
+            };
+
+            if (updated != existing)
+            {
+                CustomerList[existingIndex] = updated;
+                return true;
+            }
+
+            return false;
+        }
+
+        CustomerList.Add(new StudioCustomer(
+            Guid.NewGuid().ToString("N"),
+            booking.CustomerName.Trim(),
+            booking.PhoneNumber.Trim(),
+            string.Empty,
+            string.Empty,
+            DateTime.Now,
+            DateTime.Now
+        ));
+
+        return true;
+    }
+
+    private void OpenCustomerModal()
+    {
+        EditingCustomerId = null;
+        DraftName = string.Empty;
+        DraftPhoneNumber = string.Empty;
+        DraftEmail = string.Empty;
+        DraftInstagram = string.Empty;
+        FormMessage = null;
+        IsCustomerModalOpen = true;
+    }
+
+    private void EditCustomer(string id)
+    {
+        var customer = CustomerList.FirstOrDefault(item => item.Id == id);
+
+        if (customer is null)
+        {
+            return;
+        }
+
+        EditingCustomerId = customer.Id;
+        DraftName = customer.Name;
+        DraftPhoneNumber = customer.PhoneNumber;
+        DraftEmail = customer.Email;
+        DraftInstagram = customer.Instagram;
+        FormMessage = null;
+        IsCustomerModalOpen = true;
+    }
+
+    private void CloseCustomerModal()
+    {
+        IsCustomerModalOpen = false;
+        EditingCustomerId = null;
+    }
+
+    private async Task SaveCustomerAsync()
+    {
+        if (string.IsNullOrWhiteSpace(DraftName) || string.IsNullOrWhiteSpace(DraftPhoneNumber))
+        {
+            FormMessage = "Nama dan No HP wajib diisi.";
+            return;
+        }
+
+        var normalizedPhone = NormalizePhone(DraftPhoneNumber);
+        var duplicate = CustomerList.FirstOrDefault(customer =>
+            customer.Id != EditingCustomerId &&
+            NormalizePhone(customer.PhoneNumber) == normalizedPhone);
+
+        if (duplicate is not null)
+        {
+            FormMessage = $"No HP sudah terdaftar untuk {duplicate.Name}.";
+            return;
+        }
+
+        if (EditingCustomerId is null)
+        {
+            var now = DateTime.Now;
+
+            CustomerList.Add(new StudioCustomer(
+                Guid.NewGuid().ToString("N"),
+                DraftName.Trim(),
+                DraftPhoneNumber.Trim(),
+                DraftEmail.Trim(),
+                NormalizeInstagram(DraftInstagram),
+                now,
+                now
+            ));
+        }
+        else
+        {
+            var index = CustomerList.FindIndex(customer => customer.Id == EditingCustomerId);
+
+            if (index < 0)
+            {
+                FormMessage = "Customer tidak ditemukan.";
+                return;
+            }
+
+            var existing = CustomerList[index];
+
+            CustomerList[index] = existing with
+            {
+                Name = DraftName.Trim(),
+                PhoneNumber = DraftPhoneNumber.Trim(),
+                Email = DraftEmail.Trim(),
+                Instagram = NormalizeInstagram(DraftInstagram),
+                UpdatedAt = DateTime.Now
+            };
+        }
+
+        CustomerList.Sort((left, right) => string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase));
+
+        await PersistCustomersAsync();
+
+        var saved = CustomerList.FirstOrDefault(customer => NormalizePhone(customer.PhoneNumber) == normalizedPhone);
+        SelectedCustomerId = saved?.Id ?? SelectedCustomerId;
+
+        CloseCustomerModal();
+        FormMessage = "Customer berhasil disimpan.";
+    }
+
+    private void SelectCustomer(string? customerId)
+    {
+        SelectedCustomerId = customerId;
+        FormMessage = null;
+    }
+
+    private CustomerStats BuildCustomerStats(StudioCustomer customer)
+    {
+        var customerBookings = GetCustomerBookings(customer).ToArray();
+        var unpaid = customerBookings.Where(IsUnpaidBooking).ToArray();
+        var favoriteHour = BuildFavoriteHourLabel(customerBookings);
+
+        return new CustomerStats(
+            customerBookings.Length,
+            customerBookings.Sum(booking => Math.Max(0, booking.DurationHours)),
+            favoriteHour,
+            unpaid.Sum(booking => booking.RemainingAmount)
+        );
+    }
+
+    private IEnumerable<StudioBooking> GetCustomerBookings(StudioCustomer customer)
+    {
+        return Bookings
+            .Where(booking => BookingBelongsToCustomer(booking, customer))
+            .OrderByDescending(booking => booking.StartAt)
+            .ToArray();
+    }
+
+    private IEnumerable<StudioBooking> GetUpcomingBookings(StudioCustomer customer)
+    {
+        var now = DateTime.Now;
+
+        return Bookings
+            .Where(booking => BookingBelongsToCustomer(booking, customer))
+            .Where(booking => booking.EndAt >= now)
+            .OrderBy(booking => booking.StartAt)
+            .ToArray();
+    }
+
+    private IEnumerable<StudioBooking> GetUnpaidBookings(StudioCustomer customer)
+    {
+        return Bookings
+            .Where(booking => BookingBelongsToCustomer(booking, customer))
+            .Where(IsUnpaidBooking)
+            .OrderBy(booking => booking.StartAt)
+            .ToArray();
+    }
+
+    private static bool BookingBelongsToCustomer(StudioBooking booking, StudioCustomer customer)
+    {
+        var bookingPhone = NormalizePhone(booking.PhoneNumber);
+        var customerPhone = NormalizePhone(customer.PhoneNumber);
+
+        if (!string.IsNullOrWhiteSpace(bookingPhone) &&
+            !string.IsNullOrWhiteSpace(customerPhone) &&
+            bookingPhone == customerPhone)
+        {
+            return true;
+        }
+
+        return string.Equals(booking.CustomerName.Trim(), customer.Name.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsUnpaidBooking(StudioBooking booking)
+    {
+        return booking.Status != BookingPaymentStatus.Paid && booking.RemainingAmount > 0;
+    }
+
+    private static string BuildFavoriteHourLabel(IReadOnlyList<StudioBooking> bookings)
+    {
+        if (bookings.Count == 0)
+        {
+            return "Belum ada";
+        }
+
+        var favorite = bookings
+            .GroupBy(booking => booking.StartAt.TimeOfDay)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .First();
+
+        return FormatTime(favorite.Key);
+    }
+
+    private static string GetInitial(string name)
+    {
+        return string.IsNullOrWhiteSpace(name)
+            ? "?"
+            : name.Trim()[0].ToString().ToUpperInvariant();
+    }
+
+    private static string GetCustomerItemClass(StudioCustomer customer)
+    {
+        return "studio-customer-item";
+    }
+
+    private string GetCustomerItemClassWithActive(StudioCustomer customer)
+    {
+        return SelectedCustomerId == customer.Id
+            ? "studio-customer-item is-active"
+            : "studio-customer-item";
+    }
+
+    private string GetCustomerItemClass(StudioCustomer customer, bool active)
+    {
+        return active ? "studio-customer-item is-active" : "studio-customer-item";
+    }
+
+    private string GetCustomerItemClassInstance(StudioCustomer customer)
+    {
+        return SelectedCustomerId == customer.Id
+            ? "studio-customer-item is-active"
+            : "studio-customer-item";
+    }
+
+    private string GetCustomerItemClassLegacy(StudioCustomer customer)
+    {
+        return SelectedCustomerId == customer.Id
+            ? "studio-customer-item is-active"
+            : "studio-customer-item";
+    }
+
+    private string GetCustomerItemClassFinal(StudioCustomer customer)
+    {
+        return SelectedCustomerId == customer.Id
+            ? "studio-customer-item is-active"
+            : "studio-customer-item";
+    }
+
+    private string GetCustomerItemClassResolved(StudioCustomer customer)
+    {
+        return SelectedCustomerId == customer.Id
+            ? "studio-customer-item is-active"
+            : "studio-customer-item";
+    }
+
+    private string GetUnpaidStatClass(decimal unpaidAmount)
+    {
+        return unpaidAmount > 0
+            ? "has-unpaid"
+            : string.Empty;
+    }
+
+    private static string DisplayOptional(string value, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? fallback
+            : value.Trim();
+    }
+
+    private static string NormalizeInstagram(string value)
+    {
+        var trimmed = value.Trim();
+
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return string.Empty;
+        }
+
+        return trimmed.StartsWith("@", StringComparison.Ordinal)
+            ? trimmed
+            : $"@{trimmed}";
+    }
+
+    private static string NormalizePhone(string value)
+    {
+        return new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+    }
+
+    private static string FormatCurrency(decimal value)
+    {
+        return value <= 0
+            ? "Rp0"
+            : value.ToString("C0", IndonesianCulture);
+    }
+
+    private static string FormatTimeRange(DateTime startAt, DateTime endAt)
+    {
+        return $"{FormatTime(startAt.TimeOfDay)} - {FormatTime(endAt.TimeOfDay)}";
+    }
+
+    private static string FormatTime(TimeSpan time)
+    {
+        return $"{(int)time.TotalHours:00}.00";
+    }
+
+    private static string GetPaymentStatusLabel(BookingPaymentStatus status)
+    {
+        return status switch
+        {
+            BookingPaymentStatus.Pending => "Pending",
+            BookingPaymentStatus.Dp => "DP",
+            BookingPaymentStatus.Paid => "Lunas",
+            _ => status.ToString()
+        };
+    }
+
+    private readonly record struct CustomerStats(
+        int TotalBooking,
+        int TotalTrainingHours,
+        string FavoriteHourLabel,
+        decimal UnpaidAmount);
+
+    private sealed record StudioCustomer(
+        string Id,
+        string Name,
+        string PhoneNumber,
+        string Email,
+        string Instagram,
+        DateTime CreatedAt,
+        DateTime UpdatedAt);
+
+    private sealed class StudioCustomerLocalRecord
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public string Email { get; set; } = string.Empty;
+
+        public string Instagram { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+
+        public static StudioCustomerLocalRecord FromCustomer(StudioCustomer customer)
+        {
+            return new StudioCustomerLocalRecord
+            {
+                SchemaVersion = 1,
+                Id = customer.Id,
+                Name = customer.Name,
+                PhoneNumber = customer.PhoneNumber,
+                Email = customer.Email,
+                Instagram = customer.Instagram,
+                CreatedAt = customer.CreatedAt,
+                UpdatedAt = customer.UpdatedAt
+            };
+        }
+
+        public StudioCustomer ToCustomer()
+        {
+            var now = DateTime.Now;
+
+            return new StudioCustomer(
+                string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString("N") : Id,
+                Name.Trim(),
+                PhoneNumber.Trim(),
+                Email.Trim(),
+                Instagram.Trim(),
+                CreatedAt == default ? now : CreatedAt,
+                UpdatedAt == default ? now : UpdatedAt
+            );
+        }
+    }
+
+    private enum BookingPaymentStatus
+    {
+        Pending,
+        Dp,
+        Paid
+    }
+
+    private readonly record struct ScheduleTimeSlot(TimeSpan Start, TimeSpan End);
+
+    private sealed record StudioBooking(
+        string Id,
+        string CustomerName,
+        string BandName,
+        string PhoneNumber,
+        DateTime BookingDate,
+        DateTime StartAt,
+        DateTime EndAt,
+        ScheduleTimeSlot Slot,
+        string Duration,
+        int DurationHours,
+        int CustomDurationHours,
+        BookingPaymentStatus Status,
+        decimal TotalAmount,
+        decimal DpAmount,
+        decimal RemainingAmount,
+        string Note);
+
+    private sealed class StudioBookingLocalRecord
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string Id { get; set; } = string.Empty;
+
+        public string CustomerName { get; set; } = string.Empty;
+
+        public string BandName { get; set; } = string.Empty;
+
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public DateTime BookingDate { get; set; }
+
+        public DateTime StartAt { get; set; }
+
+        public DateTime EndAt { get; set; }
+
+        public int SlotStartHour { get; set; }
+
+        public int SlotEndHour { get; set; }
+
+        public string Duration { get; set; } = "1 Jam";
+
+        public int DurationHours { get; set; } = 1;
+
+        public int CustomDurationHours { get; set; } = 1;
+
+        public BookingPaymentStatus Status { get; set; }
+
+        public decimal TotalAmount { get; set; }
+
+        public decimal DpAmount { get; set; }
+
+        public decimal RemainingAmount { get; set; }
+
+        public string Note { get; set; } = string.Empty;
+
+        public StudioBooking ToBooking()
+        {
+            var safeDurationHours = Math.Max(1, DurationHours);
+            var safeSlotStart = SlotStartHour <= 0 ? StartAt.Hour : SlotStartHour;
+            var safeSlotEnd = SlotEndHour <= safeSlotStart ? safeSlotStart + 1 : SlotEndHour;
+
+            return new StudioBooking(
+                string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString("N") : Id,
+                CustomerName.Trim(),
+                BandName.Trim(),
+                PhoneNumber.Trim(),
+                BookingDate.Date,
+                StartAt,
+                EndAt,
+                new ScheduleTimeSlot(TimeSpan.FromHours(safeSlotStart), TimeSpan.FromHours(safeSlotEnd)),
+                string.IsNullOrWhiteSpace(Duration) ? $"{safeDurationHours} Jam" : Duration,
+                safeDurationHours,
+                Math.Max(1, CustomDurationHours),
+                Status,
+                TotalAmount,
+                DpAmount,
+                RemainingAmount,
+                Note.Trim()
+            );
+        }
+    }
+}
