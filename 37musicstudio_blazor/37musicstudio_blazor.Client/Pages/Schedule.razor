@@ -6,6 +6,11 @@
 @rendermode InteractiveAuto
 
 @using System.Globalization
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JsRuntime
 
 <PageTitle>Schedule | 37 Music Studio</PageTitle>
 
@@ -280,8 +285,10 @@
 @code {
     private const int StudioOpenHour = 10;
     private const int StudioCloseHour = 23;
+    private const string LocalBookingStorageKey = "37musicstudio.bookings.v1";
 
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
+    private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
 
     private readonly List<StudioBooking> Bookings = new();
 
@@ -309,6 +316,8 @@
         .ToArray();
 
     private bool IsBookingCanvasOpen { get; set; }
+
+    private bool HasLoadedLocalBookings { get; set; }
 
     private DateTime? SelectedDate { get; set; }
 
@@ -391,6 +400,89 @@
             }
 
             return $"{BookingDate.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} - {FormatTime(DraftStartAt.Value.TimeOfDay)} - {FormatTime(DraftEndAt.Value.TimeOfDay)}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || HasLoadedLocalBookings)
+        {
+            return;
+        }
+
+        HasLoadedLocalBookings = true;
+        await LoadBookingsFromLocalStorageAsync();
+        StateHasChanged();
+    }
+
+    private static JsonSerializerOptions CreateLocalJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            WriteIndented = false
+        };
+
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        return options;
+    }
+
+    private async Task LoadBookingsFromLocalStorageAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalBookingStorageKey);
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return;
+            }
+
+            var localRecords = JsonSerializer.Deserialize<List<StudioBookingLocalRecord>>(json, LocalJsonOptions) ?? new();
+
+            Bookings.Clear();
+
+            foreach (var record in localRecords.OrderBy(item => item.StartAt))
+            {
+                var booking = record.ToBooking();
+
+                if (booking.StartAt >= booking.EndAt)
+                {
+                    continue;
+                }
+
+                if (HasBookingConflict(booking.StartAt, booking.EndAt, booking.Id))
+                {
+                    continue;
+                }
+
+                Bookings.Add(booking);
+            }
+        }
+        catch
+        {
+            Bookings.Clear();
+        }
+    }
+
+    private async Task<bool> PersistBookingsToLocalStorageAsync()
+    {
+        try
+        {
+            var localRecords = Bookings
+                .OrderBy(booking => booking.StartAt)
+                .Select(StudioBookingLocalRecord.FromBooking)
+                .ToList();
+
+            var json = JsonSerializer.Serialize(localRecords, LocalJsonOptions);
+            await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalBookingStorageKey, json);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            FormMessage = $"Data booking tampil sementara, tapi gagal disimpan lokal: {ex.Message}";
+            return false;
         }
     }
 
@@ -506,7 +598,7 @@
         FormMessage = null;
     }
 
-    private void SaveBooking()
+    private async Task SaveBooking()
     {
         if (SelectedSlot is null || DraftStartAt is null || DraftEndAt is null)
         {
@@ -545,6 +637,7 @@
             return;
         }
 
+        var snapshot = Bookings.ToList();
         var bookingId = EditingBookingId ?? Guid.NewGuid().ToString("N");
         var oldBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
 
@@ -571,6 +664,15 @@
             RemainingAmount,
             Note.Trim()
         ));
+
+        var persisted = await PersistBookingsToLocalStorageAsync();
+
+        if (!persisted)
+        {
+            Bookings.Clear();
+            Bookings.AddRange(snapshot);
+            return;
+        }
 
         CurrentAnchorDate = ActiveViewMode == ScheduleViewMode.Month
             ? new DateTime(BookingDate.Year, BookingDate.Month, 1)
@@ -850,5 +952,104 @@
         public string DisplayName => string.IsNullOrWhiteSpace(BandName)
             ? CustomerName
             : BandName;
+    }
+
+    private sealed class StudioBookingLocalRecord
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string Id { get; set; } = string.Empty;
+
+        public string CustomerName { get; set; } = string.Empty;
+
+        public string BandName { get; set; } = string.Empty;
+
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public DateTime BookingDate { get; set; }
+
+        public DateTime StartAt { get; set; }
+
+        public DateTime EndAt { get; set; }
+
+        public int SlotStartHour { get; set; }
+
+        public int SlotEndHour { get; set; }
+
+        public string Duration { get; set; } = "1 Jam";
+
+        public int DurationHours { get; set; } = 1;
+
+        public int CustomDurationHours { get; set; } = 1;
+
+        public BookingPaymentStatus Status { get; set; }
+
+        public decimal TotalAmount { get; set; }
+
+        public decimal DpAmount { get; set; }
+
+        public decimal RemainingAmount { get; set; }
+
+        public string Note { get; set; } = string.Empty;
+
+        public static StudioBookingLocalRecord FromBooking(StudioBooking booking)
+        {
+            return new StudioBookingLocalRecord
+            {
+                SchemaVersion = 1,
+                Id = booking.Id,
+                CustomerName = booking.CustomerName,
+                BandName = booking.BandName,
+                PhoneNumber = booking.PhoneNumber,
+                BookingDate = booking.BookingDate,
+                StartAt = booking.StartAt,
+                EndAt = booking.EndAt,
+                SlotStartHour = (int)booking.Slot.Start.TotalHours,
+                SlotEndHour = (int)booking.Slot.End.TotalHours,
+                Duration = booking.Duration,
+                DurationHours = booking.DurationHours,
+                CustomDurationHours = booking.CustomDurationHours,
+                Status = booking.Status,
+                TotalAmount = booking.TotalAmount,
+                DpAmount = booking.DpAmount,
+                RemainingAmount = booking.RemainingAmount,
+                Note = booking.Note
+            };
+        }
+
+        public StudioBooking ToBooking()
+        {
+            var safeId = string.IsNullOrWhiteSpace(Id)
+                ? Guid.NewGuid().ToString("N")
+                : Id;
+
+            var safeDurationHours = Math.Max(1, DurationHours);
+            var safeSlotStart = SlotStartHour <= 0
+                ? StartAt.Hour
+                : SlotStartHour;
+
+            var safeSlotEnd = SlotEndHour <= safeSlotStart
+                ? safeSlotStart + 1
+                : SlotEndHour;
+
+            return new StudioBooking(
+                safeId,
+                CustomerName.Trim(),
+                BandName.Trim(),
+                PhoneNumber.Trim(),
+                BookingDate.Date,
+                StartAt,
+                EndAt,
+                new ScheduleTimeSlot(TimeSpan.FromHours(safeSlotStart), TimeSpan.FromHours(safeSlotEnd)),
+                string.IsNullOrWhiteSpace(Duration) ? $"{safeDurationHours} Jam" : Duration,
+                safeDurationHours,
+                Math.Max(1, CustomDurationHours),
+                Status,
+                TotalAmount,
+                DpAmount,
+                RemainingAmount,
+                Note.Trim()
+            );
+        }
     }
 }
