@@ -53,67 +53,48 @@
 
     @if (ActiveSubPage == SettingsSubPagePricing)
     {
-        <div class="studio-settings-tabs" role="tablist" aria-label="Pricing settings tabs">
-            <button type="button" role="tab" class="@GetTabClass(SettingsTabHourly)" @onclick="() => SetTab(SettingsTabHourly)">
-                Harga Per Jam
-            </button>
+        <section class="studio-settings-panel studio-pricing-vertical-panel">
+            <div class="studio-settings-card is-hero-card studio-pricing-section-card">
+                <div>
+                    <p>Harga latihan reguler</p>
+                    <h2>@FormatCurrency(PricingModel.HourlyRate)</h2>
+                    <span>Default sistem: Rp120.000 per jam. Harga ini dipakai otomatis di halaman Schedule untuk booking latihan.</span>
+                </div>
 
-            <button type="button" role="tab" class="@GetTabClass(SettingsTabRecording)" @onclick="() => SetTab(SettingsTabRecording)">
-                Paket Recording
-            </button>
+                <label class="studio-settings-field">
+                    <span>Harga per jam</span>
+                    <input type="number" min="0" step="1000" @bind="PricingModel.HourlyRate" @bind:event="oninput" />
+                </label>
+            </div>
 
-            <button type="button" role="tab" class="@GetTabClass(SettingsTabDiscount)" @onclick="() => SetTab(SettingsTabDiscount)">
-                Diskon Latihan
-            </button>
-        </div>
-
-        <section class="studio-settings-panel">
-            @if (ActiveTab == SettingsTabHourly)
-            {
-                <div class="studio-settings-card is-hero-card">
+            <div class="studio-settings-card studio-pricing-section-card">
+                <header class="studio-settings-card-head">
                     <div>
-                        <p>Harga latihan reguler</p>
-                        <h2>@FormatCurrency(PricingModel.HourlyRate)</h2>
-                        <span>Default sistem: Rp120.000 per jam</span>
+                        <p>Paket Recording</p>
+                        <h2>Tambah Paket</h2>
+                        <span>Buat paket recording berisi nama paket, durasi, dan harga tetap.</span>
                     </div>
+                </header>
+
+                <div class="studio-settings-form-grid">
+                    <label class="studio-settings-field">
+                        <span>Nama paket</span>
+                        <input type="text" placeholder="Contoh: Recording Basic" @bind="PackageDraft.Name" @bind:event="oninput" />
+                    </label>
 
                     <label class="studio-settings-field">
-                        <span>Harga per jam</span>
-                        <input type="number" min="0" step="1000" @bind="PricingModel.HourlyRate" @bind:event="oninput" />
+                        <span>Durasi paket</span>
+                        <input type="number" min="1" step="1" @bind="PackageDraft.DurationHours" @bind:event="oninput" />
                     </label>
-                </div>
-            }
 
-            @if (ActiveTab == SettingsTabRecording)
-            {
-                <div class="studio-settings-card">
-                    <header class="studio-settings-card-head">
-                        <div>
-                            <p>Paket Recording</p>
-                            <h2>Tambah Paket</h2>
-                        </div>
-                    </header>
+                    <label class="studio-settings-field">
+                        <span>Harga paket</span>
+                        <input type="number" min="0" step="1000" @bind="PackageDraft.Price" @bind:event="oninput" />
+                    </label>
 
-                    <div class="studio-settings-form-grid">
-                        <label class="studio-settings-field">
-                            <span>Nama paket</span>
-                            <input type="text" placeholder="Contoh: Recording Basic" @bind="PackageDraft.Name" @bind:event="oninput" />
-                        </label>
-
-                        <label class="studio-settings-field">
-                            <span>Durasi paket</span>
-                            <input type="number" min="1" step="1" @bind="PackageDraft.DurationHours" @bind:event="oninput" />
-                        </label>
-
-                        <label class="studio-settings-field">
-                            <span>Harga paket</span>
-                            <input type="number" min="0" step="1000" @bind="PackageDraft.Price" @bind:event="oninput" />
-                        </label>
-
-                        <button type="button" class="studio-settings-add-action" @onclick="AddRecordingPackage">
-                            Tambah Paket
-                        </button>
-                    </div>
+                    <button type="button" class="studio-settings-add-action" @onclick="AddRecordingPackage">
+                        Tambah Paket
+                    </button>
                 </div>
 
                 <div class="studio-settings-list">
@@ -151,38 +132,36 @@
                         }
                     }
                 </div>
-            }
+            </div>
 
-            @if (ActiveTab == SettingsTabDiscount)
-            {
-                <div class="studio-settings-card">
-                    <header class="studio-settings-card-head">
-                        <div>
-                            <p>Diskon sesi latihan</p>
-                            <h2>Tambah Diskon</h2>
-                        </div>
-                    </header>
-
-                    <div class="studio-settings-form-grid is-discount-grid">
-                        <label class="studio-settings-field">
-                            <span>Durasi jam latihan</span>
-                            <input type="number" min="1" step="1" @bind="DiscountDraft.DurationHours" @bind:event="oninput" />
-                        </label>
-
-                        <label class="studio-settings-field">
-                            <span>Nominal diskon</span>
-                            <input type="number" min="0" step="1000" @bind="DiscountDraft.Amount" @bind:event="oninput" />
-                        </label>
-
-                        <label class="studio-settings-check-field">
-                            <input type="checkbox" @bind="DiscountDraft.AppliesMultiple" />
-                            <span>Berlaku kelipatan</span>
-                        </label>
-
-                        <button type="button" class="studio-settings-add-action" @onclick="AddTrainingDiscount">
-                            Tambah Diskon
-                        </button>
+            <div class="studio-settings-card studio-pricing-section-card">
+                <header class="studio-settings-card-head">
+                    <div>
+                        <p>Diskon sesi latihan</p>
+                        <h2>Tambah Diskon</h2>
+                        <span>Default: diskon Rp60.000 untuk 3 jam latihan. Bisa dibuat berlaku kelipatan.</span>
                     </div>
+                </header>
+
+                <div class="studio-settings-form-grid is-discount-grid">
+                    <label class="studio-settings-field">
+                        <span>Durasi jam latihan</span>
+                        <input type="number" min="1" step="1" @bind="DiscountDraft.DurationHours" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-settings-field">
+                        <span>Nominal diskon</span>
+                        <input type="number" min="0" step="1000" @bind="DiscountDraft.Amount" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-settings-check-field">
+                        <input type="checkbox" @bind="DiscountDraft.AppliesMultiple" />
+                        <span>Berlaku kelipatan</span>
+                    </label>
+
+                    <button type="button" class="studio-settings-add-action" @onclick="AddTrainingDiscount">
+                        Tambah Diskon
+                    </button>
                 </div>
 
                 <div class="studio-settings-list">
@@ -220,7 +199,7 @@
                         }
                     }
                 </div>
-            }
+            </div>
         </section>
     }
 
@@ -274,10 +253,6 @@
     private const string SettingsSubPagePricing = "pricing";
     private const string SettingsSubPageProfile = "profile";
 
-    private const string SettingsTabHourly = "hourly";
-    private const string SettingsTabRecording = "recording";
-    private const string SettingsTabDiscount = "discount";
-
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
     private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
 
@@ -290,8 +265,6 @@
     private TrainingDiscountDraft DiscountDraft { get; set; } = TrainingDiscountDraft.CreateDefault();
 
     private string ActiveSubPage { get; set; } = SettingsSubPagePricing;
-
-    private string ActiveTab { get; set; } = SettingsTabHourly;
 
     private string? FormMessage { get; set; }
 
@@ -438,19 +411,6 @@
             : SettingsSubPagePricing;
 
         FormMessage = null;
-    }
-
-    private void SetTab(string tab)
-    {
-        ActiveTab = tab;
-        FormMessage = null;
-    }
-
-    private string GetTabClass(string tab)
-    {
-        return ActiveTab == tab
-            ? "studio-settings-tab is-active"
-            : "studio-settings-tab";
     }
 
     private void AddRecordingPackage()
