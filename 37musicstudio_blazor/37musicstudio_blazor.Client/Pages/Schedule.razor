@@ -52,17 +52,17 @@
             <div class="studio-control-group studio-filter-group" aria-label="Quick filter booking">
                 <span class="studio-control-label">Filter</span>
 
-                <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Pending)" @onclick="() => SetStatusFilter(BookingStatusFilter.Pending)">
+                <button type="button" class="@GetStatusFilterButtonClass(BookingPaymentStatus.Pending)" @onclick="() => SetStatusFilter(BookingPaymentStatus.Pending)">
                     <span class="studio-status-dot"></span>
                     Pending
                 </button>
 
-                <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Dp)" @onclick="() => SetStatusFilter(BookingStatusFilter.Dp)">
+                <button type="button" class="@GetStatusFilterButtonClass(BookingPaymentStatus.Dp)" @onclick="() => SetStatusFilter(BookingPaymentStatus.Dp)">
                     <span class="studio-status-dot"></span>
                     DP
                 </button>
 
-                <button type="button" class="@GetStatusFilterButtonClass(BookingStatusFilter.Paid)" @onclick="() => SetStatusFilter(BookingStatusFilter.Paid)">
+                <button type="button" class="@GetStatusFilterButtonClass(BookingPaymentStatus.Paid)" @onclick="() => SetStatusFilter(BookingPaymentStatus.Paid)">
                     <span class="studio-status-dot"></span>
                     Lunas
                 </button>
@@ -97,19 +97,28 @@
 
                             @foreach (var day in VisibleDays)
                             {
-                                var cellId = BuildCellId(day, slot);
+                                var booking = GetBooking(day, slot);
                                 var isToday = day.Date == Today.Date;
-                                var isSelected = SelectedSlotId == cellId;
+                                var isSelected = SelectedSlotId == BuildCellId(day, slot);
+                                var isFilteredOut = booking is not null && booking.Status != ActiveStatusFilter;
 
-                                <td class="@GetCellClass(isToday, isSelected)">
+                                <td class="@GetCellClass(isToday, isSelected, booking, isFilteredOut)">
                                     <button
                                         type="button"
-                                        class="studio-schedule-slot"
+                                        class="@GetSlotButtonClass(booking, isFilteredOut)"
                                         title="@BuildSlotTitle(day, slot)"
                                         aria-label="@BuildSlotAria(day, slot)"
                                         @onclick="() => OpenBookingCanvas(day, slot)">
                                         <span>
-                                            <StudioIcon Name="plus" />
+                                            @if (booking is null)
+                                            {
+                                                <StudioIcon Name="plus" />
+                                            }
+                                            else
+                                            {
+                                                <strong>@booking.DisplayName</strong>
+                                                <em>@GetPaymentStatusLabel(booking.Status)</em>
+                                            }
                                         </span>
                                     </button>
                                 </td>
@@ -126,10 +135,10 @@
         <div class="studio-booking-modal" role="dialog" aria-modal="true" aria-labelledby="bookingCanvasTitle">
             <button class="studio-booking-backdrop" type="button" aria-label="Tutup modal booking" @onclick="CloseBookingCanvas"></button>
 
-            <section class="studio-booking-panel">
+            <section class="studio-booking-panel studio-booking-form-panel">
                 <header class="studio-booking-header">
                     <div>
-                        <p id="bookingCanvasTitle">Booking</p>
+                        <p id="bookingCanvasTitle">Booking Form</p>
                         <h2>@SelectedSlotTitle</h2>
                     </div>
 
@@ -138,7 +147,104 @@
                     </button>
                 </header>
 
-                <div class="studio-booking-canvas" aria-label="Canvas booking kosong"></div>
+                <form class="studio-booking-form" @onsubmit="SaveBooking" @onsubmit:preventDefault>
+                    @if (!string.IsNullOrWhiteSpace(FormMessage))
+                    {
+                        <div class="studio-booking-form-alert" role="alert">@FormMessage</div>
+                    }
+
+                    <div class="studio-booking-form-grid">
+                        <label class="studio-form-field">
+                            <span>Nama</span>
+                            <input type="text" autocomplete="name" placeholder="Nama customer" required @bind="CustomerName" @bind:event="oninput" />
+                        </label>
+
+                        <label class="studio-form-field">
+                            <span>Nama Band</span>
+                            <input type="text" placeholder="Nama band" required @bind="BandName" @bind:event="oninput" />
+                        </label>
+
+                        <label class="studio-form-field">
+                            <span>No Hp</span>
+                            <input type="tel" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" required @bind="PhoneNumber" @bind:event="oninput" />
+                        </label>
+
+                        <label class="studio-form-field">
+                            <span>Tanggal Booking</span>
+                            <input type="date" required @bind="BookingDate" />
+                        </label>
+
+                        <label class="studio-form-field">
+                            <span>Durasi Booking</span>
+                            <select required @bind="BookingDuration">
+                                <option value="1 Jam">1 Jam</option>
+                                <option value="2 Jam">2 Jam</option>
+                                <option value="3 Jam">3 Jam</option>
+                                <option value="4 Jam">4 Jam</option>
+                                <option value="5 Jam">5 Jam</option>
+                                <option value="6 Jam">6 Jam</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </label>
+
+                        @if (BookingDuration == "Custom")
+                        {
+                            <label class="studio-form-field">
+                                <span>Custom Jam</span>
+                                <input type="number" min="1" max="24" step="1" required @bind="CustomDurationHours" @bind:event="oninput" />
+                            </label>
+                        }
+
+                        <label class="studio-form-field">
+                            <span>Status Pembayaran</span>
+                            <select required @bind="PaymentStatus">
+                                <option value="@BookingPaymentStatus.Pending">Pending</option>
+                                <option value="@BookingPaymentStatus.Dp">DP</option>
+                                <option value="@BookingPaymentStatus.Paid">Lunas</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="studio-booking-detail" aria-label="Detail pembayaran">
+                        <label class="studio-detail-box">
+                            <span>Jumlah</span>
+                            <input type="number" min="0" step="1000" placeholder="0" @bind="TotalAmount" @bind:event="oninput" />
+                        </label>
+
+                        <div class="studio-detail-box">
+                            <span>DP</span>
+
+                            @if (PaymentStatus == BookingPaymentStatus.Dp)
+                            {
+                                <input type="number" min="0" step="1000" placeholder="0" @bind="DpAmount" @bind:event="oninput" />
+                            }
+                            else
+                            {
+                                <strong>@FormatCurrency(EffectiveDpAmount)</strong>
+                            }
+                        </div>
+
+                        <div class="studio-detail-box is-readonly">
+                            <span>Sisa</span>
+                            <strong>@FormatCurrency(RemainingAmount)</strong>
+                        </div>
+                    </div>
+
+                    <label class="studio-form-field studio-field-full">
+                        <span>Catatan <small>Opsional</small></span>
+                        <textarea rows="3" placeholder="Catatan tambahan..." @bind="Note" @bind:event="oninput"></textarea>
+                    </label>
+
+                    <footer class="studio-booking-form-footer">
+                        <button class="studio-form-secondary" type="button" @onclick="CloseBookingCanvas">
+                            Batal
+                        </button>
+
+                        <button class="studio-form-primary" type="submit">
+                            Simpan Booking
+                        </button>
+                    </footer>
+                </form>
             </section>
         </div>
     }
@@ -147,11 +253,13 @@
 @code {
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
 
+    private readonly List<StudioBooking> Bookings = new();
+
     private DateTime CurrentAnchorDate { get; set; } = DateTime.Today;
 
     private ScheduleViewMode ActiveViewMode { get; set; } = ScheduleViewMode.Month;
 
-    private BookingStatusFilter ActiveStatusFilter { get; set; } = BookingStatusFilter.Pending;
+    private BookingPaymentStatus ActiveStatusFilter { get; set; } = BookingPaymentStatus.Pending;
 
     private DateTime Today => DateTime.Today;
 
@@ -178,6 +286,28 @@
 
     private string? SelectedSlotId { get; set; }
 
+    private string CustomerName { get; set; } = string.Empty;
+
+    private string BandName { get; set; } = string.Empty;
+
+    private string PhoneNumber { get; set; } = string.Empty;
+
+    private DateTime BookingDate { get; set; } = DateTime.Today;
+
+    private string BookingDuration { get; set; } = "1 Jam";
+
+    private int CustomDurationHours { get; set; } = 1;
+
+    private BookingPaymentStatus PaymentStatus { get; set; } = BookingPaymentStatus.Pending;
+
+    private decimal TotalAmount { get; set; }
+
+    private decimal DpAmount { get; set; }
+
+    private string Note { get; set; } = string.Empty;
+
+    private string? FormMessage { get; set; }
+
     private string CalendarTitle => ActiveViewMode switch
     {
         ScheduleViewMode.Day => CurrentAnchorDate.ToString("dddd, dd MMMM yyyy", IndonesianCulture),
@@ -186,6 +316,15 @@
     };
 
     private string ScheduleDayStyle => $"--schedule-days:{VisibleDays.Count};";
+
+    private decimal EffectiveDpAmount => PaymentStatus switch
+    {
+        BookingPaymentStatus.Paid => TotalAmount,
+        BookingPaymentStatus.Pending => 0,
+        _ => Math.Min(Math.Max(DpAmount, 0), TotalAmount)
+    };
+
+    private decimal RemainingAmount => Math.Max(TotalAmount - EffectiveDpAmount, 0);
 
     private string SelectedSlotTitle
     {
@@ -210,7 +349,7 @@
         CloseBookingCanvas();
     }
 
-    private void SetStatusFilter(BookingStatusFilter statusFilter)
+    private void SetStatusFilter(BookingPaymentStatus statusFilter)
     {
         ActiveStatusFilter = statusFilter;
         CloseBookingCanvas();
@@ -251,9 +390,45 @@
 
     private void OpenBookingCanvas(DateTime date, ScheduleTimeSlot slot)
     {
+        var existingBooking = GetBooking(date, slot);
+
         SelectedDate = date.Date;
         SelectedSlot = slot;
         SelectedSlotId = BuildCellId(date, slot);
+        BookingDate = date.Date;
+        FormMessage = null;
+
+        if (existingBooking is null)
+        {
+            ResetBookingForm();
+            BookingDate = date.Date;
+            return;
+        }
+
+        CustomerName = existingBooking.CustomerName;
+        BandName = existingBooking.BandName;
+        PhoneNumber = existingBooking.PhoneNumber;
+        BookingDate = existingBooking.BookingDate;
+        BookingDuration = existingBooking.Duration;
+        CustomDurationHours = existingBooking.CustomDurationHours;
+        PaymentStatus = existingBooking.Status;
+        TotalAmount = existingBooking.TotalAmount;
+        DpAmount = existingBooking.DpAmount;
+        Note = existingBooking.Note;
+        IsBookingCanvasOpen = true;
+    }
+
+    private void ResetBookingForm()
+    {
+        CustomerName = string.Empty;
+        BandName = string.Empty;
+        PhoneNumber = string.Empty;
+        BookingDuration = "1 Jam";
+        CustomDurationHours = 1;
+        PaymentStatus = BookingPaymentStatus.Pending;
+        TotalAmount = 0;
+        DpAmount = 0;
+        Note = string.Empty;
         IsBookingCanvasOpen = true;
     }
 
@@ -263,6 +438,67 @@
         SelectedDate = null;
         SelectedSlot = null;
         SelectedSlotId = null;
+        FormMessage = null;
+    }
+
+    private void SaveBooking()
+    {
+        if (SelectedSlot is null)
+        {
+            FormMessage = "Slot booking belum dipilih.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CustomerName) ||
+            string.IsNullOrWhiteSpace(BandName) ||
+            string.IsNullOrWhiteSpace(PhoneNumber))
+        {
+            FormMessage = "Nama, nama band, dan nomor HP wajib diisi.";
+            return;
+        }
+
+        if (BookingDuration == "Custom" && CustomDurationHours < 1)
+        {
+            FormMessage = "Durasi custom minimal 1 jam.";
+            return;
+        }
+
+        var cellId = BuildCellId(BookingDate, SelectedSlot.Value);
+        var oldBooking = Bookings.FirstOrDefault(booking => booking.CellId == cellId);
+
+        if (oldBooking is not null)
+        {
+            Bookings.Remove(oldBooking);
+        }
+
+        Bookings.Add(new StudioBooking(
+            cellId,
+            CustomerName.Trim(),
+            BandName.Trim(),
+            PhoneNumber.Trim(),
+            BookingDate.Date,
+            SelectedSlot.Value,
+            BookingDuration,
+            CustomDurationHours,
+            PaymentStatus,
+            TotalAmount,
+            EffectiveDpAmount,
+            RemainingAmount,
+            Note.Trim()
+        ));
+
+        ActiveStatusFilter = PaymentStatus;
+        CurrentAnchorDate = ActiveViewMode == ScheduleViewMode.Month
+            ? new DateTime(BookingDate.Year, BookingDate.Month, 1)
+            : BookingDate.Date;
+
+        CloseBookingCanvas();
+    }
+
+    private StudioBooking? GetBooking(DateTime day, ScheduleTimeSlot slot)
+    {
+        var cellId = BuildCellId(day, slot);
+        return Bookings.FirstOrDefault(booking => booking.CellId == cellId);
     }
 
     private string GetViewModeButtonClass(ScheduleViewMode viewMode)
@@ -272,13 +508,69 @@
             : "studio-control-button";
     }
 
-    private string GetStatusFilterButtonClass(BookingStatusFilter statusFilter)
+    private string GetStatusFilterButtonClass(BookingPaymentStatus statusFilter)
     {
         var key = statusFilter.ToString().ToLowerInvariant();
 
         return ActiveStatusFilter == statusFilter
             ? $"studio-control-button studio-status-{key} is-active"
             : $"studio-control-button studio-status-{key}";
+    }
+
+    private static string GetPaymentStatusLabel(BookingPaymentStatus status)
+    {
+        return status switch
+        {
+            BookingPaymentStatus.Pending => "Pending",
+            BookingPaymentStatus.Dp => "DP",
+            BookingPaymentStatus.Paid => "Lunas",
+            _ => status.ToString()
+        };
+    }
+
+    private static string GetSlotButtonClass(StudioBooking? booking, bool isFilteredOut)
+    {
+        if (booking is null)
+        {
+            return "studio-schedule-slot";
+        }
+
+        var statusKey = booking.Status.ToString().ToLowerInvariant();
+        var className = $"studio-schedule-slot has-booking status-{statusKey}";
+
+        if (isFilteredOut)
+        {
+            className += " is-filtered-out";
+        }
+
+        return className;
+    }
+
+    private static string GetCellClass(bool isToday, bool isSelected, StudioBooking? booking, bool isFilteredOut)
+    {
+        var className = "studio-schedule-cell";
+
+        if (isToday)
+        {
+            className += " is-today";
+        }
+
+        if (isSelected)
+        {
+            className += " is-selected";
+        }
+
+        if (booking is not null)
+        {
+            className += " has-booking";
+        }
+
+        if (isFilteredOut)
+        {
+            className += " is-filtered-out";
+        }
+
+        return className;
     }
 
     private string BuildWeekTitle()
@@ -342,23 +634,6 @@
         return className;
     }
 
-    private static string GetCellClass(bool isToday, bool isSelected)
-    {
-        var className = "studio-schedule-cell";
-
-        if (isToday)
-        {
-            className += " is-today";
-        }
-
-        if (isSelected)
-        {
-            className += " is-selected";
-        }
-
-        return className;
-    }
-
     private static string BuildSlotTitle(DateTime day, ScheduleTimeSlot slot)
     {
         return $"{day.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} - {FormatTimeSlot(slot)}";
@@ -369,6 +644,13 @@
         return $"Buka form booking untuk {BuildSlotTitle(day, slot)}";
     }
 
+    private static string FormatCurrency(decimal value)
+    {
+        return value <= 0
+            ? "Rp0"
+            : value.ToString("C0", IndonesianCulture);
+    }
+
     private enum ScheduleViewMode
     {
         Day,
@@ -376,7 +658,7 @@
         Month
     }
 
-    private enum BookingStatusFilter
+    private enum BookingPaymentStatus
     {
         Pending,
         Dp,
@@ -384,4 +666,24 @@
     }
 
     private readonly record struct ScheduleTimeSlot(TimeSpan Start, TimeSpan End);
+
+    private sealed record StudioBooking(
+        string CellId,
+        string CustomerName,
+        string BandName,
+        string PhoneNumber,
+        DateTime BookingDate,
+        ScheduleTimeSlot Slot,
+        string Duration,
+        int CustomDurationHours,
+        BookingPaymentStatus Status,
+        decimal TotalAmount,
+        decimal DpAmount,
+        decimal RemainingAmount,
+        string Note)
+    {
+        public string DisplayName => string.IsNullOrWhiteSpace(BandName)
+            ? CustomerName
+            : BandName;
+    }
 }
