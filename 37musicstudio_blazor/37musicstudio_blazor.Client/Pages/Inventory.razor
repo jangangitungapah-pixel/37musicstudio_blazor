@@ -1,0 +1,644 @@
+@page "/inventory"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@layout StudioAdminLayout
+
+@using System.Globalization
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Inventory | 37 Music Studio</PageTitle>
+
+<section class="studio-inventory-page" aria-labelledby="inventoryTitle">
+    <header class="studio-inventory-header">
+        <div>
+            <p>Inventory</p>
+            <h1 id="inventoryTitle">Inventory List</h1>
+            <span>Kelola barang studio, kategori, kondisi, jumlah, dan riwayat maintenance terakhir.</span>
+        </div>
+
+        <button type="button" class="studio-inventory-primary-action" @onclick="OpenInventoryModal">
+            Tambah Barang
+        </button>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(FormMessage))
+    {
+        <div class="studio-inventory-alert" role="alert">@FormMessage</div>
+    }
+
+    <section class="studio-inventory-heroes" aria-label="Ringkasan inventory">
+        <article class="studio-inventory-hero">
+            <span>Total Barang</span>
+            <strong>@TotalItemCount</strong>
+            <small>@InventoryItems.Count jenis item</small>
+        </article>
+
+        <article class="studio-inventory-hero">
+            <span>Kondisi Good+</span>
+            <strong>@GoodPlusCount</strong>
+            <small>Excelent dan Good</small>
+        </article>
+
+        <article class="studio-inventory-hero is-bad">
+            <span>Perlu Perhatian</span>
+            <strong>@BadConditionCount</strong>
+            <small>Kondisi Bad</small>
+        </article>
+    </section>
+
+    <section class="studio-inventory-toolbar">
+        <label class="studio-inventory-field">
+            <span>Cari Barang</span>
+            <input type="search" placeholder="Nama atau kategori..." @bind="SearchText" @bind:event="oninput" />
+        </label>
+
+        <label class="studio-inventory-field">
+            <span>Filter Kategori</span>
+            <select @bind="ActiveCategoryFilter">
+                <option value="">Semua Kategori</option>
+
+                @foreach (var category in CategoryOptions)
+                {
+                    <option value="@category">@category</option>
+                }
+            </select>
+        </label>
+
+        <label class="studio-inventory-field">
+            <span>Filter Kondisi</span>
+            <select @bind="ActiveConditionFilter">
+                <option value="">Semua Kondisi</option>
+                <option value="Excelent">Excelent</option>
+                <option value="Good">Good</option>
+                <option value="Bad">Bad</option>
+            </select>
+        </label>
+    </section>
+
+    <section class="studio-inventory-list-panel" aria-label="Inventory list">
+        @if (!HasLoadedInventory)
+        {
+            <div class="studio-inventory-empty">
+                <strong>Memuat inventory...</strong>
+                <span>Sedang membaca data lokal.</span>
+            </div>
+        }
+        else if (!VisibleInventoryItems.Any())
+        {
+            <div class="studio-inventory-empty">
+                <strong>Belum ada barang</strong>
+                <span>Tambahkan barang pertama untuk mulai mendata inventory studio.</span>
+            </div>
+        }
+        else
+        {
+            <div class="studio-inventory-table">
+                <div class="studio-inventory-table-head">
+                    <span>Barang</span>
+                    <span>Kategori</span>
+                    <span>Jumlah</span>
+                    <span>Kondisi</span>
+                    <span>Maintenance</span>
+                    <span>Aksi</span>
+                </div>
+
+                @foreach (var item in VisibleInventoryItems)
+                {
+                    <article class="studio-inventory-row">
+                        <div class="studio-inventory-main-cell">
+                            <span class="studio-inventory-item-mark">@GetInitial(item.Name)</span>
+                            <div>
+                                <strong>@item.Name</strong>
+                                <small>Diperbarui @item.UpdatedAt.ToString("dd MMM yyyy", IndonesianCulture)</small>
+                            </div>
+                        </div>
+
+                        <span>@item.Category</span>
+
+                        <b>@item.Quantity</b>
+
+                        <span class="@GetConditionClass(item.Condition)">
+                            @GetConditionLabel(item.Condition)
+                        </span>
+
+                        <span>@FormatMaintenanceDate(item.LastMaintenanceDate)</span>
+
+                        <div class="studio-inventory-row-actions">
+                            <button type="button" class="studio-inventory-soft-action" @onclick="() => EditInventoryItem(item.Id)">
+                                Edit
+                            </button>
+
+                            <button type="button" class="studio-inventory-danger-action" @onclick="() => DeleteInventoryItemAsync(item.Id)">
+                                Hapus
+                            </button>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    @if (IsInventoryModalOpen)
+    {
+        <div class="studio-inventory-modal-backdrop" role="presentation" @onclick="CloseInventoryModal">
+            <section class="studio-inventory-modal" role="dialog" aria-modal="true" aria-labelledby="inventoryModalTitle" @onclick:stopPropagation>
+                <header>
+                    <div>
+                        <p>Inventory Form</p>
+                        <h2 id="inventoryModalTitle">@InventoryModalTitle</h2>
+                    </div>
+
+                    <button type="button" class="studio-inventory-icon-action" @onclick="CloseInventoryModal" aria-label="Tutup">
+                        <StudioIcon Name="x" />
+                    </button>
+                </header>
+
+                <form class="studio-inventory-form" @onsubmit="SaveInventoryItemAsync" @onsubmit:preventDefault>
+                    <label class="studio-inventory-field">
+                        <span>Nama Barang</span>
+                        <input type="text" required placeholder="Contoh: Gitar Fender Stratocaster" @bind="DraftName" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-inventory-field">
+                        <span>Kategori Barang</span>
+                        <select value="@DraftCategoryMode" @onchange="OnCategoryModeChanged">
+                            @foreach (var category in CategoryOptions)
+                            {
+                                <option value="@category">@category</option>
+                            }
+
+                            <option value="@NewCategoryMode">+ Tambah kategori baru</option>
+                        </select>
+                    </label>
+
+                    @if (DraftCategoryMode == NewCategoryMode)
+                    {
+                        <label class="studio-inventory-field">
+                            <span>Kategori Baru</span>
+                            <input type="text" required placeholder="Contoh: Drum, Amplifier, Mic" @bind="DraftNewCategory" @bind:event="oninput" />
+                        </label>
+                    }
+
+                    <label class="studio-inventory-field">
+                        <span>Jumlah Barang</span>
+                        <input type="number" min="0" step="1" required @bind="DraftQuantity" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-inventory-field">
+                        <span>Kondisi Barang</span>
+                        <select @bind="DraftCondition">
+                            <option value="Excelent">Excelent</option>
+                            <option value="Good">Good</option>
+                            <option value="Bad">Bad</option>
+                        </select>
+                    </label>
+
+                    <label class="studio-inventory-field">
+                        <span>Tanggal Terakhir Maintenance</span>
+                        <input type="date" @bind="DraftLastMaintenanceDate" />
+                    </label>
+
+                    <footer>
+                        <button type="button" class="studio-inventory-soft-action" @onclick="CloseInventoryModal">
+                            Batal
+                        </button>
+
+                        <button type="submit" class="studio-inventory-primary-action">
+                            Simpan Barang
+                        </button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+    }
+</section>
+
+@code {
+    private const string LocalInventoryStorageKey = "37musicstudio.inventory.v1";
+    private const string NewCategoryMode = "__new_category__";
+
+    private static readonly CultureInfo IndonesianCulture = new("id-ID");
+    private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
+
+    private readonly List<StudioInventoryItem> InventoryItems = new();
+
+    private bool HasLoadedInventory { get; set; }
+
+    private bool IsInventoryModalOpen { get; set; }
+
+    private string? EditingInventoryItemId { get; set; }
+
+    private string SearchText { get; set; } = string.Empty;
+
+    private string ActiveCategoryFilter { get; set; } = string.Empty;
+
+    private string ActiveConditionFilter { get; set; } = string.Empty;
+
+    private string DraftName { get; set; } = string.Empty;
+
+    private string DraftCategoryMode { get; set; } = "Alat Musik";
+
+    private string DraftNewCategory { get; set; } = string.Empty;
+
+    private int DraftQuantity { get; set; } = 1;
+
+    private InventoryCondition DraftCondition { get; set; } = InventoryCondition.Excelent;
+
+    private DateTime DraftLastMaintenanceDate { get; set; } = DateTime.Today;
+
+    private string? FormMessage { get; set; }
+
+    private string InventoryModalTitle => EditingInventoryItemId is null
+        ? "Tambah Barang"
+        : "Edit Barang";
+
+    private int TotalItemCount => InventoryItems.Sum(item => Math.Max(0, item.Quantity));
+
+    private int GoodPlusCount => InventoryItems
+        .Where(item => item.Condition is InventoryCondition.Excelent or InventoryCondition.Good)
+        .Sum(item => Math.Max(0, item.Quantity));
+
+    private int BadConditionCount => InventoryItems
+        .Where(item => item.Condition == InventoryCondition.Bad)
+        .Sum(item => Math.Max(0, item.Quantity));
+
+    private IReadOnlyList<string> CategoryOptions
+    {
+        get
+        {
+            var defaultCategories = new[]
+            {
+                "Alat Musik",
+                "Audio",
+                "Kabel",
+                "Microphone",
+                "Amplifier",
+                "Drum",
+                "Aksesoris",
+                "Furniture",
+                "Lainnya"
+            };
+
+            return defaultCategories
+                .Concat(InventoryItems.Select(item => item.Category))
+                .Where(category => !string.IsNullOrWhiteSpace(category))
+                .Select(category => category.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(category => category)
+                .ToArray();
+        }
+    }
+
+    private IEnumerable<StudioInventoryItem> VisibleInventoryItems
+    {
+        get
+        {
+            var query = InventoryItems
+                .OrderBy(item => item.Category)
+                .ThenBy(item => item.Name)
+                .AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var keyword = SearchText.Trim();
+
+                query = query.Where(item =>
+                    item.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    item.Category.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(ActiveCategoryFilter))
+            {
+                query = query.Where(item =>
+                    string.Equals(item.Category, ActiveCategoryFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(ActiveConditionFilter) &&
+                Enum.TryParse<InventoryCondition>(ActiveConditionFilter, out var condition))
+            {
+                query = query.Where(item => item.Condition == condition);
+            }
+
+            return query.ToArray();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || HasLoadedInventory)
+        {
+            return;
+        }
+
+        HasLoadedInventory = true;
+        await LoadInventoryAsync();
+        StateHasChanged();
+    }
+
+    private static JsonSerializerOptions CreateLocalJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            WriteIndented = false
+        };
+
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        return options;
+    }
+
+    private async Task LoadInventoryAsync()
+    {
+        try
+        {
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalInventoryStorageKey);
+            var records = string.IsNullOrWhiteSpace(json)
+                ? new List<StudioInventoryLocalRecord>()
+                : JsonSerializer.Deserialize<List<StudioInventoryLocalRecord>>(json, LocalJsonOptions) ?? new();
+
+            InventoryItems.Clear();
+            InventoryItems.AddRange(records.Select(record => record.ToInventoryItem()).OrderBy(item => item.Name));
+        }
+        catch (Exception ex)
+        {
+            InventoryItems.Clear();
+            FormMessage = $"Inventory gagal dibaca. Data lokal diabaikan sementara: {ex.Message}";
+        }
+    }
+
+    private async Task PersistInventoryAsync()
+    {
+        var records = InventoryItems
+            .OrderBy(item => item.Category)
+            .ThenBy(item => item.Name)
+            .Select(StudioInventoryLocalRecord.FromInventoryItem)
+            .ToList();
+
+        var json = JsonSerializer.Serialize(records, LocalJsonOptions);
+        await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalInventoryStorageKey, json);
+    }
+
+    private void OpenInventoryModal()
+    {
+        EditingInventoryItemId = null;
+        DraftName = string.Empty;
+        DraftCategoryMode = CategoryOptions.FirstOrDefault() ?? "Alat Musik";
+        DraftNewCategory = string.Empty;
+        DraftQuantity = 1;
+        DraftCondition = InventoryCondition.Excelent;
+        DraftLastMaintenanceDate = DateTime.Today;
+        FormMessage = null;
+        IsInventoryModalOpen = true;
+    }
+
+    private void EditInventoryItem(string id)
+    {
+        var item = InventoryItems.FirstOrDefault(candidate => candidate.Id == id);
+
+        if (item is null)
+        {
+            return;
+        }
+
+        EditingInventoryItemId = item.Id;
+        DraftName = item.Name;
+        DraftCategoryMode = item.Category;
+        DraftNewCategory = string.Empty;
+        DraftQuantity = Math.Max(0, item.Quantity);
+        DraftCondition = item.Condition;
+        DraftLastMaintenanceDate = item.LastMaintenanceDate;
+        FormMessage = null;
+        IsInventoryModalOpen = true;
+    }
+
+    private void CloseInventoryModal()
+    {
+        IsInventoryModalOpen = false;
+        EditingInventoryItemId = null;
+        FormMessage = null;
+    }
+
+    private void OnCategoryModeChanged(ChangeEventArgs args)
+    {
+        DraftCategoryMode = args.Value?.ToString() ?? string.Empty;
+
+        if (DraftCategoryMode != NewCategoryMode)
+        {
+            DraftNewCategory = string.Empty;
+        }
+    }
+
+    private async Task SaveInventoryItemAsync()
+    {
+        if (string.IsNullOrWhiteSpace(DraftName))
+        {
+            FormMessage = "Nama barang wajib diisi.";
+            return;
+        }
+
+        var category = DraftCategoryMode == NewCategoryMode
+            ? DraftNewCategory.Trim()
+            : DraftCategoryMode.Trim();
+
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            FormMessage = "Kategori barang wajib diisi.";
+            return;
+        }
+
+        if (DraftQuantity < 0)
+        {
+            FormMessage = "Jumlah barang tidak boleh minus.";
+            return;
+        }
+
+        var now = DateTime.Now;
+
+        if (EditingInventoryItemId is null)
+        {
+            InventoryItems.Add(new StudioInventoryItem(
+                Guid.NewGuid().ToString("N"),
+                DraftName.Trim(),
+                category,
+                DraftQuantity,
+                DraftCondition,
+                DraftLastMaintenanceDate.Date,
+                now,
+                now
+            ));
+        }
+        else
+        {
+            var index = InventoryItems.FindIndex(item => item.Id == EditingInventoryItemId);
+
+            if (index < 0)
+            {
+                FormMessage = "Barang inventory tidak ditemukan.";
+                return;
+            }
+
+            var existing = InventoryItems[index];
+
+            InventoryItems[index] = existing with
+            {
+                Name = DraftName.Trim(),
+                Category = category,
+                Quantity = DraftQuantity,
+                Condition = DraftCondition,
+                LastMaintenanceDate = DraftLastMaintenanceDate.Date,
+                UpdatedAt = now
+            };
+        }
+
+        InventoryItems.Sort((left, right) =>
+        {
+            var categoryCompare = string.Compare(left.Category, right.Category, StringComparison.OrdinalIgnoreCase);
+            return categoryCompare != 0
+                ? categoryCompare
+                : string.Compare(left.Name, right.Name, StringComparison.OrdinalIgnoreCase);
+        });
+
+        try
+        {
+            await PersistInventoryAsync();
+            CloseInventoryModal();
+            FormMessage = "Inventory berhasil disimpan.";
+        }
+        catch (Exception ex)
+        {
+            FormMessage = $"Gagal menyimpan inventory: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteInventoryItemAsync(string id)
+    {
+        var item = InventoryItems.FirstOrDefault(candidate => candidate.Id == id);
+
+        if (item is null)
+        {
+            return;
+        }
+
+        InventoryItems.Remove(item);
+
+        try
+        {
+            await PersistInventoryAsync();
+            FormMessage = "Barang inventory berhasil dihapus.";
+        }
+        catch (Exception ex)
+        {
+            InventoryItems.Add(item);
+            FormMessage = $"Gagal menghapus inventory: {ex.Message}";
+        }
+    }
+
+    private static string GetInitial(string value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? "?"
+            : value.Trim()[0].ToString().ToUpperInvariant();
+    }
+
+    private static string GetConditionClass(InventoryCondition condition)
+    {
+        return condition switch
+        {
+            InventoryCondition.Excelent => "studio-inventory-condition is-excelent",
+            InventoryCondition.Good => "studio-inventory-condition is-good",
+            InventoryCondition.Bad => "studio-inventory-condition is-bad",
+            _ => "studio-inventory-condition"
+        };
+    }
+
+    private static string GetConditionLabel(InventoryCondition condition)
+    {
+        return condition switch
+        {
+            InventoryCondition.Excelent => "Excelent",
+            InventoryCondition.Good => "Good",
+            InventoryCondition.Bad => "Bad",
+            _ => condition.ToString()
+        };
+    }
+
+    private static string FormatMaintenanceDate(DateTime value)
+    {
+        return value == default
+            ? "Belum diisi"
+            : value.ToString("dd MMM yyyy", IndonesianCulture);
+    }
+
+    private enum InventoryCondition
+    {
+        Excelent,
+        Good,
+        Bad
+    }
+
+    private sealed record StudioInventoryItem(
+        string Id,
+        string Name,
+        string Category,
+        int Quantity,
+        InventoryCondition Condition,
+        DateTime LastMaintenanceDate,
+        DateTime CreatedAt,
+        DateTime UpdatedAt);
+
+    private sealed class StudioInventoryLocalRecord
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string Id { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
+
+        public string Category { get; set; } = string.Empty;
+
+        public int Quantity { get; set; }
+
+        public InventoryCondition Condition { get; set; } = InventoryCondition.Excelent;
+
+        public DateTime LastMaintenanceDate { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+
+        public static StudioInventoryLocalRecord FromInventoryItem(StudioInventoryItem item)
+        {
+            return new StudioInventoryLocalRecord
+            {
+                SchemaVersion = 1,
+                Id = item.Id,
+                Name = item.Name,
+                Category = item.Category,
+                Quantity = item.Quantity,
+                Condition = item.Condition,
+                LastMaintenanceDate = item.LastMaintenanceDate,
+                CreatedAt = item.CreatedAt,
+                UpdatedAt = item.UpdatedAt
+            };
+        }
+
+        public StudioInventoryItem ToInventoryItem()
+        {
+            var now = DateTime.Now;
+
+            return new StudioInventoryItem(
+                string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString("N") : Id,
+                string.IsNullOrWhiteSpace(Name) ? "Barang Inventory" : Name.Trim(),
+                string.IsNullOrWhiteSpace(Category) ? "Lainnya" : Category.Trim(),
+                Math.Max(0, Quantity),
+                Condition,
+                LastMaintenanceDate == default ? DateTime.Today : LastMaintenanceDate.Date,
+                CreatedAt == default ? now : CreatedAt,
+                UpdatedAt == default ? now : UpdatedAt
+            );
+        }
+    }
+}
