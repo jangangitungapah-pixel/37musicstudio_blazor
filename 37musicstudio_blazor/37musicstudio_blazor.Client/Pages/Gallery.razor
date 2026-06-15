@@ -12,6 +12,7 @@
 
 @inject IJSRuntime JsRuntime
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
 
 <PageTitle>Gallery | 37 Music Studio</PageTitle>
 
@@ -346,7 +347,7 @@
             await SaveCloudinarySettingsAsync();
 
             var signatureResponse = await Http.PostAsJsonAsync(
-                "cloudinary/sign-upload",
+                NavigationManager.ToAbsoluteUri("/cloudinary/sign-upload"),
                 new CloudinarySignatureRequest(CloudinarySettings.Folder?.Trim() ?? string.Empty));
 
             var signatureResponseText = await signatureResponse.Content.ReadAsStringAsync();
