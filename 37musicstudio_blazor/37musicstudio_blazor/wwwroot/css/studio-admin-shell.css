@@ -5295,3 +5295,207 @@ textarea,
 }
 /* </studio-mobile-shell-refinement> */
 
+
+/* <studio-shell-polish-page-rhythm> */
+:root {
+    --studio-page-max-width: 1480px;
+    --studio-page-narrow-width: 1180px;
+    --studio-page-gap: clamp(0.9rem, 1.35vw, 1.2rem);
+    --studio-page-edge: clamp(0.86rem, 1.55vw, 1.25rem);
+    --studio-card-radius: 1.22rem;
+    --studio-card-border: rgba(148, 163, 184, 0.16);
+    --studio-card-shadow:
+        0 1.1rem 2.9rem rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.studio-admin-main {
+    position: relative;
+    overflow: auto;
+    scroll-behavior: smooth;
+    scroll-padding: var(--studio-page-edge);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(216, 168, 95, 0.42) transparent;
+}
+
+.studio-admin-main::-webkit-scrollbar,
+.studio-shell-nav::-webkit-scrollbar {
+    width: 0.72rem;
+    height: 0.72rem;
+}
+
+.studio-admin-main::-webkit-scrollbar-track,
+.studio-shell-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.studio-admin-main::-webkit-scrollbar-thumb,
+.studio-shell-nav::-webkit-scrollbar-thumb {
+    border: 0.22rem solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+    background-color: rgba(216, 168, 95, 0.42);
+}
+
+.studio-admin-main::-webkit-scrollbar-thumb:hover,
+.studio-shell-nav::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(216, 168, 95, 0.62);
+}
+
+.studio-admin-main::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 72% 8%, rgba(216, 168, 95, 0.09), transparent 22rem),
+        radial-gradient(circle at 42% 95%, rgba(141, 124, 255, 0.075), transparent 26rem);
+}
+
+.studio-admin-main > section:not(.studio-schedule-page) {
+    width: min(100%, var(--studio-page-max-width));
+    margin-inline: auto;
+}
+
+.studio-admin-main > :where(.studio-dashboard-page, .studio-bookkeeping-page, .studio-gallery-page, .studio-inventory-page, .studio-customers-page, .studio-billing-pos-page, .studio-settings-page) {
+    gap: var(--studio-page-gap);
+}
+
+.studio-admin-main > :where(.studio-settings-page, .studio-gallery-page, .studio-inventory-page, .studio-customers-page) {
+    width: min(100%, var(--studio-page-narrow-width));
+}
+
+.studio-admin-shell :where(
+    .studio-dashboard-hero,
+    .studio-dashboard-panel,
+    .studio-dashboard-metric,
+    .studio-bookkeeping-hero,
+    .studio-bookkeeping-summary-card,
+    .studio-bookkeeping-toolbar,
+    .studio-bookkeeping-table-card,
+    .studio-gallery-hero,
+    .studio-gallery-panel,
+    .studio-gallery-card,
+    .studio-inventory-hero,
+    .studio-inventory-panel,
+    .studio-inventory-card,
+    .studio-customers-hero,
+    .studio-customers-panel,
+    .studio-customers-card,
+    .studio-billing-pos-hero,
+    .studio-billing-pos-panel,
+    .studio-billing-pos-card,
+    .studio-settings-hero,
+    .studio-settings-panel,
+    .studio-settings-card
+) {
+    border-color: var(--studio-card-border);
+    box-shadow: var(--studio-card-shadow);
+}
+
+.studio-admin-shell :where(
+    .studio-dashboard-hero,
+    .studio-bookkeeping-hero,
+    .studio-gallery-hero,
+    .studio-inventory-hero,
+    .studio-customers-hero,
+    .studio-billing-pos-hero,
+    .studio-settings-hero
+) {
+    border-radius: var(--studio-shell-radius-xl, 1.45rem);
+}
+
+.studio-admin-shell :where(
+    .studio-dashboard-panel,
+    .studio-dashboard-metric,
+    .studio-bookkeeping-summary-card,
+    .studio-bookkeeping-toolbar,
+    .studio-bookkeeping-table-card,
+    .studio-gallery-panel,
+    .studio-gallery-card,
+    .studio-inventory-panel,
+    .studio-inventory-card,
+    .studio-customers-panel,
+    .studio-customers-card,
+    .studio-billing-pos-panel,
+    .studio-billing-pos-card,
+    .studio-settings-panel,
+    .studio-settings-card
+) {
+    border-radius: var(--studio-card-radius);
+}
+
+.studio-admin-shell :where(button, a, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(216, 168, 95, 0.34);
+    outline-offset: 3px;
+}
+
+.studio-admin-shell :where(input, select, textarea) {
+    accent-color: var(--studio-shell-accent, #d8a85f);
+}
+
+.studio-admin-shell ::selection {
+    background: rgba(216, 168, 95, 0.32);
+    color: #ffffff;
+}
+
+.studio-shell-nav-item,
+.studio-bottom-nav-item,
+.studio-mobile-settings,
+.studio-mobile-logout,
+.studio-shell-logout {
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .studio-shell-nav-item:hover {
+        transform: translateX(2px);
+    }
+
+    .studio-bottom-nav-item:hover {
+        border-color: rgba(216, 168, 95, 0.2);
+        background: rgba(216, 168, 95, 0.08);
+    }
+}
+
+@media (max-width: 980px) {
+    .studio-admin-main {
+        overflow: visible;
+        scroll-padding-bottom: calc(var(--studio-shell-mobile-nav-height, 4.35rem) + 1.4rem + env(safe-area-inset-bottom));
+    }
+
+    .studio-admin-main > section:not(.studio-schedule-page) {
+        width: 100%;
+        margin-inline: 0;
+    }
+
+    .studio-admin-main > :where(.studio-dashboard-page, .studio-bookkeeping-page, .studio-gallery-page, .studio-inventory-page, .studio-customers-page, .studio-billing-pos-page, .studio-settings-page) {
+        padding-inline: 0.12rem;
+    }
+}
+
+@media (max-width: 640px) {
+    :root {
+        --studio-page-gap: 0.82rem;
+        --studio-page-edge: 0.78rem;
+        --studio-card-radius: 1.05rem;
+    }
+
+    .studio-admin-main {
+        padding-inline: 0.64rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .studio-admin-main {
+        scroll-behavior: auto;
+    }
+
+    .studio-shell-nav-item:hover,
+    .studio-bottom-nav-item:hover {
+        transform: none;
+    }
+}
+/* </studio-shell-polish-page-rhythm> */
+
