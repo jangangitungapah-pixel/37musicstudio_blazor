@@ -1291,3 +1291,256 @@ select,
     }
 }
 /* </studio-booking-form-modal> */
+
+
+/* <studio-booking-duration-range-hotfix> */
+.studio-booking-form-panel {
+    width: min(100%, 44rem);
+    max-height: min(88dvh, 43rem);
+}
+
+.studio-booking-header {
+    min-height: 3.85rem;
+    padding: 0.72rem 0.82rem;
+}
+
+.studio-booking-header p {
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+}
+
+.studio-booking-header h2 {
+    max-width: 100%;
+    font-size: clamp(0.92rem, 1.8vw, 1.08rem);
+    line-height: 1.2;
+}
+
+.studio-booking-form {
+    gap: 0.54rem;
+    padding: 0.68rem;
+}
+
+.studio-booking-form-grid {
+    gap: 0.46rem;
+}
+
+.studio-form-field {
+    gap: 0.2rem;
+}
+
+.studio-form-field > span,
+.studio-detail-box > span {
+    font-size: 0.62rem;
+}
+
+.studio-form-field input,
+.studio-form-field select,
+.studio-detail-box input {
+    min-height: 2.26rem;
+    border-radius: 0.66rem;
+    padding: 0 0.62rem;
+    font-size: 0.72rem;
+}
+
+.studio-form-field textarea {
+    min-height: 3.35rem;
+    border-radius: 0.66rem;
+    padding: 0.52rem 0.62rem;
+    font-size: 0.72rem;
+}
+
+.studio-booking-detail {
+    gap: 0.4rem;
+}
+
+.studio-detail-box {
+    border-radius: 0.7rem;
+    padding: 0.42rem;
+}
+
+.studio-detail-box strong {
+    min-height: 2.08rem;
+    font-size: 0.72rem;
+}
+
+.studio-booking-form-footer {
+    bottom: -0.68rem;
+    margin: 0 -0.68rem -0.68rem;
+    padding: 0.5rem 0.68rem 0.68rem;
+}
+
+.studio-schedule-slot.has-booking span {
+    align-content: center;
+    justify-items: start;
+    gap: 0.08rem;
+    padding: 0.22rem 0.32rem;
+    border-color: color-mix(in srgb, var(--ui-accent, #d8a85f) 28%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background:
+        radial-gradient(circle at 15% 0%, color-mix(in srgb, #ffffff 30%, transparent), transparent 5rem),
+        color-mix(in srgb, var(--ui-accent, #d8a85f) 9%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-slot.has-booking.is-range-mid span {
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    border-radius: 0.24rem;
+    opacity: 0.92;
+}
+
+.studio-schedule-slot.has-booking.is-range-start:not(.is-range-end) span {
+    border-bottom-color: transparent;
+    border-bottom-left-radius: 0.24rem;
+    border-bottom-right-radius: 0.24rem;
+}
+
+.studio-schedule-slot.has-booking.is-range-end:not(.is-range-start) span {
+    border-top-color: transparent;
+    border-top-left-radius: 0.24rem;
+    border-top-right-radius: 0.24rem;
+}
+
+.studio-schedule-slot.has-booking strong,
+.studio-schedule-slot.has-booking em {
+    max-width: 100%;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-style: normal;
+    line-height: 1.08;
+}
+
+.studio-schedule-slot.has-booking strong {
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.6rem;
+    font-weight: 850;
+    letter-spacing: -0.035em;
+}
+
+.studio-schedule-slot.has-booking em {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.5rem;
+    font-weight: 750;
+}
+
+.studio-schedule-slot.status-dp span {
+    border-color: color-mix(in srgb, #365cc9 34%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background-color: color-mix(in srgb, #365cc9 6%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-slot.status-paid span {
+    border-color: color-mix(in srgb, #15794b 36%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background-color: color-mix(in srgb, #15794b 6%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-slot.status-pending span {
+    border-color: color-mix(in srgb, #8a5b10 36%, var(--ui-border, rgba(32, 28, 23, 0.12)));
+    background-color: color-mix(in srgb, #8a5b10 6%, var(--ui-surface, #fffefa));
+}
+
+.studio-schedule-slot.is-filtered-out {
+    opacity: 0.32;
+}
+
+@media (max-width: 720px) {
+    .studio-booking-modal {
+        align-items: end;
+        padding: 0.48rem;
+    }
+
+    .studio-booking-form-panel {
+        width: 100%;
+        max-height: min(91dvh, 44rem);
+        border-radius: 1.02rem;
+    }
+
+    .studio-booking-header {
+        min-height: 3.5rem;
+        padding: 0.58rem 0.62rem;
+    }
+
+    .studio-booking-header h2 {
+        font-size: 0.82rem;
+        line-height: 1.18;
+    }
+
+    .studio-booking-header button {
+        min-width: 3.4rem;
+        height: 2.08rem;
+        border-radius: 0.62rem;
+        font-size: 0.66rem;
+    }
+
+    .studio-booking-form {
+        gap: 0.42rem;
+        padding: 0.52rem;
+    }
+
+    .studio-booking-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.38rem;
+    }
+
+    .studio-form-field > span,
+    .studio-detail-box > span {
+        font-size: 0.58rem;
+    }
+
+    .studio-form-field input,
+    .studio-form-field select,
+    .studio-detail-box input {
+        min-height: 2.1rem;
+        border-radius: 0.6rem;
+        padding: 0 0.56rem;
+        font-size: 0.68rem;
+    }
+
+    .studio-form-field textarea {
+        min-height: 3rem;
+        border-radius: 0.6rem;
+        padding: 0.46rem 0.56rem;
+        font-size: 0.68rem;
+    }
+
+    .studio-booking-detail {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.32rem;
+    }
+
+    .studio-detail-box {
+        border-radius: 0.62rem;
+        padding: 0.34rem;
+    }
+
+    .studio-detail-box strong {
+        min-height: 1.92rem;
+        font-size: 0.6rem;
+        letter-spacing: -0.03em;
+    }
+
+    .studio-booking-form-footer {
+        bottom: -0.52rem;
+        margin: 0 -0.52rem -0.52rem;
+        padding: 0.42rem 0.52rem 0.52rem;
+    }
+
+    .studio-form-primary,
+    .studio-form-secondary {
+        flex: 1 1 0;
+        min-height: 2.14rem;
+        border-radius: 0.62rem;
+        padding: 0 0.56rem;
+        font-size: 0.66rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .studio-booking-detail {
+        grid-template-columns: 1fr;
+    }
+
+    .studio-detail-box strong {
+        font-size: 0.76rem;
+    }
+}
+/* </studio-booking-duration-range-hotfix> */

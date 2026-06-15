@@ -97,27 +97,34 @@
 
                             @foreach (var day in VisibleDays)
                             {
-                                var booking = GetBooking(day, slot);
+                                var segment = GetBookingSegment(day, slot);
+                                var booking = segment?.Booking;
+                                var cellId = BuildCellId(day, slot);
                                 var isToday = day.Date == Today.Date;
-                                var isSelected = SelectedSlotId == BuildCellId(day, slot);
+                                var isSelected = SelectedSlotId == cellId;
                                 var isFilteredOut = booking is not null && booking.Status != ActiveStatusFilter;
 
-                                <td class="@GetCellClass(isToday, isSelected, booking, isFilteredOut)">
+                                <td class="@GetCellClass(isToday, isSelected, segment, isFilteredOut)">
                                     <button
                                         type="button"
-                                        class="@GetSlotButtonClass(booking, isFilteredOut)"
+                                        class="@GetSlotButtonClass(segment, isFilteredOut)"
                                         title="@BuildSlotTitle(day, slot)"
                                         aria-label="@BuildSlotAria(day, slot)"
-                                        @onclick="() => OpenBookingCanvas(day, slot)">
+                                        @onclick="() => OpenBookingCanvas(day, slot, booking)">
                                         <span>
-                                            @if (booking is null)
+                                            @if (segment is null)
                                             {
                                                 <StudioIcon Name="plus" />
                                             }
+                                            else if (segment.IsStart)
+                                            {
+                                                <strong>@segment.Booking.DisplayName</strong>
+                                                <em>@BuildBookingChipMeta(segment.Booking)</em>
+                                            }
                                             else
                                             {
-                                                <strong>@booking.DisplayName</strong>
-                                                <em>@GetPaymentStatusLabel(booking.Status)</em>
+                                                <strong>@segment.Booking.DisplayName</strong>
+                                                <em>@GetPaymentStatusLabel(segment.Booking.Status)</em>
                                             }
                                         </span>
                                     </button>
@@ -191,16 +198,16 @@
                         {
                             <label class="studio-form-field">
                                 <span>Custom Jam</span>
-                                <input type="number" min="1" max="24" step="1" required @bind="CustomDurationHours" @bind:event="oninput" />
+                                <input type="number" min="1" max="12" step="1" required @bind="CustomDurationHours" @bind:event="oninput" />
                             </label>
                         }
 
                         <label class="studio-form-field">
                             <span>Status Pembayaran</span>
                             <select required @bind="PaymentStatus">
-                                <option value="@BookingPaymentStatus.Pending">Pending</option>
-                                <option value="@BookingPaymentStatus.Dp">DP</option>
-                                <option value="@BookingPaymentStatus.Paid">Lunas</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Dp">DP</option>
+                                <option value="Paid">Lunas</option>
                             </select>
                         </label>
                     </div>
@@ -251,6 +258,9 @@
 </section>
 
 @code {
+    private const int StudioOpenHour = 10;
+    private const int StudioCloseHour = 23;
+
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
 
     private readonly List<StudioBooking> Bookings = new();
@@ -274,7 +284,7 @@
     };
 
     private IReadOnlyList<ScheduleTimeSlot> TimeSlots { get; } = Enumerable
-        .Range(10, 13)
+        .Range(StudioOpenHour, StudioCloseHour - StudioOpenHour)
         .Select(hour => new ScheduleTimeSlot(TimeSpan.FromHours(hour), TimeSpan.FromHours(hour + 1)))
         .ToArray();
 
@@ -285,6 +295,8 @@
     private ScheduleTimeSlot? SelectedSlot { get; set; }
 
     private string? SelectedSlotId { get; set; }
+
+    private string? EditingBookingId { get; set; }
 
     private string CustomerName { get; set; } = string.Empty;
 
@@ -308,6 +320,29 @@
 
     private string? FormMessage { get; set; }
 
+    private int EffectiveDurationHours
+    {
+        get
+        {
+            if (BookingDuration == "Custom")
+            {
+                return Math.Max(1, CustomDurationHours);
+            }
+
+            var firstPart = BookingDuration.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+
+            return int.TryParse(firstPart, out var hours)
+                ? Math.Max(1, hours)
+                : 1;
+        }
+    }
+
+    private DateTime? DraftStartAt => SelectedSlot is null
+        ? null
+        : BookingDate.Date.Add(SelectedSlot.Value.Start);
+
+    private DateTime? DraftEndAt => DraftStartAt?.AddHours(EffectiveDurationHours);
+
     private string CalendarTitle => ActiveViewMode switch
     {
         ScheduleViewMode.Day => CurrentAnchorDate.ToString("dddd, dd MMMM yyyy", IndonesianCulture),
@@ -330,12 +365,12 @@
     {
         get
         {
-            if (SelectedDate is null || SelectedSlot is null)
+            if (SelectedSlot is null || DraftStartAt is null || DraftEndAt is null)
             {
                 return string.Empty;
             }
 
-            return $"{SelectedDate.Value.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} - {FormatTimeSlot(SelectedSlot.Value)}";
+            return $"{BookingDate.ToString("dddd, dd MMMM yyyy", IndonesianCulture)} - {FormatTime(DraftStartAt.Value.TimeOfDay)} - {FormatTime(DraftEndAt.Value.TimeOfDay)}";
         }
     }
 
@@ -388,37 +423,47 @@
         CloseBookingCanvas();
     }
 
-    private void OpenBookingCanvas(DateTime date, ScheduleTimeSlot slot)
+    private void OpenBookingCanvas(DateTime date, ScheduleTimeSlot slot, StudioBooking? booking)
     {
-        var existingBooking = GetBooking(date, slot);
+        FormMessage = null;
 
+        if (booking is not null)
+        {
+            LoadBookingIntoForm(booking);
+            return;
+        }
+
+        EditingBookingId = null;
         SelectedDate = date.Date;
         SelectedSlot = slot;
         SelectedSlotId = BuildCellId(date, slot);
         BookingDate = date.Date;
-        FormMessage = null;
-
-        if (existingBooking is null)
-        {
-            ResetBookingForm();
-            BookingDate = date.Date;
-            return;
-        }
-
-        CustomerName = existingBooking.CustomerName;
-        BandName = existingBooking.BandName;
-        PhoneNumber = existingBooking.PhoneNumber;
-        BookingDate = existingBooking.BookingDate;
-        BookingDuration = existingBooking.Duration;
-        CustomDurationHours = existingBooking.CustomDurationHours;
-        PaymentStatus = existingBooking.Status;
-        TotalAmount = existingBooking.TotalAmount;
-        DpAmount = existingBooking.DpAmount;
-        Note = existingBooking.Note;
+        ResetBookingFormFields();
         IsBookingCanvasOpen = true;
     }
 
-    private void ResetBookingForm()
+    private void LoadBookingIntoForm(StudioBooking booking)
+    {
+        EditingBookingId = booking.Id;
+        SelectedDate = booking.BookingDate.Date;
+        SelectedSlot = booking.Slot;
+        SelectedSlotId = BuildCellId(booking.BookingDate, booking.Slot);
+
+        CustomerName = booking.CustomerName;
+        BandName = booking.BandName;
+        PhoneNumber = booking.PhoneNumber;
+        BookingDate = booking.BookingDate.Date;
+        BookingDuration = booking.Duration;
+        CustomDurationHours = booking.CustomDurationHours;
+        PaymentStatus = booking.Status;
+        TotalAmount = booking.TotalAmount;
+        DpAmount = booking.DpAmount;
+        Note = booking.Note;
+
+        IsBookingCanvasOpen = true;
+    }
+
+    private void ResetBookingFormFields()
     {
         CustomerName = string.Empty;
         BandName = string.Empty;
@@ -429,7 +474,6 @@
         TotalAmount = 0;
         DpAmount = 0;
         Note = string.Empty;
-        IsBookingCanvasOpen = true;
     }
 
     private void CloseBookingCanvas()
@@ -438,12 +482,13 @@
         SelectedDate = null;
         SelectedSlot = null;
         SelectedSlotId = null;
+        EditingBookingId = null;
         FormMessage = null;
     }
 
     private void SaveBooking()
     {
-        if (SelectedSlot is null)
+        if (SelectedSlot is null || DraftStartAt is null || DraftEndAt is null)
         {
             FormMessage = "Slot booking belum dipilih.";
             return;
@@ -463,8 +508,25 @@
             return;
         }
 
-        var cellId = BuildCellId(BookingDate, SelectedSlot.Value);
-        var oldBooking = Bookings.FirstOrDefault(booking => booking.CellId == cellId);
+        var startAt = DraftStartAt.Value;
+        var endAt = DraftEndAt.Value;
+        var openAt = BookingDate.Date.AddHours(StudioOpenHour);
+        var closeAt = BookingDate.Date.AddHours(StudioCloseHour);
+
+        if (startAt < openAt || endAt > closeAt)
+        {
+            FormMessage = $"Durasi melewati jam operasional studio ({FormatTime(openAt.TimeOfDay)} - {FormatTime(closeAt.TimeOfDay)}).";
+            return;
+        }
+
+        if (HasBookingConflict(startAt, endAt, EditingBookingId))
+        {
+            FormMessage = "Slot ini bentrok dengan booking lain. Pilih jam atau durasi berbeda.";
+            return;
+        }
+
+        var bookingId = EditingBookingId ?? Guid.NewGuid().ToString("N");
+        var oldBooking = Bookings.FirstOrDefault(booking => booking.Id == bookingId);
 
         if (oldBooking is not null)
         {
@@ -472,13 +534,16 @@
         }
 
         Bookings.Add(new StudioBooking(
-            cellId,
+            bookingId,
             CustomerName.Trim(),
             BandName.Trim(),
             PhoneNumber.Trim(),
             BookingDate.Date,
+            startAt,
+            endAt,
             SelectedSlot.Value,
             BookingDuration,
+            EffectiveDurationHours,
             CustomDurationHours,
             PaymentStatus,
             TotalAmount,
@@ -495,10 +560,33 @@
         CloseBookingCanvas();
     }
 
-    private StudioBooking? GetBooking(DateTime day, ScheduleTimeSlot slot)
+    private bool HasBookingConflict(DateTime startAt, DateTime endAt, string? ignoredBookingId)
     {
-        var cellId = BuildCellId(day, slot);
-        return Bookings.FirstOrDefault(booking => booking.CellId == cellId);
+        return Bookings.Any(booking =>
+            booking.Id != ignoredBookingId &&
+            startAt < booking.EndAt &&
+            endAt > booking.StartAt);
+    }
+
+    private StudioBookingSegment? GetBookingSegment(DateTime day, ScheduleTimeSlot slot)
+    {
+        var slotStartAt = day.Date.Add(slot.Start);
+        var slotEndAt = day.Date.Add(slot.End);
+
+        var booking = Bookings.FirstOrDefault(item =>
+            slotStartAt < item.EndAt &&
+            slotEndAt > item.StartAt);
+
+        if (booking is null)
+        {
+            return null;
+        }
+
+        return new StudioBookingSegment(
+            booking,
+            slotStartAt == booking.StartAt,
+            slotEndAt >= booking.EndAt
+        );
     }
 
     private string GetViewModeButtonClass(ScheduleViewMode viewMode)
@@ -528,15 +616,34 @@
         };
     }
 
-    private static string GetSlotButtonClass(StudioBooking? booking, bool isFilteredOut)
+    private static string BuildBookingChipMeta(StudioBooking booking)
     {
-        if (booking is null)
+        return $"{FormatTime(booking.StartAt.TimeOfDay)} - {FormatTime(booking.EndAt.TimeOfDay)} | {GetPaymentStatusLabel(booking.Status)}";
+    }
+
+    private static string GetSlotButtonClass(StudioBookingSegment? segment, bool isFilteredOut)
+    {
+        if (segment is null)
         {
             return "studio-schedule-slot";
         }
 
-        var statusKey = booking.Status.ToString().ToLowerInvariant();
+        var statusKey = segment.Booking.Status.ToString().ToLowerInvariant();
         var className = $"studio-schedule-slot has-booking status-{statusKey}";
+
+        if (segment.IsStart)
+        {
+            className += " is-range-start";
+        }
+        else
+        {
+            className += " is-range-mid";
+        }
+
+        if (segment.IsEnd)
+        {
+            className += " is-range-end";
+        }
 
         if (isFilteredOut)
         {
@@ -546,7 +653,7 @@
         return className;
     }
 
-    private static string GetCellClass(bool isToday, bool isSelected, StudioBooking? booking, bool isFilteredOut)
+    private static string GetCellClass(bool isToday, bool isSelected, StudioBookingSegment? segment, bool isFilteredOut)
     {
         var className = "studio-schedule-cell";
 
@@ -560,7 +667,7 @@
             className += " is-selected";
         }
 
-        if (booking is not null)
+        if (segment is not null)
         {
             className += " has-booking";
         }
@@ -667,14 +774,22 @@
 
     private readonly record struct ScheduleTimeSlot(TimeSpan Start, TimeSpan End);
 
+    private sealed record StudioBookingSegment(
+        StudioBooking Booking,
+        bool IsStart,
+        bool IsEnd);
+
     private sealed record StudioBooking(
-        string CellId,
+        string Id,
         string CustomerName,
         string BandName,
         string PhoneNumber,
         DateTime BookingDate,
+        DateTime StartAt,
+        DateTime EndAt,
         ScheduleTimeSlot Slot,
         string Duration,
+        int DurationHours,
         int CustomDurationHours,
         BookingPaymentStatus Status,
         decimal TotalAmount,
