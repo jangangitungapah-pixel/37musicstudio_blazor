@@ -2185,3 +2185,43 @@ select,
     }
 }
 /* </studio-sticky-hour-layer-hotfix> */
+
+
+/* <studio-interaction-layer-reset> */
+.studio-admin-shell,
+.studio-admin-main,
+.studio-schedule-page,
+.studio-schedule-toolbar,
+.studio-schedule-board,
+.studio-schedule-table-wrap,
+.studio-bottom-nav,
+.studio-mobile-topbar {
+    pointer-events: auto !important;
+}
+
+.studio-admin-shell::before,
+.studio-schedule-page::before,
+.studio-schedule-time-head::after,
+.studio-schedule-time-cell::after,
+.studio-booking-block::before,
+.studio-booking-block::after {
+    pointer-events: none !important;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+.studio-schedule-slot,
+.studio-control-button,
+.studio-bottom-nav-item,
+.studio-shell-nav-item,
+.studio-booking-backdrop {
+    pointer-events: auto !important;
+}
+
+.studio-booking-modal {
+    pointer-events: auto !important;
+}
+/* </studio-interaction-layer-reset> */
