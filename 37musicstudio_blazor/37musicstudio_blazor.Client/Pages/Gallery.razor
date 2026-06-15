@@ -325,6 +325,15 @@
         }
     }
 
+    private Uri BuildCloudinarySignatureUri()
+    {
+        var folder = CloudinarySettings.Folder?.Trim() ?? string.Empty;
+        var query = string.IsNullOrWhiteSpace(folder)
+            ? string.Empty
+            : $"?folder={Uri.EscapeDataString(folder)}";
+
+        return NavigationManager.ToAbsoluteUri($"/cloudinary/sign-upload{query}");
+    }
     private async Task UploadSelectedImageAsync()
     {
         if (SelectedFile is null)
@@ -346,9 +355,8 @@
         {
             await SaveCloudinarySettingsAsync();
 
-            var signatureResponse = await Http.PostAsJsonAsync(
-                NavigationManager.ToAbsoluteUri("/cloudinary/sign-upload"),
-                new CloudinarySignatureRequest(CloudinarySettings.Folder?.Trim() ?? string.Empty));
+            var signatureEndpoint = BuildCloudinarySignatureUri();
+            var signatureResponse = await Http.PostAsync(signatureEndpoint, content: null);
 
             var signatureResponseText = await signatureResponse.Content.ReadAsStringAsync();
 

@@ -151,14 +151,14 @@ app.MapPost("/local-auth/sign-out", async (HttpContext httpContext) =>
 }).RequireAuthorization();
 // </studio-local-admin-auth:endpoints>
 
-app.MapPost("/cloudinary/sign-upload", async (CloudinarySignatureRequest request, IWebHostEnvironment environment) =>
+app.MapPost("/cloudinary/sign-upload", async (string? folder, IWebHostEnvironment environment) =>
 {
     try
     {
         var options = await CloudinaryUploadSupport.LoadOptionsAsync(environment.ContentRootPath);
-        var folder = string.IsNullOrWhiteSpace(request.Folder)
+        var resolvedFolder = string.IsNullOrWhiteSpace(folder)
             ? options.Folder
-            : request.Folder.Trim();
+            : folder.Trim();
 
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
@@ -167,9 +167,9 @@ app.MapPost("/cloudinary/sign-upload", async (CloudinarySignatureRequest request
             ["timestamp"] = timestamp.ToString(CultureInfo.InvariantCulture)
         };
 
-        if (!string.IsNullOrWhiteSpace(folder))
+        if (!string.IsNullOrWhiteSpace(resolvedFolder))
         {
-            parameters["folder"] = folder;
+            parameters["folder"] = resolvedFolder;
         }
 
         var signature = CloudinaryUploadSupport.SignParameters(parameters, options.ApiSecret);
@@ -179,7 +179,7 @@ app.MapPost("/cloudinary/sign-upload", async (CloudinarySignatureRequest request
             options.ApiKey,
             timestamp,
             signature,
-            folder ?? string.Empty
+            resolvedFolder ?? string.Empty
         ));
     }
     catch (Exception ex)
