@@ -15,16 +15,16 @@
     <header class="studio-settings-header">
         <div>
             <p>Settings</p>
-            <h1 id="settingsTitle">Pricing Schedule</h1>
-            <span>Atur harga latihan, paket recording, dan diskon sesi latihan.</span>
+            <h1 id="settingsTitle">@CurrentSubPageTitle</h1>
+            <span>@CurrentSubPageDescription</span>
         </div>
 
         <div class="studio-settings-actions">
-            <button type="button" class="studio-settings-soft-action" @onclick="ResetToDefaultAsync">
+            <button type="button" class="studio-settings-soft-action" @onclick="ResetCurrentSubPageAsync">
                 Reset Default
             </button>
 
-            <button type="button" class="studio-settings-primary-action" @onclick="SaveSettingsAsync">
+            <button type="button" class="studio-settings-primary-action" @onclick="SaveCurrentSubPageAsync">
                 Simpan Settings
             </button>
         </div>
@@ -35,179 +35,245 @@
         <div class="studio-settings-alert" role="alert">@FormMessage</div>
     }
 
-    <div class="studio-settings-tabs" role="tablist" aria-label="Pricing settings tabs">
-        <button type="button" role="tab" class="@GetTabClass(SettingsTabHourly)" @onclick="() => SetTab(SettingsTabHourly)">
-            Harga Per Jam
-        </button>
+    <section class="studio-settings-subpage-card" aria-label="Pilih subpage settings">
+        <label class="studio-settings-field studio-settings-subpage-field">
+            <span>Subpage Settings</span>
 
-        <button type="button" role="tab" class="@GetTabClass(SettingsTabRecording)" @onclick="() => SetTab(SettingsTabRecording)">
-            Paket Recording
-        </button>
+            <select value="@ActiveSubPage" @onchange="OnSubPageChanged">
+                <option value="@SettingsSubPagePricing">Pricing</option>
+                <option value="@SettingsSubPageProfile">Profile Studio</option>
+            </select>
+        </label>
 
-        <button type="button" role="tab" class="@GetTabClass(SettingsTabDiscount)" @onclick="() => SetTab(SettingsTabDiscount)">
-            Diskon Latihan
-        </button>
-    </div>
-
-    <section class="studio-settings-panel">
-        @if (ActiveTab == SettingsTabHourly)
-        {
-            <div class="studio-settings-card is-hero-card">
-                <div>
-                    <p>Harga latihan reguler</p>
-                    <h2>@FormatCurrency(SettingsModel.HourlyRate)</h2>
-                    <span>Default sistem: Rp120.000 per jam</span>
-                </div>
-
-                <label class="studio-settings-field">
-                    <span>Harga per jam</span>
-                    <input type="number" min="0" step="1000" @bind="SettingsModel.HourlyRate" @bind:event="oninput" />
-                </label>
-            </div>
-        }
-
-        @if (ActiveTab == SettingsTabRecording)
-        {
-            <div class="studio-settings-card">
-                <header class="studio-settings-card-head">
-                    <div>
-                        <p>Paket Recording</p>
-                        <h2>Tambah Paket</h2>
-                    </div>
-                </header>
-
-                <div class="studio-settings-form-grid">
-                    <label class="studio-settings-field">
-                        <span>Nama paket</span>
-                        <input type="text" placeholder="Contoh: Recording Basic" @bind="PackageDraft.Name" @bind:event="oninput" />
-                    </label>
-
-                    <label class="studio-settings-field">
-                        <span>Durasi paket</span>
-                        <input type="number" min="1" step="1" @bind="PackageDraft.DurationHours" @bind:event="oninput" />
-                    </label>
-
-                    <label class="studio-settings-field">
-                        <span>Harga paket</span>
-                        <input type="number" min="0" step="1000" @bind="PackageDraft.Price" @bind:event="oninput" />
-                    </label>
-
-                    <button type="button" class="studio-settings-add-action" @onclick="AddRecordingPackage">
-                        Tambah Paket
-                    </button>
-                </div>
-            </div>
-
-            <div class="studio-settings-list">
-                @if (!SettingsModel.RecordingPackages.Any())
-                {
-                    <div class="studio-settings-empty">
-                        <strong>Belum ada paket recording</strong>
-                        <span>Tambahkan paket untuk dipakai di halaman Schedule.</span>
-                    </div>
-                }
-                else
-                {
-                    @foreach (var item in SettingsModel.RecordingPackages)
-                    {
-                        <article class="studio-settings-row-card">
-                            <label class="studio-settings-field">
-                                <span>Nama Paket</span>
-                                <input type="text" @bind="item.Name" @bind:event="oninput" />
-                            </label>
-
-                            <label class="studio-settings-field">
-                                <span>Durasi Jam</span>
-                                <input type="number" min="1" step="1" @bind="item.DurationHours" @bind:event="oninput" />
-                            </label>
-
-                            <label class="studio-settings-field">
-                                <span>Harga</span>
-                                <input type="number" min="0" step="1000" @bind="item.Price" @bind:event="oninput" />
-                            </label>
-
-                            <button type="button" class="studio-settings-danger-action" @onclick="() => RemoveRecordingPackage(item.Id)">
-                                Hapus
-                            </button>
-                        </article>
-                    }
-                }
-            </div>
-        }
-
-        @if (ActiveTab == SettingsTabDiscount)
-        {
-            <div class="studio-settings-card">
-                <header class="studio-settings-card-head">
-                    <div>
-                        <p>Diskon sesi latihan</p>
-                        <h2>Tambah Diskon</h2>
-                    </div>
-                </header>
-
-                <div class="studio-settings-form-grid is-discount-grid">
-                    <label class="studio-settings-field">
-                        <span>Durasi jam latihan</span>
-                        <input type="number" min="1" step="1" @bind="DiscountDraft.DurationHours" @bind:event="oninput" />
-                    </label>
-
-                    <label class="studio-settings-field">
-                        <span>Nominal diskon</span>
-                        <input type="number" min="0" step="1000" @bind="DiscountDraft.Amount" @bind:event="oninput" />
-                    </label>
-
-                    <label class="studio-settings-check-field">
-                        <input type="checkbox" @bind="DiscountDraft.AppliesMultiple" />
-                        <span>Berlaku kelipatan</span>
-                    </label>
-
-                    <button type="button" class="studio-settings-add-action" @onclick="AddTrainingDiscount">
-                        Tambah Diskon
-                    </button>
-                </div>
-            </div>
-
-            <div class="studio-settings-list">
-                @if (!SettingsModel.TrainingDiscounts.Any())
-                {
-                    <div class="studio-settings-empty">
-                        <strong>Belum ada diskon latihan</strong>
-                        <span>Default: Rp60.000 per 3 jam latihan.</span>
-                    </div>
-                }
-                else
-                {
-                    @foreach (var item in SettingsModel.TrainingDiscounts)
-                    {
-                        <article class="studio-settings-row-card is-discount-row">
-                            <label class="studio-settings-field">
-                                <span>Durasi Jam</span>
-                                <input type="number" min="1" step="1" @bind="item.DurationHours" @bind:event="oninput" />
-                            </label>
-
-                            <label class="studio-settings-field">
-                                <span>Nominal Diskon</span>
-                                <input type="number" min="0" step="1000" @bind="item.Amount" @bind:event="oninput" />
-                            </label>
-
-                            <label class="studio-settings-check-field">
-                                <input type="checkbox" @bind="item.AppliesMultiple" />
-                                <span>Berlaku kelipatan</span>
-                            </label>
-
-                            <button type="button" class="studio-settings-danger-action" @onclick="() => RemoveTrainingDiscount(item.Id)">
-                                Hapus
-                            </button>
-                        </article>
-                    }
-                }
-            </div>
-        }
+        <div class="studio-settings-subpage-summary">
+            <strong>@CurrentSubPageTitle</strong>
+            <span>@CurrentSubPageDescription</span>
+        </div>
     </section>
+
+    @if (ActiveSubPage == SettingsSubPagePricing)
+    {
+        <div class="studio-settings-tabs" role="tablist" aria-label="Pricing settings tabs">
+            <button type="button" role="tab" class="@GetTabClass(SettingsTabHourly)" @onclick="() => SetTab(SettingsTabHourly)">
+                Harga Per Jam
+            </button>
+
+            <button type="button" role="tab" class="@GetTabClass(SettingsTabRecording)" @onclick="() => SetTab(SettingsTabRecording)">
+                Paket Recording
+            </button>
+
+            <button type="button" role="tab" class="@GetTabClass(SettingsTabDiscount)" @onclick="() => SetTab(SettingsTabDiscount)">
+                Diskon Latihan
+            </button>
+        </div>
+
+        <section class="studio-settings-panel">
+            @if (ActiveTab == SettingsTabHourly)
+            {
+                <div class="studio-settings-card is-hero-card">
+                    <div>
+                        <p>Harga latihan reguler</p>
+                        <h2>@FormatCurrency(PricingModel.HourlyRate)</h2>
+                        <span>Default sistem: Rp120.000 per jam</span>
+                    </div>
+
+                    <label class="studio-settings-field">
+                        <span>Harga per jam</span>
+                        <input type="number" min="0" step="1000" @bind="PricingModel.HourlyRate" @bind:event="oninput" />
+                    </label>
+                </div>
+            }
+
+            @if (ActiveTab == SettingsTabRecording)
+            {
+                <div class="studio-settings-card">
+                    <header class="studio-settings-card-head">
+                        <div>
+                            <p>Paket Recording</p>
+                            <h2>Tambah Paket</h2>
+                        </div>
+                    </header>
+
+                    <div class="studio-settings-form-grid">
+                        <label class="studio-settings-field">
+                            <span>Nama paket</span>
+                            <input type="text" placeholder="Contoh: Recording Basic" @bind="PackageDraft.Name" @bind:event="oninput" />
+                        </label>
+
+                        <label class="studio-settings-field">
+                            <span>Durasi paket</span>
+                            <input type="number" min="1" step="1" @bind="PackageDraft.DurationHours" @bind:event="oninput" />
+                        </label>
+
+                        <label class="studio-settings-field">
+                            <span>Harga paket</span>
+                            <input type="number" min="0" step="1000" @bind="PackageDraft.Price" @bind:event="oninput" />
+                        </label>
+
+                        <button type="button" class="studio-settings-add-action" @onclick="AddRecordingPackage">
+                            Tambah Paket
+                        </button>
+                    </div>
+                </div>
+
+                <div class="studio-settings-list">
+                    @if (!PricingModel.RecordingPackages.Any())
+                    {
+                        <div class="studio-settings-empty">
+                            <strong>Belum ada paket recording</strong>
+                            <span>Tambahkan paket untuk dipakai di halaman Schedule.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var item in PricingModel.RecordingPackages)
+                        {
+                            <article class="studio-settings-row-card">
+                                <label class="studio-settings-field">
+                                    <span>Nama Paket</span>
+                                    <input type="text" @bind="item.Name" @bind:event="oninput" />
+                                </label>
+
+                                <label class="studio-settings-field">
+                                    <span>Durasi Jam</span>
+                                    <input type="number" min="1" step="1" @bind="item.DurationHours" @bind:event="oninput" />
+                                </label>
+
+                                <label class="studio-settings-field">
+                                    <span>Harga</span>
+                                    <input type="number" min="0" step="1000" @bind="item.Price" @bind:event="oninput" />
+                                </label>
+
+                                <button type="button" class="studio-settings-danger-action" @onclick="() => RemoveRecordingPackage(item.Id)">
+                                    Hapus
+                                </button>
+                            </article>
+                        }
+                    }
+                </div>
+            }
+
+            @if (ActiveTab == SettingsTabDiscount)
+            {
+                <div class="studio-settings-card">
+                    <header class="studio-settings-card-head">
+                        <div>
+                            <p>Diskon sesi latihan</p>
+                            <h2>Tambah Diskon</h2>
+                        </div>
+                    </header>
+
+                    <div class="studio-settings-form-grid is-discount-grid">
+                        <label class="studio-settings-field">
+                            <span>Durasi jam latihan</span>
+                            <input type="number" min="1" step="1" @bind="DiscountDraft.DurationHours" @bind:event="oninput" />
+                        </label>
+
+                        <label class="studio-settings-field">
+                            <span>Nominal diskon</span>
+                            <input type="number" min="0" step="1000" @bind="DiscountDraft.Amount" @bind:event="oninput" />
+                        </label>
+
+                        <label class="studio-settings-check-field">
+                            <input type="checkbox" @bind="DiscountDraft.AppliesMultiple" />
+                            <span>Berlaku kelipatan</span>
+                        </label>
+
+                        <button type="button" class="studio-settings-add-action" @onclick="AddTrainingDiscount">
+                            Tambah Diskon
+                        </button>
+                    </div>
+                </div>
+
+                <div class="studio-settings-list">
+                    @if (!PricingModel.TrainingDiscounts.Any())
+                    {
+                        <div class="studio-settings-empty">
+                            <strong>Belum ada diskon latihan</strong>
+                            <span>Default: Rp60.000 per 3 jam latihan.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var item in PricingModel.TrainingDiscounts)
+                        {
+                            <article class="studio-settings-row-card is-discount-row">
+                                <label class="studio-settings-field">
+                                    <span>Durasi Jam</span>
+                                    <input type="number" min="1" step="1" @bind="item.DurationHours" @bind:event="oninput" />
+                                </label>
+
+                                <label class="studio-settings-field">
+                                    <span>Nominal Diskon</span>
+                                    <input type="number" min="0" step="1000" @bind="item.Amount" @bind:event="oninput" />
+                                </label>
+
+                                <label class="studio-settings-check-field">
+                                    <input type="checkbox" @bind="item.AppliesMultiple" />
+                                    <span>Berlaku kelipatan</span>
+                                </label>
+
+                                <button type="button" class="studio-settings-danger-action" @onclick="() => RemoveTrainingDiscount(item.Id)">
+                                    Hapus
+                                </button>
+                            </article>
+                        }
+                    }
+                </div>
+            }
+        </section>
+    }
+
+    @if (ActiveSubPage == SettingsSubPageProfile)
+    {
+        <section class="studio-settings-panel">
+            <div class="studio-settings-card studio-profile-card">
+                <header class="studio-settings-card-head">
+                    <div>
+                        <p>Profile Studio</p>
+                        <h2>Identitas Studio</h2>
+                        <span>Data ini nanti bisa dipakai untuk invoice, billing, dan tampilan publik.</span>
+                    </div>
+                </header>
+
+                <div class="studio-profile-form-grid">
+                    <label class="studio-settings-field">
+                        <span>Nama Studio</span>
+                        <input type="text" placeholder="37 Music Studio" @bind="ProfileModel.StudioName" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-settings-field">
+                        <span>Nomor HP / WA</span>
+                        <input type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" @bind="ProfileModel.PhoneOrWhatsApp" @bind:event="oninput" />
+                    </label>
+
+                    <label class="studio-settings-field studio-profile-address-field">
+                        <span>Alamat Studio</span>
+                        <textarea rows="5" placeholder="Alamat lengkap studio..." @bind="ProfileModel.Address" @bind:event="oninput"></textarea>
+                    </label>
+                </div>
+            </div>
+
+            <div class="studio-profile-preview-card">
+                <p>Preview Profile</p>
+
+                <strong>@ProfileModel.SafeStudioName</strong>
+
+                <span>@ProfileModel.SafePhoneOrWhatsApp</span>
+
+                <address>@ProfileModel.SafeAddress</address>
+            </div>
+        </section>
+    }
 </section>
 
 @code {
     private const string LocalPricingStorageKey = "37musicstudio.pricing-settings.v1";
+    private const string LocalStudioProfileStorageKey = "37musicstudio.studio-profile.v1";
+
+    private const string SettingsSubPagePricing = "pricing";
+    private const string SettingsSubPageProfile = "profile";
+
     private const string SettingsTabHourly = "hourly";
     private const string SettingsTabRecording = "recording";
     private const string SettingsTabDiscount = "discount";
@@ -215,17 +281,29 @@
     private static readonly CultureInfo IndonesianCulture = new("id-ID");
     private static readonly JsonSerializerOptions LocalJsonOptions = CreateLocalJsonOptions();
 
-    private StudioPricingSettings SettingsModel { get; set; } = StudioPricingSettings.CreateDefault();
+    private StudioPricingSettings PricingModel { get; set; } = StudioPricingSettings.CreateDefault();
+
+    private StudioProfileSettings ProfileModel { get; set; } = StudioProfileSettings.CreateDefault();
 
     private RecordingPackageDraft PackageDraft { get; set; } = new();
 
     private TrainingDiscountDraft DiscountDraft { get; set; } = TrainingDiscountDraft.CreateDefault();
+
+    private string ActiveSubPage { get; set; } = SettingsSubPagePricing;
 
     private string ActiveTab { get; set; } = SettingsTabHourly;
 
     private string? FormMessage { get; set; }
 
     private bool HasLoadedSettings { get; set; }
+
+    private string CurrentSubPageTitle => ActiveSubPage == SettingsSubPageProfile
+        ? "Profile Studio"
+        : "Pricing";
+
+    private string CurrentSubPageDescription => ActiveSubPage == SettingsSubPageProfile
+        ? "Edit nama studio, nomor HP/WA, dan alamat studio."
+        : "Atur harga latihan, paket recording, dan diskon sesi latihan.";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -235,7 +313,8 @@
         }
 
         HasLoadedSettings = true;
-        await LoadSettingsAsync();
+        await LoadPricingSettingsAsync();
+        await LoadProfileSettingsAsync();
         StateHasChanged();
     }
 
@@ -251,13 +330,13 @@
         return options;
     }
 
-    private async Task LoadSettingsAsync()
+    private async Task LoadPricingSettingsAsync()
     {
         try
         {
             var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalPricingStorageKey);
 
-            SettingsModel = string.IsNullOrWhiteSpace(json)
+            PricingModel = string.IsNullOrWhiteSpace(json)
                 ? StudioPricingSettings.CreateDefault()
                 : JsonSerializer.Deserialize<StudioPricingSettings>(json, LocalJsonOptions)?.Normalize() ?? StudioPricingSettings.CreateDefault();
 
@@ -265,18 +344,46 @@
         }
         catch (Exception ex)
         {
-            SettingsModel = StudioPricingSettings.CreateDefault();
-            FormMessage = $"Settings gagal dibaca. Default dipakai sementara: {ex.Message}";
+            PricingModel = StudioPricingSettings.CreateDefault();
+            FormMessage = $"Pricing gagal dibaca. Default dipakai sementara: {ex.Message}";
         }
     }
 
-    private async Task SaveSettingsAsync()
+    private async Task LoadProfileSettingsAsync()
     {
         try
         {
-            SettingsModel = SettingsModel.Normalize();
+            var json = await JsRuntime.InvokeAsync<string?>("localStorage.getItem", LocalStudioProfileStorageKey);
 
-            var json = JsonSerializer.Serialize(SettingsModel, LocalJsonOptions);
+            ProfileModel = string.IsNullOrWhiteSpace(json)
+                ? StudioProfileSettings.CreateDefault()
+                : JsonSerializer.Deserialize<StudioProfileSettings>(json, LocalJsonOptions)?.Normalize() ?? StudioProfileSettings.CreateDefault();
+        }
+        catch (Exception ex)
+        {
+            ProfileModel = StudioProfileSettings.CreateDefault();
+            FormMessage = $"Profile studio gagal dibaca. Default dipakai sementara: {ex.Message}";
+        }
+    }
+
+    private async Task SaveCurrentSubPageAsync()
+    {
+        if (ActiveSubPage == SettingsSubPageProfile)
+        {
+            await SaveProfileSettingsAsync();
+            return;
+        }
+
+        await SavePricingSettingsAsync();
+    }
+
+    private async Task SavePricingSettingsAsync()
+    {
+        try
+        {
+            PricingModel = PricingModel.Normalize();
+
+            var json = JsonSerializer.Serialize(PricingModel, LocalJsonOptions);
             await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalPricingStorageKey, json);
 
             FormMessage = "Pricing settings berhasil disimpan lokal.";
@@ -287,14 +394,50 @@
         }
     }
 
-    private async Task ResetToDefaultAsync()
+    private async Task SaveProfileSettingsAsync()
     {
-        SettingsModel = StudioPricingSettings.CreateDefault();
+        try
+        {
+            ProfileModel = ProfileModel.Normalize();
+
+            var json = JsonSerializer.Serialize(ProfileModel, LocalJsonOptions);
+            await JsRuntime.InvokeVoidAsync("localStorage.setItem", LocalStudioProfileStorageKey, json);
+
+            FormMessage = "Profile studio berhasil disimpan lokal.";
+        }
+        catch (Exception ex)
+        {
+            FormMessage = $"Gagal menyimpan profile studio: {ex.Message}";
+        }
+    }
+
+    private async Task ResetCurrentSubPageAsync()
+    {
+        if (ActiveSubPage == SettingsSubPageProfile)
+        {
+            ProfileModel = StudioProfileSettings.CreateDefault();
+            await SaveProfileSettingsAsync();
+            FormMessage = "Profile studio dikembalikan ke default.";
+            return;
+        }
+
+        PricingModel = StudioPricingSettings.CreateDefault();
         PackageDraft = new RecordingPackageDraft();
         DiscountDraft = TrainingDiscountDraft.CreateDefault();
 
-        await SaveSettingsAsync();
+        await SavePricingSettingsAsync();
         FormMessage = "Pricing settings dikembalikan ke default.";
+    }
+
+    private void OnSubPageChanged(ChangeEventArgs args)
+    {
+        var nextPage = args.Value?.ToString();
+
+        ActiveSubPage = nextPage == SettingsSubPageProfile
+            ? SettingsSubPageProfile
+            : SettingsSubPagePricing;
+
+        FormMessage = null;
     }
 
     private void SetTab(string tab)
@@ -330,7 +473,7 @@
             return;
         }
 
-        SettingsModel.RecordingPackages.Add(new StudioRecordingPackage
+        PricingModel.RecordingPackages.Add(new StudioRecordingPackage
         {
             Id = Guid.NewGuid().ToString("N"),
             Name = PackageDraft.Name.Trim(),
@@ -344,7 +487,7 @@
 
     private void RemoveRecordingPackage(string id)
     {
-        SettingsModel.RecordingPackages.RemoveAll(item => item.Id == id);
+        PricingModel.RecordingPackages.RemoveAll(item => item.Id == id);
         FormMessage = "Paket recording dihapus. Klik Simpan Settings untuk menyimpan.";
     }
 
@@ -362,7 +505,7 @@
             return;
         }
 
-        SettingsModel.TrainingDiscounts.Add(new StudioTrainingDiscount
+        PricingModel.TrainingDiscounts.Add(new StudioTrainingDiscount
         {
             Id = Guid.NewGuid().ToString("N"),
             DurationHours = DiscountDraft.DurationHours,
@@ -376,7 +519,7 @@
 
     private void RemoveTrainingDiscount(string id)
     {
-        SettingsModel.TrainingDiscounts.RemoveAll(item => item.Id == id);
+        PricingModel.TrainingDiscounts.RemoveAll(item => item.Id == id);
         FormMessage = "Diskon latihan dihapus. Klik Simpan Settings untuk menyimpan.";
     }
 
@@ -412,6 +555,53 @@
                 Amount = 60000,
                 AppliesMultiple = true
             };
+        }
+    }
+
+    private sealed class StudioProfileSettings
+    {
+        public int SchemaVersion { get; set; } = 1;
+
+        public string StudioName { get; set; } = "37 Music Studio";
+
+        public string PhoneOrWhatsApp { get; set; } = string.Empty;
+
+        public string Address { get; set; } = string.Empty;
+
+        [JsonIgnore]
+        public string SafeStudioName => string.IsNullOrWhiteSpace(StudioName)
+            ? "37 Music Studio"
+            : StudioName.Trim();
+
+        [JsonIgnore]
+        public string SafePhoneOrWhatsApp => string.IsNullOrWhiteSpace(PhoneOrWhatsApp)
+            ? "Nomor HP/WA belum diisi"
+            : PhoneOrWhatsApp.Trim();
+
+        [JsonIgnore]
+        public string SafeAddress => string.IsNullOrWhiteSpace(Address)
+            ? "Alamat studio belum diisi"
+            : Address.Trim();
+
+        public static StudioProfileSettings CreateDefault()
+        {
+            return new StudioProfileSettings
+            {
+                SchemaVersion = 1,
+                StudioName = "37 Music Studio",
+                PhoneOrWhatsApp = string.Empty,
+                Address = string.Empty
+            };
+        }
+
+        public StudioProfileSettings Normalize()
+        {
+            SchemaVersion = 1;
+            StudioName = string.IsNullOrWhiteSpace(StudioName) ? "37 Music Studio" : StudioName.Trim();
+            PhoneOrWhatsApp = PhoneOrWhatsApp?.Trim() ?? string.Empty;
+            Address = Address?.Trim() ?? string.Empty;
+
+            return this;
         }
     }
 

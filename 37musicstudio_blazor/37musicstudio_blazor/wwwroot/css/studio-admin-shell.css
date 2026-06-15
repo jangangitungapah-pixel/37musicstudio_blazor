@@ -3124,3 +3124,141 @@ textarea,
     }
 }
 /* </studio-pricing-settings-page> */
+
+
+/* <studio-settings-subpages-profile> */
+.studio-settings-subpage-card {
+    display: grid;
+    grid-template-columns: minmax(14rem, 0.44fr) minmax(0, 1fr);
+    gap: 0.58rem;
+    align-items: end;
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    border-radius: 1rem;
+    padding: 0.68rem;
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 76%, transparent)),
+        var(--ui-surface, #fffefa);
+    box-shadow:
+        0 1rem 2.4rem color-mix(in srgb, #000000 5%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+    backdrop-filter: blur(20px);
+}
+
+.studio-settings-subpage-field select,
+.studio-profile-form-grid textarea {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--ui-border, rgba(32, 28, 23, 0.12)) 84%, transparent);
+    border-radius: 0.72rem;
+    background: color-mix(in srgb, var(--ui-surface, #fffefa) 78%, transparent);
+    color: var(--ui-text-main, #25231f);
+    outline: 0;
+    font-size: 0.76rem;
+    font-weight: 760;
+}
+
+.studio-settings-subpage-field select {
+    min-height: 2.4rem;
+    padding: 0 0.72rem;
+}
+
+.studio-settings-subpage-summary {
+    min-width: 0;
+    display: grid;
+    gap: 0.18rem;
+    padding: 0.42rem 0.5rem;
+}
+
+.studio-settings-subpage-summary strong {
+    color: var(--ui-text-strong, #11100e);
+    font-size: 0.88rem;
+    font-weight: 950;
+    letter-spacing: -0.04em;
+}
+
+.studio-settings-subpage-summary span {
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.68rem;
+    font-weight: 680;
+}
+
+.studio-profile-card {
+    gap: 0.9rem;
+}
+
+.studio-profile-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.62rem;
+}
+
+.studio-profile-address-field {
+    grid-column: 1 / -1;
+}
+
+.studio-profile-form-grid textarea {
+    min-height: 7.5rem;
+    resize: vertical;
+    padding: 0.68rem 0.74rem;
+    line-height: 1.45;
+}
+
+.studio-profile-preview-card {
+    display: grid;
+    gap: 0.26rem;
+    border: 1px solid var(--ui-border, rgba(32, 28, 23, 0.12));
+    border-radius: 1.16rem;
+    padding: 0.86rem;
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--ui-accent, #d8a85f) 14%, transparent), transparent 10rem),
+        linear-gradient(145deg, color-mix(in srgb, var(--ui-elevated, rgba(255, 254, 250, 0.84)) 94%, transparent), color-mix(in srgb, var(--ui-surface-glass, rgba(255, 254, 250, 0.62)) 76%, transparent)),
+        var(--ui-surface, #fffefa);
+    box-shadow:
+        0 1.1rem 3rem color-mix(in srgb, #000000 7%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+    backdrop-filter: blur(22px);
+}
+
+.studio-profile-preview-card p {
+    margin: 0;
+    color: var(--ui-text-muted, #70685e);
+    font-size: 0.58rem;
+    font-weight: 850;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.studio-profile-preview-card strong {
+    color: var(--ui-text-strong, #11100e);
+    font-size: clamp(1.12rem, 2vw, 1.48rem);
+    font-weight: 950;
+    line-height: 1;
+    letter-spacing: -0.06em;
+}
+
+.studio-profile-preview-card span {
+    color: var(--ui-accent, #d8a85f);
+    font-size: 0.76rem;
+    font-weight: 850;
+}
+
+.studio-profile-preview-card address {
+    max-width: 42rem;
+    margin: 0.18rem 0 0;
+    color: var(--ui-text-muted, #70685e);
+    font-style: normal;
+    font-size: 0.72rem;
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+@media (max-width: 980px) {
+    .studio-settings-subpage-card,
+    .studio-profile-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .studio-settings-subpage-summary {
+        padding: 0;
+    }
+}
+/* </studio-settings-subpages-profile> */
