@@ -60,6 +60,7 @@
                             <th>Uraian</th>
                             <th class="amount">Debit</th>
                             <th class="amount">Credit</th>
+                            <th class="amount">Saldo</th>
                             <th class="action">Action</th>
                         </tr>
                     </thead>
@@ -68,9 +69,8 @@
                         @foreach (var row in Rows)
                         {
                             <tr>
-                                <td>
-                                    <strong>@row.Entry.TransactionDate.ToString("dd MMM yyyy", IndonesianCulture)</strong>
-                                    <span>@row.Entry.PaymentMethod</span>
+                                <td class="date">
+                                    <strong>@row.Entry.TransactionDate.ToString("dd MMM yy", IndonesianCulture)</strong>
                                 </td>
 
                                 <td>
@@ -79,16 +79,22 @@
 
                                 <td class="description">
                                     <strong>@row.Entry.Description</strong>
-                                    <span>@row.Entry.Category</span>
                                 </td>
 
                                 <td class="amount debit">@row.DebitLabel</td>
                                 <td class="amount credit">@row.CreditLabel</td>
+                                <td class="amount balance">@FormatCurrency(row.RunningBalance)</td>
 
                                 <td class="action">
-                                    <button type="button" @onclick="@(() => EditEntryAsync(row.Entry))">Edit</button>
-                                    <button type="button" class="danger" @onclick="@(() => DeleteEntryAsync(row.Entry))">Delete</button>
-                                    <button type="button" class="ghost" @onclick="@(() => OpenDetail(row.Entry))">Detail</button>
+                                    <button type="button" class="icon edit" title="Edit" aria-label="Edit transaksi" @onclick="@(() => EditEntryAsync(row.Entry))">
+                                        <span aria-hidden="true">✎</span>
+                                    </button>
+                                    <button type="button" class="icon danger" title="Delete" aria-label="Delete transaksi" @onclick="@(() => DeleteEntryAsync(row.Entry))">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                    <button type="button" class="icon ghost" title="Detail" aria-label="Detail transaksi" @onclick="@(() => OpenDetail(row.Entry))">
+                                        <span aria-hidden="true">i</span>
+                                    </button>
                                 </td>
                             </tr>
                         }
